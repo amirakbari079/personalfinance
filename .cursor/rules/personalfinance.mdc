@@ -181,3 +181,16 @@ frontend/
 - **Do not ask before:** routine CRUD within an approved milestone, matching existing module structure, Persian error messages, Flyway migrations for planned entities.
 - Do not invent requirements not in the docs. Mark genuine gaps as `[RECOMMENDATION]` and propose — do not silently implement.
 - When unsure between two valid approaches, prefer the one already used in the codebase.
+
+
+Minimize token usage.
+
+Read only the files required for the current task.
+
+Do not scan the entire repository unless explicitly requested.
+
+Modify the minimum number of files.
+
+Reuse existing patterns before creating new code.
+
+Keep responses concise.
