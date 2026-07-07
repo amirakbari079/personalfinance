@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/personalfinance
+    username: postgres
+    password: 110
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+
+app:
+  jwt:
+    secret: "personalfinance-wan-motor-secret-key-2025"
+    expiration-ms: 86400000
+    cookie-name: token
+  cors:
+    allowed-origin: http://localhost:5173

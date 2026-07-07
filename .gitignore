@@ -1,0 +1,26 @@
+# Build output
+backend/target/
+frontend/dist/
+frontend/.next/
+*.class
+
+# Dependencies
+frontend/node_modules/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# AI tools
+.aider*
+
+# Cursor (keep project rules)
+.cursor/*
+!.cursor/rules/

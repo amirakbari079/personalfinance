@@ -1,0 +1,183 @@
+---
+description: PersonalFinance — architecture, conventions, and daily dev rules
+alwaysApply: true
+---
+
+# PersonalFinance
+
+Persian RTL personal + business finance app. Source of truth: `REQUIREMENTS.md`, `ARCHITECTURE.md`, `ROADMAP.md`.
+
+**Stack:** Java 21 · Spring Boot 3 · PostgreSQL · Flyway · Next.js (TypeScript) · Tailwind  
+**Domain rules:** Toman (integer, no decimals) · Jalali dates in UI/API · Gregorian `DATE` in DB · server is source of truth
+
+---
+
+## Project layout
+
+```
+PersonalFinance/
+├── backend/          # Spring Boot (Maven)
+│   └── src/main/java/com/personalfinance/{module}/
+│       ├── controller/
+│       ├── service/
+│       ├── repository/
+│       ├── entity/
+│       └── dto/
+├── frontend/         # Next.js (migrating from Vite/React)
+└── ROADMAP.md        # Milestone order is authoritative; do not skip ahead
+```
+
+One backend package per domain module (`account`, `auth`, `income`, `loan`, `expense`, …). Phase 2 modules follow the same pattern (`product`, `counterparty`, `inventory`, …).
+
+---
+
+## Naming
+
+| Layer | Convention | Example |
+|-------|------------|---------|
+| Java packages | lowercase, singular module | `com.personalfinance.account` |
+| Java classes | PascalCase | `AccountService`, `AccountRequest` |
+| REST paths | kebab-case, plural | `/api/v1/pending-expenses` |
+| DB tables/columns | snake_case | `pending_expenses`, `created_at` |
+| Flyway files | `V{n}__snake_description.sql` | `V7__add_receivables.sql` |
+| DTOs | `{Entity}Request` / `{Entity}Response` | `AccountRequest` |
+| Enums (Java + TS) | `UPPER_SNAKE` | `DIGITAL_WALLET` |
+| TS files | camelCase | `accountsApi.ts`, `jalaliUtils.ts` |
+
+User-facing labels (account names, categories, counterparties) are **never hardcoded** — only system enums and UI copy are fixed.
+
+---
+
+## Spring Boot backend
+
+- **Layers:** Controller → Service → Repository. No business logic in controllers; no HTTP concerns in services.
+- **Entities** extend `BaseEntity` (`id`, `createdAt`). Use `@Transactional` on write operations in services.
+- **Mapping:** Entity ↔ DTO via static `from()` on Response DTOs and private `apply()` in services — match existing modules.
+- **Dependency injection:** constructor injection only (no `@Autowired` on fields).
+- **Validation:** `@Valid` on request bodies; Jakarta validation annotations on `*Request` DTOs.
+- **Exceptions:** throw meaningful domain-specific exceptions. Use `GlobalExceptionHandler` to map exceptions to HTTP responses.
+- **Jalali:** convert only in the service layer via `JalaliDateConverter`. API accepts/returns `"YYYY/MM/DD"` strings; DB stores `LocalDate` (Gregorian).
+- **Money:** `BIGINT` / `Long` in Java — always Toman, never Rial, never `double`.
+- **New module checklist:** entity → Flyway migration → repository → service → DTOs → controller. Follow the nearest existing module (e.g. `account`).
+
+---
+
+## PostgreSQL + Flyway
+
+- Schema changes **only** via Flyway — never `ddl-auto: update`. JPA is `validate`.
+- One migration per logical change; never edit applied migrations.
+- Monetary columns: `BIGINT NOT NULL` (default `0` where appropriate).
+- Dates: `DATE` or `TIMESTAMP WITH TIME ZONE` for `created_at` — no Jalali column types.
+- Seed data belongs in migrations only when intentional and documented.
+
+---
+
+## API conventions
+
+- Base path: `/api/v1/`. REST verbs: GET · POST · PUT · DELETE.
+- **Every response** wraps in `ApiResponse<T>`: `{ success, message, data }`.
+  - Success: `ApiResponse.ok(data)` or `ApiResponse.ok(message, data)`
+  - Error: `ApiResponse.error(message)` with appropriate HTTP status
+- POST creates → `201 CREATED`. List endpoints return arrays in `data`.
+- Aggregate endpoints use `/total` or `/total-monthly` suffix (match existing pattern).
+- Amounts in JSON: integer Toman. Dates in JSON: Jalali `"YYYY/MM/DD"` strings.
+- CSV export: one endpoint per entity for backup (`CsvExportService` + controller) — per ARCHITECTURE.md.
+
+---
+
+## Error handling
+
+- `@RestControllerAdvice` (`GlobalExceptionHandler`) handles cross-cutting errors.
+- Validation (`@Valid`) → `400` + `ApiResponse.error("خطای اعتبارسنجی")`.
+- Auth failures → `401`/`403` via `CustomAuthenticationEntryPoint` / `CustomAccessDeniedHandler`.
+- Unhandled exceptions → `500` + generic Persian message; log full stack server-side.
+- **User-facing error messages in Persian.** Field-level validation messages on DTOs in Persian.
+- Do not leak stack traces or internal details in error messages.
+
+---
+
+## Security
+
+- Single-user JWT auth: token in **HttpOnly cookie** (`token`), `credentials: 'include'` on frontend — **never** Bearer header or localStorage.
+- Only `/api/v1/auth/login` is public; all other `/api/v1/**` require a valid token.
+- Passwords: bcrypt. JWT secret and DB credentials in `application.yml` / env — never commit secrets.
+- `SecurityConfig` currently has dev `permitAll()` — restore filter chain + `authorizeHttpRequests` before production; do not add new dev bypasses.
+- Design for future multi-user/roles without rework: 401 = no/invalid token, 403 = insufficient permission.
+
+---
+
+## Next.js frontend
+
+> **Migration note:** Legacy Vite/React code lives in `frontend/src/`. New work targets Next.js App Router. Preserve API contracts and visual tokens during migration.
+
+**Recommended structure:**
+```
+frontend/
+├── app/                  # App Router — routes, layouts, route groups
+│   ├── (auth)/login/
+│   ├── (app)/            # Protected routes
+│   └── layout.tsx        # dir="rtl" lang="fa"
+├── features/             # Feature modules (accounts, investments, …)
+│   └── {feature}/
+│       ├── components/
+│       ├── api.ts
+│       └── types.ts
+├── shared/               # Cross-feature UI (buttons, modals, date picker)
+├── lib/                  # API helpers, auth utilities, config
+├── hooks/                # Shared React hooks
+├── types/                # Shared TypeScript types
+└── tailwind.config.ts    # Design tokens — single source for colors/fonts
+```
+
+**Rules:**
+- RTL everywhere: `dir="rtl"` `lang="fa"`, Vazirmatn font. Date inputs display LTR (`dir="ltr"`) for `YYYY/MM/DD`.
+- API client: native `fetch` with `credentials: 'include'`. Parse `ApiResponse<T>` via shared helper in `lib/`.
+- Do not duplicate server state in global stores. Use TanStack Query for server state when available.
+- Auth: check session via `GET /api/v1/auth/me` on load; redirect unauthenticated users to `/login`. No dev auth bypass in production code.
+- Styling: Tailwind with project design tokens (`brand-dark`, `brand-accent`, `surface`, `text-primary`, …).
+- Prefer shadcn/ui for reusable UI components. Avoid introducing additional UI libraries unless explicitly approved.
+- UI copy: Persian. Amounts: comma-formatted via `numberFormat`. Enum labels: `Record<Enum, string>` maps.
+- Each backend module maps to a `features/{module}/` folder and one or more routes under `app/(app)/`.
+- API base URL via Next.js env (`NEXT_PUBLIC_API_URL` or rewrites) — do not hardcode ports in components.
+
+---
+
+## Refactoring
+
+- **Minimize scope** — smallest correct diff; no drive-by changes.
+- Match the nearest existing module before introducing new patterns.
+- Do not rename packages, API paths, or DB columns without explicit approval.
+- Do not add abstractions for one-time use.
+- Remove unused dependencies when replacing them.
+- Follow `ROADMAP.md` milestone order; finish open gaps in the current milestone before starting the next.
+
+---
+
+## Code Quality
+
+- Keep functions small and focused.
+- Avoid duplicated logic.
+- Prefer readability over clever code.
+- Follow existing project conventions before introducing new patterns.
+- Generate production-ready code only.
+- Never leave TODOs, placeholder implementations, or temporary hacks unless explicitly requested.
+
+---
+
+## AI Workflow
+
+- Before implementing a feature, search the existing codebase for similar implementations and reuse established patterns.
+- Modify the minimum number of files required.
+- Preserve backward compatibility unless explicitly instructed otherwise.
+- Before introducing a new dependency or architecture, verify that an existing solution does not already exist in the project.
+- When using external libraries or frameworks, always use Context7 to retrieve the latest official documentation before generating code.
+
+---
+
+## AI behavior
+
+- Read `REQUIREMENTS.md` and `ROADMAP.md` before implementing a feature.
+- **Ask before:** new dependencies, new architectural patterns, API contract changes, DB schema redesign, skipping milestones, or deviating from cookie-based auth.
+- **Do not ask before:** routine CRUD within an approved milestone, matching existing module structure, Persian error messages, Flyway migrations for planned entities.
+- Do not invent requirements not in the docs. Mark genuine gaps as `[RECOMMENDATION]` and propose — do not silently implement.
+- When unsure between two valid approaches, prefer the one already used in the codebase.
