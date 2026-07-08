@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Vazirmatn } from 'next/font/google'
 import type { ReactNode } from 'react'
+import { Providers } from './providers'
 import './globals.css'
 
 const vazirmatn = Vazirmatn({
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable}>
       <body className={`${vazirmatn.className} font-sans antialiased`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

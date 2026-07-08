@@ -35,6 +35,7 @@ export default {
     './index.html',
     './src/**/*.{ts,tsx}',
     './shared/**/*.{ts,tsx}',
+    './features/**/*.{ts,tsx}',
   ],
   theme: {
     extend: {
