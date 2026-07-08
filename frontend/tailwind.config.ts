@@ -1,47 +1,39 @@
 import type { Config } from 'tailwindcss'
 
-// ─────────────────────────────────────────────
-//  DESIGN TOKENS — تمام تصمیمات بصری اینجاست
-//  برای تغییر کل تم، فقط این مقادیر را عوض کن
-// ─────────────────────────────────────────────
-
-const tokens = {
-  // رنگ‌های اصلی
-  'brand-dark':    '#0D1B2A',   // پنل تاریک، متن اصلی
-  'brand-darker':  '#070E17',   // عمیق‌ترین تاریکی
-  'brand-mid':     '#1E3048',   // hover روی پنل تاریک
-  'brand-accent':  '#4F46E5',   // رنگ تأکید — دکمه، focus، لوگو
-  'brand-accent-hover': '#4338CA', // hover روی accent
-
-  // سطوح روشن
-  'surface':       '#F4F7FA',   // پس‌زمینه کل صفحه
-  'surface-card':  '#FFFFFF',   // کارت‌ها، input‌ها
-  'surface-muted': '#E8EDF2',   // border‌ها، divider‌ها
-
-  // متن
-  'text-primary':  '#0D1B2A',   // متن اصلی
-  'text-muted':    '#7A9BB5',   // متن فرعی، placeholder
-  'text-on-dark':  '#F4F7FA',   // متن روی پنل تاریک
-  'text-on-accent':'#FFFFFF',   // متن روی دکمه accent
-
-  // وضعیت
-  'status-error':  '#F87171',   // خطا
-  'status-error-bg': '#FEF2F2', // پس‌زمینه خطا
-  'status-error-border': '#FECACA',
-}
-
 export default {
   content: [
     './src/app/**/*.{ts,tsx}',
     './shared/**/*.{ts,tsx}',
     './features/**/*.{ts,tsx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
         sans: ['var(--font-vazirmatn)', 'Vazirmatn', 'sans-serif'],
       },
-      colors: tokens,
+      colors: {
+        'brand-dark': 'var(--color-brand-dark)',
+        'brand-darker': 'var(--color-brand-darker)',
+        'brand-mid': 'var(--color-brand-mid)',
+        'brand-accent': 'var(--color-brand-accent)',
+        'brand-accent-hover': 'var(--color-brand-accent-hover)',
+        surface: 'var(--color-surface)',
+        'surface-card': 'var(--color-surface-card)',
+        'surface-muted': 'var(--color-surface-muted)',
+        'text-primary': 'var(--color-text-primary)',
+        'text-muted': 'var(--color-text-muted)',
+        'text-on-dark': 'var(--color-text-on-dark)',
+        'text-on-accent': 'var(--color-text-on-accent)',
+        'status-error': 'var(--color-status-error)',
+        'status-error-bg': 'var(--color-status-error-bg)',
+        'status-error-border': 'var(--color-status-error-border)',
+      },
+      boxShadow: {
+        luxury: 'var(--shadow-card)',
+        modal: 'var(--shadow-modal)',
+        gold: 'var(--shadow-gold)',
+      },
     },
   },
   plugins: [],

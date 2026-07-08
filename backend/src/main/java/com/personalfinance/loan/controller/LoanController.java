@@ -1,14 +1,17 @@
 package com.personalfinance.loan.controller;
 
 import com.personalfinance.common.ApiResponse;
+import com.personalfinance.common.CsvExportService;
 import com.personalfinance.loan.dto.LoanRequest;
 import com.personalfinance.loan.dto.LoanResponse;
 import com.personalfinance.loan.service.LoanService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -17,9 +20,11 @@ import java.util.NoSuchElementException;
 public class LoanController {
 
     private final LoanService loanService;
+    private final CsvExportService csvExportService;
 
-    public LoanController(LoanService loanService) {
+    public LoanController(LoanService loanService, CsvExportService csvExportService) {
         this.loanService = loanService;
+        this.csvExportService = csvExportService;
     }
 
     @GetMapping
@@ -30,6 +35,12 @@ public class LoanController {
     @GetMapping("/total-monthly")
     public ResponseEntity<ApiResponse<Long>> getMonthlyTotal() {
         return ResponseEntity.ok(ApiResponse.ok(loanService.activeMonthlyTotal()));
+    }
+
+    @GetMapping("/export")
+    public void exportCsv(HttpServletResponse response) throws IOException {
+        csvExportService.writeToResponse(
+                loanService.findAll(), LoanResponse.class, "loans.csv", response);
     }
 
     @PostMapping

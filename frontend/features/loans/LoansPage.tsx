@@ -15,6 +15,8 @@ import {
 import LoanForm from './LoanForm'
 import { Pencil, Trash2, Check, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
+import PageHeader from '@/shared/PageHeader'
+import { exportLoansCsv } from '@/lib/api/loansApi'
 
 export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([])
@@ -86,19 +88,13 @@ export default function LoansPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-text-primary">وام‌ها</h1>
-          <p className="text-sm text-text-muted mt-0.5">مجموع قسط ماهانه فعال: {formatToman(monthlyTotal)}</p>
-        </div>
-        <button
-          onClick={() => { setEditing(null); setShowForm(true) }}
-          className="bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + وام جدید
-        </button>
-      </div>
+      <PageHeader
+        title="وام‌ها"
+        subtitle={`مجموع قسط ماهانه فعال: ${formatToman(monthlyTotal)}`}
+        addLabel="+ وام جدید"
+        onAdd={() => { setEditing(null); setShowForm(true) }}
+        onExport={exportLoansCsv}
+      />
 
       {error && (
         <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5 mb-4">
@@ -156,7 +152,7 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
     : 0
 
   return (
-    <div className="bg-surface-card border border-surface-muted rounded-xl overflow-hidden">
+    <div className="luxury-card overflow-hidden">
       {/* Top row */}
       <div className="px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">

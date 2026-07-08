@@ -1,5 +1,6 @@
 import type { ApiResponse } from './authApi'
 import { parseJson } from './authApi'
+import { downloadCsv } from '@/lib/csvExport'
 
 export type InvestmentType = 'STOCK' | 'GOLD' | 'CRYPTO' | 'FOREIGN_CURRENCY' | 'OTHER'
 
@@ -98,4 +99,8 @@ export async function deleteInvestment(id: number): Promise<void> {
     } catch { /* empty body */ }
     throw new Error(message)
   }
+}
+
+export function exportInvestmentsCsv(): Promise<void> {
+  return downloadCsv(`${BASE}/export`, 'investments.csv')
 }

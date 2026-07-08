@@ -4,9 +4,11 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from 'react'
+import { getMe, login as apiLogin, logout as apiLogout } from '@/lib/api/authApi'
 
 interface AuthState {
   isAuthenticated: boolean
@@ -21,24 +23,42 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// ⚠️ DEVELOPMENT MODE — authentication bypassed on the frontend.
-// Restore real auth (getMe / login / logout from lib/api) before production.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
-    isAuthenticated: true,
-    username: 'dev',
-    isLoading: false,
+    isAuthenticated: false,
+    username: null,
+    isLoading: true,
   })
 
-  const login = useCallback(async (_username: string, _password: string) => {
+  useEffect(() => {
+    getMe()
+      .then((res) => {
+        setState({
+          isAuthenticated: true,
+          username: res.data,
+          isLoading: false,
+        })
+      })
+      .catch(() => {
+        setState({
+          isAuthenticated: false,
+          username: null,
+          isLoading: false,
+        })
+      })
+  }, [])
+
+  const login = useCallback(async (username: string, password: string) => {
+    const res = await apiLogin({ username, password })
     setState({
       isAuthenticated: true,
-      username: _username || 'dev',
+      username: res.data?.username ?? username,
       isLoading: false,
     })
   }, [])
 
   const logout = useCallback(async () => {
+    await apiLogout()
     setState({ isAuthenticated: false, username: null, isLoading: false })
   }, [])
 

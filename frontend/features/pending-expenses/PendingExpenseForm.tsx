@@ -43,11 +43,11 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
 
   return (
     <div
-      className="fixed inset-0 bg-brand-dark/50 flex items-center justify-center z-50 px-4"
+      className="luxury-modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
-      <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md p-7">
-        <h2 className="text-base font-semibold text-text-primary mb-6">
+      <div className="luxury-modal">
+        <h2 className="text-lg font-light text-text-primary mb-6 tracking-tight">
           {initial ? 'ویرایش هزینه معوق' : 'هزینه معوق جدید'}
         </h2>
 
@@ -62,7 +62,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
               required
               autoFocus
               placeholder="مثلاً: بیمه خودرو، تعمیرات، خرید لوازم"
-              className="w-full bg-surface border border-surface-muted rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-accent/25 focus:border-brand-accent transition-all"
+              className="field-input"
             />
           </div>
 
@@ -76,7 +76,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
               onChange={e => setPlannedAmount(formatWithCommas(e.target.value))}
               required
               placeholder="0"
-              className="w-full bg-surface border border-surface-muted rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-accent/25 focus:border-brand-accent transition-all tabular-nums"
+              className="field-input tabular-nums"
             />
           </div>
 
@@ -98,7 +98,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
               onChange={e => setNotes(e.target.value)}
               rows={2}
               placeholder="توضیحات تکمیلی..."
-              className="w-full bg-surface border border-surface-muted rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-accent/25 focus:border-brand-accent transition-all resize-none"
+              className="field-input resize-none"
             />
           </div>
 
@@ -113,14 +113,14 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
             <button
               type="submit"
               disabled={saving || !label.trim()}
-              className="flex-1 bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 btn-primary py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'در حال ذخیره...' : (initial ? 'ذخیره تغییرات' : 'افزودن هزینه')}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="px-5 text-sm text-text-muted hover:text-text-primary border border-surface-muted rounded-lg transition-colors"
+              className="btn-ghost"
             >
               انصراف
             </button>

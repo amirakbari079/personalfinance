@@ -14,6 +14,8 @@ import {
 import IncomeForm from './IncomeForm'
 import { Pencil, Trash2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
+import PageHeader from '@/shared/PageHeader'
+import { exportIncomesCsv } from '@/lib/api/incomesApi'
 
 export default function IncomePage() {
   const [incomes, setIncomes] = useState<Income[]>([])
@@ -71,19 +73,13 @@ export default function IncomePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-text-primary">درآمدها</h1>
-          <p className="text-sm text-text-muted mt-0.5">درآمد ماهانه (مکرر): {formatToman(monthlyTotal)}</p>
-        </div>
-        <button
-          onClick={() => { setEditing(null); setShowForm(true) }}
-          className="bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + درآمد جدید
-        </button>
-      </div>
+      <PageHeader
+        title="درآمدها"
+        subtitle={`درآمد ماهانه (مکرر): ${formatToman(monthlyTotal)}`}
+        addLabel="+ درآمد جدید"
+        onAdd={() => { setEditing(null); setShowForm(true) }}
+        onExport={exportIncomesCsv}
+      />
 
       {error && (
         <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5 mb-4">
@@ -101,7 +97,7 @@ export default function IncomePage() {
           {incomes.map(income => (
             <div
               key={income.id}
-              className="bg-surface-card border border-surface-muted rounded-xl px-5 py-4 flex items-center justify-between"
+              className="luxury-card px-5 py-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">

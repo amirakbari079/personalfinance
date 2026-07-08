@@ -13,6 +13,8 @@ import {
 import PendingExpenseForm from './PendingExpenseForm'
 import { Pencil, Trash2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
+import PageHeader from '@/shared/PageHeader'
+import { exportPendingExpensesCsv } from '@/lib/api/pendingExpensesApi'
 
 export default function PendingExpensesPage() {
   const [expenses, setExpenses] = useState<PendingExpense[]>([])
@@ -70,19 +72,13 @@ export default function PendingExpensesPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-text-primary">هزینه‌های معوق</h1>
-          <p className="text-sm text-text-muted mt-0.5">مجموع برنامه‌ریزی‌شده: {formatToman(total)}</p>
-        </div>
-        <button
-          onClick={() => { setEditing(null); setShowForm(true) }}
-          className="bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + هزینه جدید
-        </button>
-      </div>
+      <PageHeader
+        title="هزینه‌های معوق"
+        subtitle={`مجموع برنامه‌ریزی‌شده: ${formatToman(total)}`}
+        addLabel="+ هزینه جدید"
+        onAdd={() => { setEditing(null); setShowForm(true) }}
+        onExport={exportPendingExpensesCsv}
+      />
 
       {error && (
         <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5 mb-4">
@@ -100,7 +96,7 @@ export default function PendingExpensesPage() {
           {expenses.map(expense => (
             <div
               key={expense.id}
-              className="bg-surface-card border border-surface-muted rounded-xl px-5 py-4 flex items-center justify-between"
+              className="luxury-card px-5 py-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">

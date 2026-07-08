@@ -4,11 +4,14 @@ import com.personalfinance.account.dto.AccountRequest;
 import com.personalfinance.account.dto.AccountResponse;
 import com.personalfinance.account.service.AccountService;
 import com.personalfinance.common.ApiResponse;
+import com.personalfinance.common.CsvExportService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -17,9 +20,11 @@ import java.util.NoSuchElementException;
 public class AccountController {
 
     private final AccountService accountService;
+    private final CsvExportService csvExportService;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, CsvExportService csvExportService) {
         this.accountService = accountService;
+        this.csvExportService = csvExportService;
     }
 
     @GetMapping
@@ -30,6 +35,12 @@ public class AccountController {
     @GetMapping("/total")
     public ResponseEntity<ApiResponse<Long>> getTotal() {
         return ResponseEntity.ok(ApiResponse.ok(accountService.totalBalance()));
+    }
+
+    @GetMapping("/export")
+    public void exportCsv(HttpServletResponse response) throws IOException {
+        csvExportService.writeToResponse(
+                accountService.findAll(), AccountResponse.class, "accounts.csv", response);
     }
 
     @PostMapping

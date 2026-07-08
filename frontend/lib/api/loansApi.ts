@@ -1,5 +1,6 @@
 import type { ApiResponse } from './authApi'
 import { parseJson } from './authApi'
+import { downloadCsv } from '@/lib/csvExport'
 
 export type InstallmentStatus = 'PAID' | 'NEXT' | 'UPCOMING'
 
@@ -121,4 +122,8 @@ export async function payNextInstallment(id: number): Promise<Loan> {
   }
   const body: ApiResponse<Loan> = await parseJson(res)
   return body.data!
+}
+
+export function exportLoansCsv(): Promise<void> {
+  return downloadCsv(`${BASE}/export`, 'loans.csv')
 }

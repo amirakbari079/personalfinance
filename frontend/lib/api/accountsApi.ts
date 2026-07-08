@@ -1,5 +1,6 @@
 import type { ApiResponse } from './authApi'
 import { parseJson } from './authApi'
+import { downloadCsv } from '@/lib/csvExport'
 
 export type AccountType = 'BANK' | 'DIGITAL_WALLET' | 'EXCHANGE' | 'CASH' | 'OTHER'
 
@@ -94,4 +95,8 @@ export async function deleteAccount(id: number): Promise<void> {
     } catch { /* empty body */ }
     throw new Error(message)
   }
+}
+
+export function exportAccountsCsv(): Promise<void> {
+  return downloadCsv(`${BASE}/export`, 'accounts.csv')
 }

@@ -1,5 +1,6 @@
 import type { ApiResponse } from './authApi'
 import { parseJson } from './authApi'
+import { downloadCsv } from '@/lib/csvExport'
 
 export interface PendingExpense {
   id: number
@@ -84,4 +85,8 @@ export async function deletePendingExpense(id: number): Promise<void> {
     } catch { /* empty body */ }
     throw new Error(message)
   }
+}
+
+export function exportPendingExpensesCsv(): Promise<void> {
+  return downloadCsv(`${BASE}/export`, 'pending-expenses.csv')
 }

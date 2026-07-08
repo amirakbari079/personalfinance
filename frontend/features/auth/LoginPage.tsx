@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
+import ThemeToggle from '@/shared/ThemeToggle'
 
 export default function LoginPage() {
   const { login, isAuthenticated } = useAuth()
@@ -33,53 +34,55 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
+    <div className="min-h-screen flex relative" dir="rtl">
+      <div className="absolute top-5 left-5 z-10">
+        <ThemeToggle />
+      </div>
 
-      {/* پنل تاریک — فقط دسکتاپ */}
-      <div className="hidden lg:flex lg:w-5/12 bg-brand-dark panel-texture flex-col justify-between p-14 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-px h-full bg-brand-accent/30" />
+      {/* پنل تاریک — دسکتاپ */}
+      <div className="hidden lg:flex lg:w-5/12 bg-brand-dark panel-texture flex-col justify-between p-14 relative overflow-hidden border-l border-brand-accent/15">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-accent/5 via-transparent to-transparent pointer-events-none" />
 
-        <div>
+        <div className="relative">
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-6 h-6 rounded-sm bg-brand-accent flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
               <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
             </div>
-            <span className="text-text-on-dark/50 text-xs tracking-widest uppercase font-light">
-              Finance
+            <span className="text-text-on-dark/40 text-[10px] tracking-[0.3em] uppercase font-light">
+              Luxury Finance
             </span>
           </div>
 
           <h2 className="text-4xl font-light text-text-on-dark leading-tight">
             دارایی‌های شما
             <br />
-            <span className="font-semibold text-brand-accent">یکجا</span>
+            <span className="font-normal text-brand-accent">یکجا</span>
           </h2>
-          <p className="mt-5 text-sm text-text-on-dark/40 leading-loose max-w-[260px]">
-            مدیریت کامل دارایی‌ها، درآمد، بدهی و ارزش خالص در یک محیط امن.
+          <p className="mt-5 text-sm text-text-on-dark/35 leading-loose max-w-[280px]">
+            مدیریت کامل دارایی‌ها، درآمد، بدهی و ارزش خالص در محیطی امن و لوکس.
           </p>
         </div>
 
-        <div className="space-y-1">
-          <div className="w-8 h-px bg-brand-accent/50" />
-          <p className="text-text-on-dark/25 text-xs pt-2 font-light">نسخه ۱ — شخصی</p>
+        <div className="relative space-y-2">
+          <div className="gold-line w-12" />
+          <p className="text-text-on-dark/20 text-xs pt-2 font-light tracking-wide">نسخه ۱ — شخصی</p>
         </div>
       </div>
 
       {/* پنل فرم */}
-      <div className="flex-1 flex items-center justify-center bg-surface px-8 py-16">
-        <div className="w-full max-w-[340px]">
-
-          {/* لوگو موبایل */}
+      <div className="flex-1 flex items-center justify-center px-8 py-16">
+        <div className="w-full max-w-[360px]">
           <div className="lg:hidden mb-10 flex items-center gap-3">
-            <div className="w-6 h-6 rounded-sm bg-brand-accent flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
               <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
             </div>
             <span className="text-text-primary font-semibold text-sm">حسابداری شخصی</span>
           </div>
 
           <div className="mb-9">
-            <h1 className="text-xl font-semibold text-text-primary tracking-tight">ورود به حساب</h1>
-            <p className="mt-1.5 text-sm text-text-muted">اطلاعات کاربری خود را وارد کنید</p>
+            <p className="text-[10px] tracking-[0.25em] uppercase text-brand-accent/70 mb-2">Welcome</p>
+            <h1 className="text-2xl font-light text-text-primary tracking-tight">ورود به حساب</h1>
+            <p className="mt-2 text-sm text-text-muted">اطلاعات کاربری خود را وارد کنید</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -95,13 +98,7 @@ export default function LoginPage() {
                 required
                 autoComplete="username"
                 autoFocus
-                className="
-                  w-full bg-surface-card border border-surface-muted
-                  rounded-lg px-4 py-3 text-sm text-text-primary
-                  placeholder:text-text-muted
-                  focus:outline-none focus:ring-2 focus:ring-brand-accent/25 focus:border-brand-accent
-                  transition-all duration-150
-                "
+                className="field-input"
               />
             </div>
 
@@ -116,17 +113,12 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="
-                  w-full bg-surface-card border border-surface-muted
-                  rounded-lg px-4 py-3 text-sm text-text-primary
-                  focus:outline-none focus:ring-2 focus:ring-brand-accent/25 focus:border-brand-accent
-                  transition-all duration-150
-                "
+                className="field-input"
               />
             </div>
 
             {error && (
-              <p role="alert" className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5">
+              <p role="alert" className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-xl px-4 py-2.5">
                 {error}
               </p>
             )}
@@ -134,14 +126,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="
-                w-full bg-brand-accent hover:bg-brand-accent-hover
-                text-text-on-accent text-sm font-medium
-                py-3 rounded-lg mt-1
-                transition-colors duration-150
-                focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-surface
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
+              className="w-full btn-primary py-3 mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">

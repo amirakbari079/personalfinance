@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
+import ThemeToggle from '@/shared/ThemeToggle'
 
 const NAV_ITEMS: { href: string; label: string; exact?: boolean }[] = [
   { href: '/', label: 'داشبورد', exact: true },
@@ -15,10 +16,10 @@ const NAV_ITEMS: { href: string; label: string; exact?: boolean }[] = [
 ]
 
 function navClassName(isActive: boolean) {
-  return `text-xs px-3 py-1.5 rounded-lg transition-colors ${
+  return `text-xs px-3 py-1.5 rounded-xl transition-all duration-200 ${
     isActive
-      ? 'bg-brand-accent/10 text-brand-accent font-medium'
-      : 'text-text-muted hover:text-text-primary'
+      ? 'bg-brand-accent/12 text-brand-accent font-medium border border-surface-muted'
+      : 'text-text-muted hover:text-text-primary hover:bg-surface-muted/50'
   }`
 }
 
@@ -38,16 +39,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      <header className="bg-surface-card border-b border-surface-muted px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-sm bg-brand-accent flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-text-on-accent/90" />
+    <div className="min-h-screen flex flex-col">
+      <header className="sticky top-0 z-40 border-b px-6 py-3 flex items-center justify-between app-header-glass">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
+            <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
           </div>
-          <span className="text-text-primary font-semibold text-sm">حسابداری شخصی</span>
+          <div>
+            <span className="text-text-primary font-semibold text-sm tracking-tight">حسابداری شخصی</span>
+            <p className="text-[9px] text-text-muted tracking-[0.2em] uppercase">Luxury Edition</p>
+          </div>
         </div>
 
-        <nav className="flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1">
           {NAV_ITEMS.map(({ href, label, exact }) => {
             const active = isNavActive(pathname, href, exact)
             return (
@@ -58,16 +62,31 @@ export default function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="text-xs text-text-muted hover:text-text-primary transition-colors"
-        >
-          خروج
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-xs text-text-muted hover:text-text-primary transition-colors px-3 py-1.5 rounded-xl hover:bg-surface-muted/50"
+          >
+            خروج
+          </button>
+        </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      {/* Mobile nav */}
+      <nav className="md:hidden flex items-center gap-1 px-4 py-2 border-b border-surface-muted/40 overflow-x-auto">
+        {NAV_ITEMS.map(({ href, label, exact }) => {
+          const active = isNavActive(pathname, href, exact)
+          return (
+            <Link key={href} href={href} className={`${navClassName(active)} whitespace-nowrap`}>
+              {label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      <main className="flex-1 pt-4 md:pt-6">{children}</main>
     </div>
   )
 }

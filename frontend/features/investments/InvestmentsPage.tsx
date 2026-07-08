@@ -13,6 +13,8 @@ import {
 } from '@/lib/api/investmentsApi'
 import InvestmentForm from './InvestmentForm'
 import { Pencil, Trash2 } from 'lucide-react'
+import PageHeader from '@/shared/PageHeader'
+import { exportInvestmentsCsv } from '@/lib/api/investmentsApi'
 
 export default function InvestmentsPage() {
   const [investments, setInvestments] = useState<Investment[]>([])
@@ -85,19 +87,13 @@ export default function InvestmentsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-text-primary">سرمایه‌گذاری‌ها</h1>
-          <p className="text-sm text-text-muted mt-0.5">جمع معادل تومانی: {formatToman(total)}</p>
-        </div>
-        <button
-          onClick={openNew}
-          className="bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + سرمایه‌گذاری جدید
-        </button>
-      </div>
+      <PageHeader
+        title="سرمایه‌گذاری‌ها"
+        subtitle={`جمع معادل تومانی: ${formatToman(total)}`}
+        addLabel="+ سرمایه‌گذاری جدید"
+        onAdd={openNew}
+        onExport={exportInvestmentsCsv}
+      />
 
       {error && (
         <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5 mb-4">
@@ -115,7 +111,7 @@ export default function InvestmentsPage() {
           {investments.map(investment => (
             <div
               key={investment.id}
-              className="bg-surface-card border border-surface-muted rounded-xl px-5 py-4 flex items-center justify-between"
+              className="luxury-card px-5 py-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
                 <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">

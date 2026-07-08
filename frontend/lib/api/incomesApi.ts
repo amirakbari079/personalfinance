@@ -1,5 +1,6 @@
 import type { ApiResponse } from './authApi'
 import { parseJson } from './authApi'
+import { downloadCsv } from '@/lib/csvExport'
 
 export type IncomeType = 'RECURRING' | 'ONE_OFF'
 
@@ -93,4 +94,8 @@ export async function deleteIncome(id: number): Promise<void> {
     } catch { /* empty body */ }
     throw new Error(message)
   }
+}
+
+export function exportIncomesCsv(): Promise<void> {
+  return downloadCsv(`${BASE}/export`, 'incomes.csv')
 }
