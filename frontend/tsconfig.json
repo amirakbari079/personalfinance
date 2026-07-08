@@ -31,10 +31,7 @@
     "shared/**/*.tsx",
     "features/**/*.ts",
     "features/**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx"
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "exclude": ["node_modules"]
 }

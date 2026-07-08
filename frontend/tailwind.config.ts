@@ -32,8 +32,7 @@ const tokens = {
 
 export default {
   content: [
-    './index.html',
-    './src/**/*.{ts,tsx}',
+    './src/app/**/*.{ts,tsx}',
     './shared/**/*.{ts,tsx}',
     './features/**/*.{ts,tsx}',
   ],
