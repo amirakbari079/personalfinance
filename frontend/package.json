@@ -4,12 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "next dev",
+    "dev:vite": "vite",
+    "build": "next build",
+    "build:vite": "tsc && vite build",
+    "start": "next start",
     "preview": "vite preview"
   },
   "dependencies": {
     "lucide-react": "^1.23.0",
+    "next": "^15.5.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-multi-date-picker": "^4.5.2",
@@ -17,8 +21,11 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
+    "@types/node": "^22.12.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "eslint": "^9.32.0",
+    "eslint-config-next": "^15.5.0",
     "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",

@@ -1,12 +1,12 @@
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import LoginPage from './pages/auth/LoginPage'
-import AccountsPage from './pages/accounts/AccountsPage'
-import InvestmentsPage from './pages/investments/InvestmentsPage'
-import IncomePage from './pages/income/IncomePage'
-import LoansPage from './pages/loans/LoansPage'
-import PendingExpensesPage from './pages/pendingExpenses/PendingExpensesPage'
+import LoginPage from './views/auth/LoginPage'
+import AccountsPage from './views/accounts/AccountsPage'
+import InvestmentsPage from './views/investments/InvestmentsPage'
+import IncomePage from './views/income/IncomePage'
+import LoansPage from './views/loans/LoansPage'
+import PendingExpensesPage from './views/pendingExpenses/PendingExpensesPage'
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth()
