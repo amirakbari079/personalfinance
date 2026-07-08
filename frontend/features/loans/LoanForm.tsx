@@ -58,14 +58,14 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
       <div className="luxury-modal">
-        <h2 className="text-lg font-light text-text-primary mb-6 tracking-tight">
+        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
           {initial ? 'ویرایش وام' : 'وام جدید'}
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Creditor */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">نام طلبکار / بانک</label>
+            <label className="field-label">نام طلبکار / بانک</label>
             <input
               type="text"
               value={creditor}
@@ -80,7 +80,7 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
           {/* Monthly amount + total installments */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1.5">مبلغ قسط (تومان)</label>
+              <label className="field-label">مبلغ قسط (تومان)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -92,7 +92,7 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1.5">تعداد اقساط</label>
+              <label className="field-label">تعداد اقساط</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -107,13 +107,13 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
 
           {/* Start date */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">تاریخ شروع قسط اول</label>
+            <label className="field-label">تاریخ شروع قسط اول</label>
             <JalaliDatePicker value={startDate} onChange={setStartDate} />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea

@@ -18,6 +18,7 @@ export interface Account {
   type: AccountType
   balance: number
   notes: string | null
+  bankCode: string | null
   createdAt: string
 }
 
@@ -26,6 +27,7 @@ export interface AccountRequest {
   type: AccountType
   balance: number
   notes: string
+  bankCode: string | null
 }
 
 const BASE = '/api/v1/accounts'

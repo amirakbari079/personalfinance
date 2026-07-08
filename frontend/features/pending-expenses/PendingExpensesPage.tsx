@@ -103,7 +103,7 @@ export default function PendingExpensesPage() {
                   <span className="text-brand-accent text-base">⏳</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">{expense.label}</p>
+                  <p className="text-sm text-item-title text-text-primary">{expense.label}</p>
                   <p className="text-xs text-text-muted mt-0.5">
                     {expense.dueDate ? `سررسید: ${formatJalali(expense.dueDate)}` : 'بدون سررسید'}
                   </p>
@@ -111,7 +111,7 @@ export default function PendingExpensesPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <span className="text-sm font-semibold text-text-primary tabular-nums">
+                <span className="text-sm text-amount text-text-primary">
                   <span className="text-status-error">−</span> {formatToman(expense.plannedAmount)}
                 </span>
                 <div className="flex items-center gap-1">

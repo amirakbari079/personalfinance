@@ -12,6 +12,14 @@ export default {
       fontFamily: {
         sans: ['var(--font-vazirmatn)', 'Vazirmatn', 'sans-serif'],
       },
+      fontWeight: {
+        body: 'var(--font-weight-body)',
+        caption: 'var(--font-weight-caption)',
+        label: 'var(--font-weight-label)',
+        title: 'var(--font-weight-title)',
+        heading: 'var(--font-weight-heading)',
+        amount: 'var(--font-weight-amount)',
+      },
       colors: {
         'brand-dark': 'var(--color-brand-dark)',
         'brand-darker': 'var(--color-brand-darker)',

@@ -15,6 +15,8 @@ import AccountForm from './AccountForm'
 import { Pencil, Trash2 } from 'lucide-react'
 import PageHeader from '@/shared/PageHeader'
 import { exportAccountsCsv } from '@/lib/api/accountsApi'
+import BankLogo from '@/shared/banks/BankLogo'
+import { resolveBankCode } from '@/shared/banks/detectBank'
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
@@ -114,17 +116,21 @@ export default function AccountsPage() {
               className="luxury-card px-5 py-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand-accent text-base">{typeIcon(account.type)}</span>
+                <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-surface-muted/60">
+                  <BankLogo
+                    bankCode={resolveBankCode(account.bankCode, account.name)}
+                    accountType={account.type}
+                    size={26}
+                  />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">{account.name}</p>
+                  <p className="text-sm text-item-title text-text-primary">{account.name}</p>
                   <p className="text-xs text-text-muted mt-0.5">{ACCOUNT_TYPE_LABELS[account.type]}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-6">
-                <span className="text-sm font-semibold text-text-primary tabular-nums">
+                <span className="text-sm text-amount text-text-primary">
                   {formatToman(account.balance)}
                 </span>
                 <div className="flex items-center gap-1">
@@ -156,7 +162,7 @@ export default function AccountsPage() {
       {accounts.length > 0 && (
         <div className="mt-4 pt-4 border-t border-surface-muted flex justify-between items-center">
           <span className="text-sm text-text-muted">جمع کل</span>
-          <span className="text-sm font-bold text-text-primary tabular-nums">{formatToman(total)}</span>
+          <span className="text-sm text-amount text-text-primary">{formatToman(total)}</span>
         </div>
       )}
 
@@ -174,15 +180,4 @@ export default function AccountsPage() {
 
 function formatToman(amount: number): string {
   return amount.toLocaleString('fa-IR') + ' تومان'
-}
-
-function typeIcon(type: Account['type']): string {
-  const icons: Record<Account['type'], string> = {
-    BANK:           '🏦',
-    DIGITAL_WALLET: '💳',
-    EXCHANGE:       '💱',
-    CASH:           '💵',
-    OTHER:          '📁',
-  }
-  return icons[type]
 }

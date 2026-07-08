@@ -35,6 +35,20 @@
   --radius-lg: 0.75rem;
   --modal-max-width: 35rem;
   --modal-padding: 1.75rem;
+  --font-weight-body: 400;
+  --font-weight-caption: 400;
+  --font-weight-label: 500;
+  --font-weight-title: 600;
+  --font-weight-heading: 700;
+  --font-weight-modal: 600;
+  --font-weight-amount: 600;
+  --font-weight-amount-hero: 700;
+  --shadow-amount: 0 1px 2px color-mix(in srgb, var(--color-text-primary) 14%, transparent);
+  --shadow-amount-hero: 0 2px 10px color-mix(in srgb, var(--color-brand-accent) 22%, transparent);
+  --scrollbar-size: 6px;
+  --scrollbar-track: color-mix(in srgb, var(--color-surface-muted) 10%, transparent);
+  --scrollbar-thumb: linear-gradient(160deg, color-mix(in srgb, var(--color-brand-accent) 32%, transparent), color-mix(in srgb, var(--color-surface-muted) 58%, transparent));
+  --scrollbar-thumb-border: color-mix(in srgb, white 14%, transparent);
 }
 
 /* ─── Dark theme (default) ─── */
@@ -66,6 +80,20 @@
   --radius-lg: 0.75rem;
   --modal-max-width: 35rem;
   --modal-padding: 1.75rem;
+  --font-weight-body: 400;
+  --font-weight-caption: 400;
+  --font-weight-label: 500;
+  --font-weight-title: 600;
+  --font-weight-heading: 700;
+  --font-weight-modal: 600;
+  --font-weight-amount: 600;
+  --font-weight-amount-hero: 700;
+  --shadow-amount: 0 1px 3px color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+  --shadow-amount-hero: 0 2px 12px color-mix(in srgb, var(--color-brand-accent) 28%, transparent);
+  --scrollbar-size: 6px;
+  --scrollbar-track: color-mix(in srgb, var(--color-surface-muted) 14%, transparent);
+  --scrollbar-thumb: linear-gradient(160deg, color-mix(in srgb, var(--color-brand-accent) 38%, transparent), color-mix(in srgb, var(--color-surface-muted) 62%, transparent));
+  --scrollbar-thumb-border: color-mix(in srgb, white 10%, transparent);
 }
 
 @layer base {
@@ -77,6 +105,9 @@
 
   html {
     direction: rtl;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-brand-accent) 35%, transparent) var(--scrollbar-track);
   }
 
   body {
@@ -84,8 +115,44 @@
     background-image: var(--bg-gradient);
     color: var(--color-text-primary);
     min-height: 100vh;
+    font-weight: var(--font-weight-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-brand-accent) 35%, transparent) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+    margin: 2px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: 1px solid var(--scrollbar-thumb-border);
+    box-shadow: inset 0 0 4px color-mix(in srgb, white 6%, transparent);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--color-brand-accent) 48%, transparent),
+      color-mix(in srgb, var(--color-surface-muted) 72%, transparent)
+    );
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   input,
@@ -98,7 +165,8 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm font-medium px-4 py-2 transition-all duration-200;
+    @apply bg-brand-accent hover:bg-brand-accent-hover text-text-on-accent text-sm px-4 py-2 transition-all duration-200;
+    font-weight: var(--font-weight-label);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-accent);
   }
@@ -153,7 +221,7 @@
   }
 
   .luxury-modal-backdrop {
-    @apply fixed inset-0 z-50 flex items-start justify-center px-4 py-8 overflow-y-auto;
+    @apply fixed inset-0 z-50 flex items-start justify-center px-4 py-8 glass-scroll;
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(6px);
   }
@@ -161,11 +229,91 @@
   .luxury-modal {
     @apply bg-surface-card border border-surface-muted w-full shadow-modal;
     max-width: var(--modal-max-width);
+    max-height: min(90vh, 52rem);
     padding: var(--modal-padding);
     border-radius: var(--radius-lg);
     overflow: visible;
     background:
       linear-gradient(180deg, color-mix(in srgb, var(--color-surface-card) 95%, var(--color-brand-accent) 5%), var(--color-surface-card));
+  }
+
+  .text-page-title {
+    font-weight: var(--font-weight-heading);
+    letter-spacing: -0.02em;
+  }
+
+  .text-modal-title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: var(--font-weight-modal);
+    letter-spacing: -0.015em;
+  }
+
+  .text-item-title {
+    font-weight: var(--font-weight-title);
+  }
+
+  .text-section-label {
+    font-weight: var(--font-weight-label);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .text-amount {
+    font-weight: var(--font-weight-amount);
+    font-variant-numeric: tabular-nums;
+    text-shadow: var(--shadow-amount);
+  }
+
+  .text-amount-hero {
+    font-weight: var(--font-weight-amount-hero);
+    font-variant-numeric: tabular-nums;
+    text-shadow: var(--shadow-amount-hero);
+    letter-spacing: -0.02em;
+  }
+
+  .field-label {
+    @apply block text-xs text-text-primary mb-1.5;
+    font-weight: var(--font-weight-label);
+  }
+
+  .glass-scroll {
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .glass-scroll-overlay {
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .nav-item-active {
+    font-weight: var(--font-weight-label);
+  }
+
+  @media (hover: hover) {
+    .glass-scroll-overlay {
+      scrollbar-width: none;
+    }
+
+    .glass-scroll-overlay::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .glass-scroll-overlay:hover,
+    .glass-scroll-overlay:focus-within {
+      scrollbar-width: thin;
+    }
+
+    .glass-scroll-overlay:hover::-webkit-scrollbar,
+    .glass-scroll-overlay:focus-within::-webkit-scrollbar {
+      width: var(--scrollbar-size);
+      height: var(--scrollbar-size);
+    }
   }
 
   .field-input {

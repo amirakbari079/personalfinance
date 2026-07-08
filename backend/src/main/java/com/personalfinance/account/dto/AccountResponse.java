@@ -12,6 +12,7 @@ public class AccountResponse {
     private AccountType type;
     private Long balance;
     private String notes;
+    private String bankCode;
     private Instant createdAt;
 
     public static AccountResponse from(Account account) {
@@ -21,6 +22,7 @@ public class AccountResponse {
         r.type      = account.getType();
         r.balance   = account.getBalance();
         r.notes     = account.getNotes();
+        r.bankCode  = account.getBankCode();
         r.createdAt = account.getCreatedAt();
         return r;
     }
@@ -31,4 +33,5 @@ public class AccountResponse {
     public Long getBalance() { return balance; }
     public String getNotes() { return notes; }
     public Instant getCreatedAt() { return createdAt; }
+    public String getBankCode() { return bankCode; }
 }

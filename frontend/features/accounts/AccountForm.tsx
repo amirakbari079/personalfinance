@@ -1,9 +1,11 @@
 'use client'
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import type { Account, AccountRequest, AccountType } from '@/lib/api/accountsApi'
 import { ACCOUNT_TYPE_LABELS } from '@/lib/api/accountsApi'
 import { formatWithCommas, stripCommas } from '@/utils/numberFormat'
+import BankPicker from '@/shared/banks/BankPicker'
+import { detectBankFromName } from '@/shared/banks/detectBank'
 
 interface Props {
   initial: Account | null
@@ -12,14 +14,45 @@ interface Props {
 }
 
 const ACCOUNT_TYPES: AccountType[] = ['BANK', 'DIGITAL_WALLET', 'EXCHANGE', 'CASH', 'OTHER']
+const LOGO_TYPES: AccountType[] = ['BANK', 'DIGITAL_WALLET']
 
 export default function AccountForm({ initial, onSave, onCancel }: Props) {
   const [name, setName] = useState(initial?.name ?? '')
   const [type, setType] = useState<AccountType>(initial?.type ?? 'BANK')
   const [balance, setBalance] = useState(formatWithCommas(initial?.balance?.toString() ?? '0'))
   const [notes, setNotes] = useState(initial?.notes ?? '')
+  const [bankCode, setBankCode] = useState<string | null>(initial?.bankCode ?? null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const bankManual = useRef(!!initial?.bankCode)
+
+  useEffect(() => {
+    if (!LOGO_TYPES.includes(type) || bankManual.current) return
+    const detected = detectBankFromName(name)
+    setBankCode(detected)
+  }, [name, type])
+
+  function handleNameChange(value: string) {
+    setName(value)
+  }
+
+  function handleBankChange(code: string | null) {
+    if (code === null) {
+      bankManual.current = false
+      setBankCode(detectBankFromName(name))
+      return
+    }
+    bankManual.current = true
+    setBankCode(code)
+  }
+
+  function handleTypeChange(next: AccountType) {
+    setType(next)
+    if (!LOGO_TYPES.includes(next)) {
+      setBankCode(null)
+      bankManual.current = false
+    }
+  }
 
   function handleBalanceChange(value: string) {
     setBalance(formatWithCommas(value))
@@ -35,7 +68,13 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
     setError(null)
     setSaving(true)
     try {
-      await onSave({ name, type, balance: balanceNum, notes })
+      await onSave({
+        name,
+        type,
+        balance: balanceNum,
+        notes,
+        bankCode: LOGO_TYPES.includes(type) ? bankCode : null,
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در ذخیره')
       setSaving(false)
@@ -43,37 +82,39 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
   }
 
   return (
-    /* Backdrop */
     <div
       className="luxury-modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
       <div className="luxury-modal">
-        <h2 className="text-lg font-light text-text-primary mb-6 tracking-tight">
+        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
           {initial ? 'ویرایش حساب' : 'حساب جدید'}
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* Name */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">نام حساب</label>
+            <label className="field-label">نام حساب</label>
             <input
               type="text"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => handleNameChange(e.target.value)}
               required
               autoFocus
               placeholder="مثلاً: بلو، رسالت، نقد کیف"
               className="field-input"
             />
+            {LOGO_TYPES.includes(type) && (
+              <p className="text-[10px] text-text-muted mt-1">
+                با تایپ نام، لوگوی بانک به‌صورت خودکار پیشنهاد می‌شود — یا از لیست پایین انتخاب کنید.
+              </p>
+            )}
           </div>
 
-          {/* Type */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">نوع حساب</label>
+            <label className="field-label">نوع حساب</label>
             <select
               value={type}
-              onChange={e => setType(e.target.value as AccountType)}
+              onChange={e => handleTypeChange(e.target.value as AccountType)}
               className="field-input"
             >
               {ACCOUNT_TYPES.map(t => (
@@ -82,9 +123,16 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
             </select>
           </div>
 
-          {/* Balance */}
+          {LOGO_TYPES.includes(type) && (
+            <BankPicker
+              accountType={type}
+              value={bankCode}
+              onChange={handleBankChange}
+            />
+          )}
+
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">موجودی (تومان)</label>
+            <label className="field-label">موجودی (تومان)</label>
             <input
               type="text"
               inputMode="numeric"
@@ -96,9 +144,8 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
             />
           </div>
 
-          {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea
@@ -116,7 +163,6 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
             </p>
           )}
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="submit"

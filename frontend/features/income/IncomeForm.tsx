@@ -52,14 +52,14 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
       <div className="luxury-modal">
-        <h2 className="text-lg font-light text-text-primary mb-6 tracking-tight">
+        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
           {initial ? 'ویرایش درآمد' : 'درآمد جدید'}
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Source */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">عنوان درآمد</label>
+            <label className="field-label">عنوان درآمد</label>
             <input
               type="text"
               value={source}
@@ -74,7 +74,7 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
           {/* Amount + type */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1.5">مبلغ (تومان)</label>
+              <label className="field-label">مبلغ (تومان)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -86,7 +86,7 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1.5">نوع</label>
+              <label className="field-label">نوع</label>
               <select
                 value={incomeType}
                 onChange={e => setIncomeType(e.target.value as IncomeType)}
@@ -101,7 +101,7 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
 
           {/* Date */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               تاریخ دریافت <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <JalaliDatePicker value={receivedDate} onChange={setReceivedDate} />
@@ -109,7 +109,7 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea

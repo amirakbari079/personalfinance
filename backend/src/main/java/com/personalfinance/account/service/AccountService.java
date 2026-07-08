@@ -58,5 +58,6 @@ public class AccountService {
         account.setType(request.getType());
         account.setBalance(request.getBalance());
         account.setNotes(request.getNotes());
+        account.setBankCode(request.getBankCode());
     }
 }

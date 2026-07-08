@@ -20,6 +20,9 @@ public class Account extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "bank_code", length = 50)
+    private String bankCode;
+
     public Account() {}
 
     public String getName() { return name; }
@@ -33,4 +36,7 @@ public class Account extends BaseEntity {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getBankCode() { return bankCode; }
+    public void setBankCode(String bankCode) { this.bankCode = bankCode; }
 }

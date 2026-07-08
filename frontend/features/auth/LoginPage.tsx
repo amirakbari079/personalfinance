@@ -48,24 +48,24 @@ export default function LoginPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
               <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
             </div>
-            <span className="text-text-on-dark/40 text-[10px] tracking-[0.3em] uppercase font-light">
+            <span className="text-section-label text-text-on-dark/40">
               Luxury Finance
             </span>
           </div>
 
-          <h2 className="text-4xl font-light text-text-on-dark leading-tight">
+          <h2 className="text-4xl text-page-title text-text-on-dark leading-tight">
             دارایی‌های شما
             <br />
-            <span className="font-normal text-brand-accent">یکجا</span>
+            <span className="text-brand-accent" style={{ fontWeight: 'var(--font-weight-body)' }}>یکجا</span>
           </h2>
-          <p className="mt-5 text-sm text-text-on-dark/35 leading-loose max-w-[280px]">
+          <p className="mt-5 text-sm text-text-on-dark/35 leading-loose max-w-[280px]" style={{ fontWeight: 'var(--font-weight-caption)' }}>
             مدیریت کامل دارایی‌ها، درآمد، بدهی و ارزش خالص در محیطی امن و لوکس.
           </p>
         </div>
 
         <div className="relative space-y-2">
           <div className="gold-line w-12" />
-          <p className="text-text-on-dark/20 text-xs pt-2 font-light tracking-wide">نسخه ۱ — شخصی</p>
+          <p className="text-text-on-dark/20 text-xs pt-2 tracking-wide" style={{ fontWeight: 'var(--font-weight-caption)' }}>نسخه ۱ — شخصی</p>
         </div>
       </div>
 
@@ -76,18 +76,18 @@ export default function LoginPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
               <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
             </div>
-            <span className="text-text-primary font-semibold text-sm">حسابداری شخصی</span>
+            <span className="text-text-primary text-sm" style={{ fontWeight: 'var(--font-weight-heading)' }}>حسابداری شخصی</span>
           </div>
 
           <div className="mb-9">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-brand-accent/70 mb-2">Welcome</p>
-            <h1 className="text-2xl font-light text-text-primary tracking-tight">ورود به حساب</h1>
+            <p className="text-[10px] tracking-[0.25em] uppercase text-brand-accent/70 mb-2 text-section-label">Welcome</p>
+            <h1 className="text-2xl text-page-title text-text-primary tracking-tight">ورود به حساب</h1>
             <p className="mt-2 text-sm text-text-muted">اطلاعات کاربری خود را وارد کنید</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             <div>
-              <label htmlFor="username" className="block text-xs font-medium text-text-primary mb-2 tracking-wide">
+              <label htmlFor="username" className="field-label mb-2 tracking-wide">
                 نام کاربری
               </label>
               <input
@@ -103,7 +103,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs font-medium text-text-primary mb-2 tracking-wide">
+              <label htmlFor="password" className="field-label mb-2 tracking-wide">
                 رمز عبور
               </label>
               <input

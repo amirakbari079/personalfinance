@@ -13,12 +13,14 @@ const NAV_ITEMS: { href: string; label: string; exact?: boolean }[] = [
   { href: '/incomes', label: 'درآمدها' },
   { href: '/loans', label: 'وام‌ها' },
   { href: '/pending-expenses', label: 'هزینه‌های معوق' },
+  { href: '/receivables', label: 'طلب‌ها' },
+  { href: '/standby', label: 'کالاهای معوق' },
 ]
 
 function navClassName(isActive: boolean) {
   return `text-xs px-3 py-1.5 rounded-xl transition-all duration-200 ${
     isActive
-      ? 'bg-brand-accent/12 text-brand-accent font-medium border border-surface-muted'
+      ? 'bg-brand-accent/12 text-brand-accent border border-surface-muted nav-item-active'
       : 'text-text-muted hover:text-text-primary hover:bg-surface-muted/50'
   }`
 }
@@ -46,7 +48,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
           </div>
           <div>
-            <span className="text-text-primary font-semibold text-sm tracking-tight">حسابداری شخصی</span>
+            <span className="text-text-primary text-sm tracking-tight" style={{ fontWeight: 'var(--font-weight-heading)' }}>حسابداری شخصی</span>
             <p className="text-[9px] text-text-muted tracking-[0.2em] uppercase">Luxury Edition</p>
           </div>
         </div>
@@ -75,7 +77,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       {/* Mobile nav */}
-      <nav className="md:hidden flex items-center gap-1 px-4 py-2 border-b border-surface-muted/40 overflow-x-auto">
+      <nav className="md:hidden flex items-center gap-1 px-4 py-2 border-b border-surface-muted/40 glass-scroll-overlay">
         {NAV_ITEMS.map(({ href, label, exact }) => {
           const active = isNavActive(pathname, href, exact)
           return (

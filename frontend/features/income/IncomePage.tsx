@@ -104,7 +104,7 @@ export default function IncomePage() {
                   <span className="text-brand-accent text-base">💰</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">{income.source}</p>
+                  <p className="text-sm text-item-title text-text-primary">{income.source}</p>
                   <p className="text-xs text-text-muted mt-0.5">
                     {INCOME_TYPE_LABELS[income.incomeType]}
                     {income.receivedDate && ` • ${formatJalali(income.receivedDate)}`}
@@ -113,7 +113,7 @@ export default function IncomePage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <span className="text-sm font-semibold text-text-primary tabular-nums">
+                <span className="text-sm text-amount text-text-primary">
                   <span className="text-brand-accent">+</span> {formatToman(income.amount)}
                 </span>
                 <div className="flex items-center gap-1">

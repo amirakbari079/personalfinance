@@ -19,6 +19,9 @@ public class AccountRequest {
 
     private String notes;
 
+    /** Optional key from frontend Iranian bank logo catalog. */
+    private String bankCode;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -30,4 +33,7 @@ public class AccountRequest {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getBankCode() { return bankCode; }
+    public void setBankCode(String bankCode) { this.bankCode = bankCode; }
 }

@@ -160,7 +160,7 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
             <span className="text-brand-accent text-base">🏦</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-text-primary flex items-center gap-2">
+            <p className="text-sm text-item-title text-text-primary flex items-center gap-2">
               {loan.creditor}
               {loan.completed && (
                 <span className="text-[10px] bg-brand-accent/10 text-brand-accent px-2 py-0.5 rounded-full">
@@ -222,19 +222,19 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
       <div className="px-5 pb-4 grid grid-cols-2 gap-3">
         <div className="bg-surface rounded-lg px-3 py-2">
           <p className="text-[11px] text-text-muted">پرداخت‌شده</p>
-          <p className="text-sm font-semibold text-text-primary tabular-nums">{formatToman(loan.paidAmount)}</p>
+          <p className="text-sm text-amount text-text-primary">{formatToman(loan.paidAmount)}</p>
         </div>
         <div className="bg-surface rounded-lg px-3 py-2">
           <p className="text-[11px] text-text-muted">باقی‌مانده</p>
-          <p className="text-sm font-semibold text-text-primary tabular-nums">{formatToman(loan.remainingAmount)}</p>
+          <p className="text-sm text-amount text-text-primary">{formatToman(loan.remainingAmount)}</p>
         </div>
         <div className="bg-surface rounded-lg px-3 py-2">
           <p className="text-[11px] text-text-muted">قسط باقی‌مانده</p>
-          <p className="text-sm font-semibold text-text-primary tabular-nums">{toPersian(loan.remainingInstallments)} قسط</p>
+          <p className="text-sm text-amount text-text-primary">{toPersian(loan.remainingInstallments)} قسط</p>
         </div>
         <div className="bg-surface rounded-lg px-3 py-2">
           <p className="text-[11px] text-text-muted">قسط آخر</p>
-          <p className="text-sm font-semibold text-text-primary tabular-nums">{formatJalali(loan.lastPaymentDate)}</p>
+          <p className="text-sm text-amount text-text-primary">{formatJalali(loan.lastPaymentDate)}</p>
         </div>
       </div>
 
@@ -261,7 +261,7 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
       {/* Installments checklist */}
       {expanded && (
         <div className="px-5 pb-4 border-t border-surface-muted pt-4">
-          <p className="text-xs font-medium text-text-primary mb-3">اقساط</p>
+          <p className="text-section-label text-text-primary mb-3">اقساط</p>
           <InstallmentGrid installments={loan.installments} />
         </div>
       )}

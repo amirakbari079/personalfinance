@@ -118,13 +118,13 @@ export default function InvestmentsPage() {
                   <span className="text-brand-accent text-base">{typeIcon(investment.assetType)}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">{investment.name}</p>
+                  <p className="text-sm text-item-title text-text-primary">{investment.name}</p>
                   <p className="text-xs text-text-muted mt-0.5">{INVESTMENT_TYPE_LABELS[investment.assetType]}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-6">
-                <span className="text-sm font-semibold text-text-primary tabular-nums">
+                <span className="text-sm text-amount text-text-primary">
                   {formatToman(investment.tomanEquivalent)}
                 </span>
                 <div className="flex items-center gap-1">
@@ -156,7 +156,7 @@ export default function InvestmentsPage() {
       {investments.length > 0 && (
         <div className="mt-4 pt-4 border-t border-surface-muted flex justify-between items-center">
           <span className="text-sm text-text-muted">جمع کل</span>
-          <span className="text-sm font-bold text-text-primary tabular-nums">{formatToman(total)}</span>
+          <span className="text-sm text-amount text-text-primary">{formatToman(total)}</span>
         </div>
       )}
 

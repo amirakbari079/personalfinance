@@ -74,14 +74,14 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
       <div className="luxury-modal">
-        <h2 className="text-lg font-light text-text-primary mb-6 tracking-tight">
+        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
           {initial ? 'ویرایش سرمایه‌گذاری' : 'سرمایه‌گذاری جدید'}
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">نام</label>
+            <label className="field-label">نام</label>
             <input
               type="text"
               value={name}
@@ -95,7 +95,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
 
           {/* Asset type */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">نوع دارایی</label>
+            <label className="field-label">نوع دارایی</label>
             <select
               value={assetType}
               onChange={e => setAssetType(e.target.value as InvestmentType)}
@@ -110,7 +110,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
           {/* Native amount + unit */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1.5">
+              <label className="field-label">
                 مقدار <span className="text-text-muted font-normal">(اختیاری)</span>
               </label>
               <input
@@ -123,7 +123,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-text-primary mb-1.5">
+              <label className="field-label">
                 واحد <span className="text-text-muted font-normal">(اختیاری)</span>
               </label>
               <input
@@ -138,7 +138,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
 
           {/* Toman equivalent */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">معادل تومانی (تومان)</label>
+            <label className="field-label">معادل تومانی (تومان)</label>
             <input
               type="text"
               inputMode="numeric"
@@ -152,7 +152,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea

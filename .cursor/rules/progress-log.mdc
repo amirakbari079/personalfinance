@@ -1,0 +1,17 @@
+# Progress Log Update Rule
+
+After every completed implementation task, update `PROGRESS.md` in the repository root before sending the final response.
+
+## Required update checklist
+
+1. Update `Last updated` date.
+2. Update `Current branch` if changed.
+3. Move delivered items to `Completed`.
+4. Update `Current state`.
+5. Set exactly one concrete `Next task (for new session)` with clear scope and out-of-scope.
+
+## Constraints
+
+- Keep entries short and factual.
+- Do not duplicate large technical diffs.
+- Do not scan full repository only to update progress; rely on changes made in the current task.

@@ -47,14 +47,14 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
       <div className="luxury-modal">
-        <h2 className="text-lg font-light text-text-primary mb-6 tracking-tight">
+        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
           {initial ? 'ویرایش هزینه معوق' : 'هزینه معوق جدید'}
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Label */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">عنوان هزینه</label>
+            <label className="field-label">عنوان هزینه</label>
             <input
               type="text"
               value={label}
@@ -68,7 +68,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
 
           {/* Amount */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">مبلغ برنامه‌ریزی‌شده (تومان)</label>
+            <label className="field-label">مبلغ برنامه‌ریزی‌شده (تومان)</label>
             <input
               type="text"
               inputMode="numeric"
@@ -82,7 +82,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
 
           {/* Due date */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               تاریخ سررسید <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <JalaliDatePicker value={dueDate} onChange={setDueDate} />
@@ -90,7 +90,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-text-primary mb-1.5">
+            <label className="field-label">
               یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea
