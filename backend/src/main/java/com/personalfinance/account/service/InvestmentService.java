@@ -4,6 +4,7 @@ import com.personalfinance.account.dto.InvestmentRequest;
 import com.personalfinance.account.dto.InvestmentResponse;
 import com.personalfinance.account.entity.Investment;
 import com.personalfinance.account.repository.InvestmentRepository;
+import com.personalfinance.balance.service.BalanceSheetService;
 import com.personalfinance.history.SnapshotEntityType;
 import com.personalfinance.history.service.ValueSnapshotService;
 import org.springframework.stereotype.Service;
@@ -18,16 +19,20 @@ public class InvestmentService {
 
     private final InvestmentRepository investmentRepository;
     private final ValueSnapshotService snapshotService;
+    private final BalanceSheetService balanceSheetService;
 
-    public InvestmentService(InvestmentRepository investmentRepository, ValueSnapshotService snapshotService) {
+    public InvestmentService(InvestmentRepository investmentRepository,
+                             ValueSnapshotService snapshotService,
+                             BalanceSheetService balanceSheetService) {
         this.investmentRepository = investmentRepository;
         this.snapshotService = snapshotService;
+        this.balanceSheetService = balanceSheetService;
     }
 
     public List<InvestmentResponse> findAll() {
         return investmentRepository.findAll()
                 .stream()
-                .map(InvestmentResponse::from)
+                .map(investment -> enrich(InvestmentResponse.from(investment)))
                 .toList();
     }
 
@@ -37,7 +42,8 @@ public class InvestmentService {
         apply(investment, request);
         investment = investmentRepository.save(investment);
         recordValueSnapshot(investment, request);
-        return InvestmentResponse.from(investmentRepository.save(investment));
+        balanceSheetService.recordTodaySnapshot();
+        return enrich(InvestmentResponse.from(investmentRepository.save(investment)));
     }
 
     @Transactional
@@ -46,7 +52,8 @@ public class InvestmentService {
                 .orElseThrow(() -> new NoSuchElementException("سرمایه‌گذاری یافت نشد: " + id));
         apply(investment, request);
         recordValueSnapshot(investment, request);
-        return InvestmentResponse.from(investmentRepository.save(investment));
+        balanceSheetService.recordTodaySnapshot();
+        return enrich(InvestmentResponse.from(investmentRepository.save(investment)));
     }
 
     @Transactional
@@ -56,6 +63,7 @@ public class InvestmentService {
         }
         snapshotService.deleteByEntity(SnapshotEntityType.INVESTMENT, id);
         investmentRepository.deleteById(id);
+        balanceSheetService.recordTodaySnapshot();
     }
 
     public Long totalTomanValue() {
@@ -80,5 +88,11 @@ public class InvestmentService {
                 request.getNotes());
         investment.setTomanEquivalent(
                 snapshotService.getLatestValue(SnapshotEntityType.INVESTMENT, investment.getId()));
+    }
+
+    private InvestmentResponse enrich(InvestmentResponse response) {
+        snapshotService.getLatestRecordedDateJalali(SnapshotEntityType.INVESTMENT, response.getId())
+                .ifPresent(response::setValueRecordedDate);
+        return response;
     }
 }

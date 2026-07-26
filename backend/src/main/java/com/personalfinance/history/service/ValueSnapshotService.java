@@ -132,6 +132,12 @@ public class ValueSnapshotService {
                 .orElse(0L);
     }
 
+    public java.util.Optional<String> getLatestRecordedDateJalali(SnapshotEntityType entityType, Long entityId) {
+        return repository
+                .findFirstByEntityTypeAndEntityIdOrderByRecordedDateDescIdDesc(entityType, entityId)
+                .map(snapshot -> jalaliDateConverter.toJalali(snapshot.getRecordedDate()));
+    }
+
     public Long getValueOnOrBefore(SnapshotEntityType entityType, Long entityId, LocalDate asOf) {
         return repository
                 .findTopByEntityTypeAndEntityIdAndRecordedDateLessThanEqualOrderByRecordedDateDescIdDesc(

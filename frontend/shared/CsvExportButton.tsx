@@ -6,9 +6,16 @@ import { useState } from 'react'
 interface Props {
   onExport: () => Promise<void>
   label?: string
+  title?: string
+  className?: string
 }
 
-export default function CsvExportButton({ onExport, label = 'CSV' }: Props) {
+export default function CsvExportButton({
+  onExport,
+  label = 'CSV',
+  title = 'دانلود پشتیبان CSV',
+  className = 'btn-export',
+}: Props) {
   const [loading, setLoading] = useState(false)
 
   async function handleClick() {
@@ -27,8 +34,8 @@ export default function CsvExportButton({ onExport, label = 'CSV' }: Props) {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="btn-export"
-      title="دانلود پشتیبان CSV"
+      className={className}
+      title={title}
     >
       <Download className="w-3.5 h-3.5" />
       {loading ? '...' : label}

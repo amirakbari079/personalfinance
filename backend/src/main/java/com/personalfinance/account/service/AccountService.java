@@ -4,6 +4,7 @@ import com.personalfinance.account.dto.AccountRequest;
 import com.personalfinance.account.dto.AccountResponse;
 import com.personalfinance.account.entity.Account;
 import com.personalfinance.account.repository.AccountRepository;
+import com.personalfinance.balance.service.BalanceSheetService;
 import com.personalfinance.history.SnapshotEntityType;
 import com.personalfinance.history.service.ValueSnapshotService;
 import org.springframework.stereotype.Service;
@@ -18,16 +19,20 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final ValueSnapshotService snapshotService;
+    private final BalanceSheetService balanceSheetService;
 
-    public AccountService(AccountRepository accountRepository, ValueSnapshotService snapshotService) {
+    public AccountService(AccountRepository accountRepository,
+                          ValueSnapshotService snapshotService,
+                          BalanceSheetService balanceSheetService) {
         this.accountRepository = accountRepository;
         this.snapshotService = snapshotService;
+        this.balanceSheetService = balanceSheetService;
     }
 
     public List<AccountResponse> findAll() {
         return accountRepository.findAll()
                 .stream()
-                .map(AccountResponse::from)
+                .map(account -> enrich(AccountResponse.from(account)))
                 .toList();
     }
 
@@ -37,7 +42,8 @@ public class AccountService {
         apply(account, request);
         account = accountRepository.save(account);
         recordBalanceSnapshot(account, request);
-        return AccountResponse.from(accountRepository.save(account));
+        balanceSheetService.recordTodaySnapshot();
+        return enrich(AccountResponse.from(accountRepository.save(account)));
     }
 
     @Transactional
@@ -46,7 +52,8 @@ public class AccountService {
                 .orElseThrow(() -> new NoSuchElementException("حساب یافت نشد: " + id));
         apply(account, request);
         recordBalanceSnapshot(account, request);
-        return AccountResponse.from(accountRepository.save(account));
+        balanceSheetService.recordTodaySnapshot();
+        return enrich(AccountResponse.from(accountRepository.save(account)));
     }
 
     @Transactional
@@ -56,6 +63,7 @@ public class AccountService {
         }
         snapshotService.deleteByEntity(SnapshotEntityType.ACCOUNT, id);
         accountRepository.deleteById(id);
+        balanceSheetService.recordTodaySnapshot();
     }
 
     public Long totalBalance() {
@@ -78,5 +86,11 @@ public class AccountService {
                 recordedDate,
                 request.getNotes());
         account.setBalance(snapshotService.getLatestValue(SnapshotEntityType.ACCOUNT, account.getId()));
+    }
+
+    private AccountResponse enrich(AccountResponse response) {
+        snapshotService.getLatestRecordedDateJalali(SnapshotEntityType.ACCOUNT, response.getId())
+                .ifPresent(response::setBalanceRecordedDate);
+        return response;
     }
 }

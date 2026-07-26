@@ -1,5 +1,6 @@
 package com.personalfinance.standby.service;
 
+import com.personalfinance.balance.service.BalanceSheetService;
 import com.personalfinance.common.JalaliDateConverter;
 import com.personalfinance.standby.dto.StandbyRequest;
 import com.personalfinance.standby.dto.StandbyResponse;
@@ -16,11 +17,14 @@ public class StandbyService {
 
     private final StandbyRepository standbyRepository;
     private final JalaliDateConverter jalaliDateConverter;
+    private final BalanceSheetService balanceSheetService;
 
     public StandbyService(StandbyRepository standbyRepository,
-                          JalaliDateConverter jalaliDateConverter) {
+                          JalaliDateConverter jalaliDateConverter,
+                          BalanceSheetService balanceSheetService) {
         this.standbyRepository = standbyRepository;
         this.jalaliDateConverter = jalaliDateConverter;
+        this.balanceSheetService = balanceSheetService;
     }
 
     public List<StandbyResponse> findAll() {
@@ -34,7 +38,9 @@ public class StandbyService {
     public StandbyResponse create(StandbyRequest request) {
         Standby standby = new Standby();
         apply(standby, request);
-        return toResponse(standbyRepository.save(standby));
+        StandbyResponse response = toResponse(standbyRepository.save(standby));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -42,7 +48,9 @@ public class StandbyService {
         Standby standby = standbyRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("کالای معوق یافت نشد: " + id));
         apply(standby, request);
-        return toResponse(standbyRepository.save(standby));
+        StandbyResponse response = toResponse(standbyRepository.save(standby));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -51,6 +59,7 @@ public class StandbyService {
             throw new NoSuchElementException("کالای معوق یافت نشد: " + id);
         }
         standbyRepository.deleteById(id);
+        balanceSheetService.recordTodaySnapshot();
     }
 
     public Long totalValue() {

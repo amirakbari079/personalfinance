@@ -142,13 +142,13 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
 
           <div>
             <label className="field-label">
-              یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
+              یادداشت / توضیح برای تحلیل <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={2}
-              placeholder="توضیحات تکمیلی..."
+              placeholder="مثال: وام مسکن بانک ملت / وام خودرو با ضمانت چک"
               className="field-input resize-none"
             />
           </div>

@@ -2,6 +2,7 @@ package com.personalfinance.expense.controller;
 
 import com.personalfinance.common.ApiResponse;
 import com.personalfinance.common.CsvExportService;
+import com.personalfinance.export.EntityCsvExports;
 import com.personalfinance.expense.dto.PendingExpenseRequest;
 import com.personalfinance.expense.dto.PendingExpenseResponse;
 import com.personalfinance.expense.service.PendingExpenseService;
@@ -41,7 +42,7 @@ public class PendingExpenseController {
     public void exportCsv(HttpServletResponse response) throws IOException {
         csvExportService.writeToResponse(
                 pendingExpenseService.findAll(),
-                PendingExpenseResponse.class,
+                EntityCsvExports.pendingExpenseColumns(),
                 "pending-expenses.csv",
                 response);
     }

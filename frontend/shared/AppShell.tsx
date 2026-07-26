@@ -9,6 +9,7 @@ import ThemeToggle from '@/shared/ThemeToggle'
 
 const NAV_ITEMS: { href: string; label: string; exact?: boolean }[] = [
   { href: '/', label: 'داشبورد', exact: true },
+  { href: '/balance-sheet', label: 'ترازنامه' },
   { href: '/accounts', label: 'حساب‌ها' },
   { href: '/investments', label: 'سرمایه‌گذاری‌ها' },
   { href: '/incomes', label: 'درآمدها' },

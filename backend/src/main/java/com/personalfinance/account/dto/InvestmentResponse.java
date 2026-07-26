@@ -15,6 +15,7 @@ public class InvestmentResponse {
     private String nativeUnit;
     private Long tomanEquivalent;
     private String notes;
+    private String valueRecordedDate;
     private Instant createdAt;
 
     public static InvestmentResponse from(Investment investment) {
@@ -30,6 +31,10 @@ public class InvestmentResponse {
         return r;
     }
 
+    public void setValueRecordedDate(String valueRecordedDate) {
+        this.valueRecordedDate = valueRecordedDate;
+    }
+
     public Long getId() { return id; }
     public String getName() { return name; }
     public InvestmentType getAssetType() { return assetType; }
@@ -38,4 +43,5 @@ public class InvestmentResponse {
     public Long getTomanEquivalent() { return tomanEquivalent; }
     public String getNotes() { return notes; }
     public Instant getCreatedAt() { return createdAt; }
+    public String getValueRecordedDate() { return valueRecordedDate; }
 }

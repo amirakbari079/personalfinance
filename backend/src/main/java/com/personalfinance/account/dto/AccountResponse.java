@@ -13,6 +13,7 @@ public class AccountResponse {
     private Long balance;
     private String notes;
     private String bankCode;
+    private String balanceRecordedDate;
     private Instant createdAt;
 
     public static AccountResponse from(Account account) {
@@ -27,6 +28,10 @@ public class AccountResponse {
         return r;
     }
 
+    public void setBalanceRecordedDate(String balanceRecordedDate) {
+        this.balanceRecordedDate = balanceRecordedDate;
+    }
+
     public Long getId() { return id; }
     public String getName() { return name; }
     public AccountType getType() { return type; }
@@ -34,4 +39,5 @@ public class AccountResponse {
     public String getNotes() { return notes; }
     public Instant getCreatedAt() { return createdAt; }
     public String getBankCode() { return bankCode; }
+    public String getBalanceRecordedDate() { return balanceRecordedDate; }
 }

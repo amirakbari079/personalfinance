@@ -163,13 +163,13 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
 
       <div>
         <label className="field-label">
-          یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
+          یادداشت / توضیح برای تحلیل <span className="text-text-muted font-normal">(اختیاری)</span>
         </label>
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
           rows={2}
-          placeholder="توضیحات تکمیلی..."
+          placeholder="مثال: این حساب برای دریافت وام گذاشته شده / موجودی موقت تا زمان واریز حقوق"
           className="field-input resize-none"
         />
       </div>

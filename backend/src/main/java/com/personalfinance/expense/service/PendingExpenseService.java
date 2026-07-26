@@ -1,5 +1,6 @@
 package com.personalfinance.expense.service;
 
+import com.personalfinance.balance.service.BalanceSheetService;
 import com.personalfinance.common.JalaliDateConverter;
 import com.personalfinance.expense.dto.PendingExpenseRequest;
 import com.personalfinance.expense.dto.PendingExpenseResponse;
@@ -16,11 +17,14 @@ public class PendingExpenseService {
 
     private final PendingExpenseRepository pendingExpenseRepository;
     private final JalaliDateConverter jalaliDateConverter;
+    private final BalanceSheetService balanceSheetService;
 
     public PendingExpenseService(PendingExpenseRepository pendingExpenseRepository,
-                                 JalaliDateConverter jalaliDateConverter) {
+                                 JalaliDateConverter jalaliDateConverter,
+                                 BalanceSheetService balanceSheetService) {
         this.pendingExpenseRepository = pendingExpenseRepository;
         this.jalaliDateConverter = jalaliDateConverter;
+        this.balanceSheetService = balanceSheetService;
     }
 
     public List<PendingExpenseResponse> findAll() {
@@ -34,7 +38,9 @@ public class PendingExpenseService {
     public PendingExpenseResponse create(PendingExpenseRequest request) {
         PendingExpense expense = new PendingExpense();
         apply(expense, request);
-        return toResponse(pendingExpenseRepository.save(expense));
+        PendingExpenseResponse response = toResponse(pendingExpenseRepository.save(expense));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -42,7 +48,9 @@ public class PendingExpenseService {
         PendingExpense expense = pendingExpenseRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("هزینه یافت نشد: " + id));
         apply(expense, request);
-        return toResponse(pendingExpenseRepository.save(expense));
+        PendingExpenseResponse response = toResponse(pendingExpenseRepository.save(expense));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -51,6 +59,7 @@ public class PendingExpenseService {
             throw new NoSuchElementException("هزینه یافت نشد: " + id);
         }
         pendingExpenseRepository.deleteById(id);
+        balanceSheetService.recordTodaySnapshot();
     }
 
     public Long totalPlannedAmount() {

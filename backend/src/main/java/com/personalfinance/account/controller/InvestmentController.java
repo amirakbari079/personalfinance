@@ -5,6 +5,7 @@ import com.personalfinance.account.dto.InvestmentResponse;
 import com.personalfinance.account.service.InvestmentService;
 import com.personalfinance.common.ApiResponse;
 import com.personalfinance.common.CsvExportService;
+import com.personalfinance.export.EntityCsvExports;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,10 @@ public class InvestmentController {
     @GetMapping("/export")
     public void exportCsv(HttpServletResponse response) throws IOException {
         csvExportService.writeToResponse(
-                investmentService.findAll(), InvestmentResponse.class, "investments.csv", response);
+                investmentService.findAll(),
+                EntityCsvExports.investmentColumns(),
+                "investments.csv",
+                response);
     }
 
     @PostMapping

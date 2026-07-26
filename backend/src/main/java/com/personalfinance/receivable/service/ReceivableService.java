@@ -1,5 +1,6 @@
 package com.personalfinance.receivable.service;
 
+import com.personalfinance.balance.service.BalanceSheetService;
 import com.personalfinance.common.JalaliDateConverter;
 import com.personalfinance.receivable.dto.ReceivableRequest;
 import com.personalfinance.receivable.dto.ReceivableResponse;
@@ -16,11 +17,14 @@ public class ReceivableService {
 
     private final ReceivableRepository receivableRepository;
     private final JalaliDateConverter jalaliDateConverter;
+    private final BalanceSheetService balanceSheetService;
 
     public ReceivableService(ReceivableRepository receivableRepository,
-                             JalaliDateConverter jalaliDateConverter) {
+                             JalaliDateConverter jalaliDateConverter,
+                             BalanceSheetService balanceSheetService) {
         this.receivableRepository = receivableRepository;
         this.jalaliDateConverter = jalaliDateConverter;
+        this.balanceSheetService = balanceSheetService;
     }
 
     public List<ReceivableResponse> findAll() {
@@ -34,7 +38,9 @@ public class ReceivableService {
     public ReceivableResponse create(ReceivableRequest request) {
         Receivable receivable = new Receivable();
         apply(receivable, request);
-        return toResponse(receivableRepository.save(receivable));
+        ReceivableResponse response = toResponse(receivableRepository.save(receivable));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -42,7 +48,9 @@ public class ReceivableService {
         Receivable receivable = receivableRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("طلب یافت نشد: " + id));
         apply(receivable, request);
-        return toResponse(receivableRepository.save(receivable));
+        ReceivableResponse response = toResponse(receivableRepository.save(receivable));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -51,6 +59,7 @@ public class ReceivableService {
             throw new NoSuchElementException("طلب یافت نشد: " + id);
         }
         receivableRepository.deleteById(id);
+        balanceSheetService.recordTodaySnapshot();
     }
 
     public Long totalOutstanding() {

@@ -2,6 +2,7 @@ package com.personalfinance.income.controller;
 
 import com.personalfinance.common.ApiResponse;
 import com.personalfinance.common.CsvExportService;
+import com.personalfinance.export.EntityCsvExports;
 import com.personalfinance.income.dto.IncomeRequest;
 import com.personalfinance.income.dto.IncomeResponse;
 import com.personalfinance.income.service.IncomeService;
@@ -39,7 +40,10 @@ public class IncomeController {
     @GetMapping("/export")
     public void exportCsv(HttpServletResponse response) throws IOException {
         csvExportService.writeToResponse(
-                incomeService.findAll(), IncomeResponse.class, "incomes.csv", response);
+                incomeService.findAll(),
+                EntityCsvExports.incomeColumns(),
+                "incomes.csv",
+                response);
     }
 
     @PostMapping

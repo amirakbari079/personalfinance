@@ -1,5 +1,6 @@
 package com.personalfinance.loan.service;
 
+import com.personalfinance.balance.service.BalanceSheetService;
 import com.personalfinance.common.JalaliDateConverter;
 import com.personalfinance.loan.dto.InstallmentView;
 import com.personalfinance.loan.dto.LoanRequest;
@@ -18,10 +19,14 @@ public class LoanService {
 
     private final LoanRepository loanRepository;
     private final JalaliDateConverter jalali;
+    private final BalanceSheetService balanceSheetService;
 
-    public LoanService(LoanRepository loanRepository, JalaliDateConverter jalali) {
+    public LoanService(LoanRepository loanRepository,
+                       JalaliDateConverter jalali,
+                       BalanceSheetService balanceSheetService) {
         this.loanRepository = loanRepository;
         this.jalali = jalali;
+        this.balanceSheetService = balanceSheetService;
     }
 
     public List<LoanResponse> findAll() {
@@ -34,7 +39,9 @@ public class LoanService {
     public LoanResponse create(LoanRequest request) {
         Loan loan = new Loan();
         apply(loan, request);
-        return toResponse(loanRepository.save(loan));
+        LoanResponse response = toResponse(loanRepository.save(loan));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -42,7 +49,9 @@ public class LoanService {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("وام یافت نشد: " + id));
         apply(loan, request);
-        return toResponse(loanRepository.save(loan));
+        LoanResponse response = toResponse(loanRepository.save(loan));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     @Transactional
@@ -51,6 +60,7 @@ public class LoanService {
             throw new NoSuchElementException("وام یافت نشد: " + id);
         }
         loanRepository.deleteById(id);
+        balanceSheetService.recordTodaySnapshot();
     }
 
     /**
@@ -65,7 +75,9 @@ public class LoanService {
             throw new IllegalStateException("همه اقساط این وام پرداخت شده");
         }
         loan.setPaidInstallments(loan.getPaidInstallments() + 1);
-        return toResponse(loanRepository.save(loan));
+        LoanResponse response = toResponse(loanRepository.save(loan));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     /**
@@ -80,7 +92,9 @@ public class LoanService {
             throw new IllegalStateException("هیچ قسط پرداخت‌شده‌ای برای برگرداندن وجود ندارد");
         }
         loan.setPaidInstallments(loan.getPaidInstallments() - 1);
-        return toResponse(loanRepository.save(loan));
+        LoanResponse response = toResponse(loanRepository.save(loan));
+        balanceSheetService.recordTodaySnapshot();
+        return response;
     }
 
     /** Sum of monthly installments across all active (incomplete) loans — for the dashboard. */

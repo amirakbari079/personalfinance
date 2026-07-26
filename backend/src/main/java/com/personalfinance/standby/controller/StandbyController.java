@@ -2,6 +2,7 @@ package com.personalfinance.standby.controller;
 
 import com.personalfinance.common.ApiResponse;
 import com.personalfinance.common.CsvExportService;
+import com.personalfinance.export.EntityCsvExports;
 import com.personalfinance.standby.dto.StandbyRequest;
 import com.personalfinance.standby.dto.StandbyResponse;
 import com.personalfinance.standby.service.StandbyService;
@@ -39,7 +40,10 @@ public class StandbyController {
     @GetMapping("/export")
     public void exportCsv(HttpServletResponse response) throws IOException {
         csvExportService.writeToResponse(
-                standbyService.findAll(), StandbyResponse.class, "standby.csv", response);
+                standbyService.findAll(),
+                EntityCsvExports.standbyColumns(),
+                "standby.csv",
+                response);
     }
 
     @PostMapping

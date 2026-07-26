@@ -110,13 +110,13 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
           {/* Notes */}
           <div>
             <label className="field-label">
-              یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
+              یادداشت / توضیح برای تحلیل <span className="text-text-muted font-normal">(اختیاری)</span>
             </label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={2}
-              placeholder="توضیحات تکمیلی..."
+              placeholder="مثال: حقوق ماهانه شرکت / درآمد یک‌باره فروش کالا"
               className="field-input resize-none"
             />
           </div>

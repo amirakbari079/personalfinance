@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getBalance, type BalanceSummary } from '@/lib/api/balanceApi'
+import { formatToman } from '@/utils/formatToman'
 
 const CAPITAL_ITEMS: {
   key: keyof Pick<BalanceSummary, 'cash' | 'investments' | 'standby' | 'receivablesOutstanding'>
@@ -108,8 +109,4 @@ export default function DashboardPage() {
       </section>
     </div>
   )
-}
-
-function formatToman(amount: number): string {
-  return amount.toLocaleString('fa-IR') + ' تومان'
 }

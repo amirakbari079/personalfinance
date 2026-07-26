@@ -2,6 +2,7 @@ package com.personalfinance.receivable.controller;
 
 import com.personalfinance.common.ApiResponse;
 import com.personalfinance.common.CsvExportService;
+import com.personalfinance.export.EntityCsvExports;
 import com.personalfinance.receivable.dto.ReceivableRequest;
 import com.personalfinance.receivable.dto.ReceivableResponse;
 import com.personalfinance.receivable.service.ReceivableService;
@@ -35,7 +36,10 @@ public class ReceivableController {
     @GetMapping("/export")
     public void exportCsv(HttpServletResponse response) throws IOException {
         csvExportService.writeToResponse(
-                receivableService.findAll(), ReceivableResponse.class, "receivables.csv", response);
+                receivableService.findAll(),
+                EntityCsvExports.receivableColumns(),
+                "receivables.csv",
+                response);
     }
 
     @PostMapping
