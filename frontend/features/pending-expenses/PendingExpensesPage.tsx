@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type PendingExpense,
   type PendingExpenseRequest,
@@ -15,9 +15,20 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
 import { exportPendingExpensesCsv } from '@/lib/api/pendingExpensesApi'
+import ListSortBar from '@/shared/ListSortBar'
+import {
+  BASE_SORT_OPTIONS,
+  DEFAULT_SORT,
+  DOMAIN_DATE_SORT_OPTIONS,
+  sortItems,
+  type SortOptionId,
+} from '@/utils/listSort'
+
+const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 
 export default function PendingExpensesPage() {
   const [expenses, setExpenses] = useState<PendingExpense[]>([])
+  const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
   const [total, setTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,6 +49,16 @@ export default function PendingExpensesPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const sortedExpenses = useMemo(
+    () => sortItems(expenses, sortId, {
+      getName: (e) => e.label,
+      getAmount: (e) => e.plannedAmount,
+      getCreatedAt: (e) => e.createdAt,
+      getDate: (e) => e.dueDate,
+    }),
+    [expenses, sortId],
+  )
 
   async function handleSave(data: PendingExpenseRequest) {
     if (editing) {
@@ -73,8 +94,8 @@ export default function PendingExpensesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <PageHeader
-        title="هزینه‌های معوق"
-        subtitle={`مجموع برنامه‌ریزی‌شده: ${formatToman(total)}`}
+        title="هزینه‌های برنامه‌ریزی‌شده"
+        subtitle={`خرج‌هایی که هنوز پرداخت نکرده‌اید ولی برنامه‌ریزی کرده‌اید • مجموع: ${formatToman(total)}`}
         addLabel="+ هزینه جدید"
         onAdd={() => { setEditing(null); setShowForm(true) }}
         onExport={exportPendingExpensesCsv}
@@ -86,14 +107,17 @@ export default function PendingExpensesPage() {
         </p>
       )}
 
-      {/* Expense list */}
+      {expenses.length > 0 && (
+        <ListSortBar value={sortId} options={SORT_OPTIONS} onChange={setSortId} />
+      )}
+
       {expenses.length === 0 ? (
         <div className="text-center py-16 text-text-muted text-sm">
-          هنوز هزینه‌ای ثبت نشده. اولین هزینه معوق را اضافه کنید.
+          هنوز هزینه‌ای ثبت نشده. اولین هزینه برنامه‌ریزی‌شده را اضافه کنید.
         </div>
       ) : (
         <div className="space-y-2">
-          {expenses.map(expense => (
+          {sortedExpenses.map(expense => (
             <div
               key={expense.id}
               className="luxury-card px-5 py-4 flex items-center justify-between"

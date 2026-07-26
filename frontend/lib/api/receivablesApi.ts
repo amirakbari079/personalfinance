@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGetList, apiPost, apiPut } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export interface Receivable {
@@ -23,64 +22,20 @@ export interface ReceivableRequest {
 
 const BASE = '/api/v1/receivables'
 
-export async function getReceivables(): Promise<Receivable[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت طلب‌ها')
-  const body: ApiResponse<Receivable[]> = await parseJson(res)
-  return body.data ?? []
+export function getReceivables(): Promise<Receivable[]> {
+  return apiGetList<Receivable>(BASE, 'خطا در دریافت طلب‌ها')
 }
 
-export async function createReceivable(data: ReceivableRequest): Promise<Receivable> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد طلب'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Receivable> = await parseJson(res)
-  return body.data!
+export function createReceivable(data: ReceivableRequest): Promise<Receivable> {
+  return apiPost<Receivable>(BASE, data, 'خطا در ایجاد طلب')
 }
 
-export async function updateReceivable(id: number, data: ReceivableRequest): Promise<Receivable> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش طلب'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Receivable> = await parseJson(res)
-  return body.data!
+export function updateReceivable(id: number, data: ReceivableRequest): Promise<Receivable> {
+  return apiPut<Receivable>(`${BASE}/${id}`, data, 'خطا در ویرایش طلب')
 }
 
-export async function deleteReceivable(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف طلب'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deleteReceivable(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف طلب')
 }
 
 export function exportReceivablesCsv(): Promise<void> {

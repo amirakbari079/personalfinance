@@ -25,6 +25,10 @@ public class LoanRequest {
 
     private String notes;
 
+    /** Optional; when set (edit), clamps progress to 0..totalInstallments. */
+    @Min(value = 0, message = "اقساط پرداخت‌شده نمی‌تواند منفی باشد")
+    private Integer paidInstallments;
+
     public String getCreditor() { return creditor; }
     public void setCreditor(String creditor) { this.creditor = creditor; }
 
@@ -39,4 +43,7 @@ public class LoanRequest {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public Integer getPaidInstallments() { return paidInstallments; }
+    public void setPaidInstallments(Integer paidInstallments) { this.paidInstallments = paidInstallments; }
 }

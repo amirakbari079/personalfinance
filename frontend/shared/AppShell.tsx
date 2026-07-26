@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -12,7 +13,7 @@ const NAV_ITEMS: { href: string; label: string; exact?: boolean }[] = [
   { href: '/investments', label: 'سرمایه‌گذاری‌ها' },
   { href: '/incomes', label: 'درآمدها' },
   { href: '/loans', label: 'وام‌ها' },
-  { href: '/pending-expenses', label: 'هزینه‌های معوق' },
+  { href: '/pending-expenses', label: 'هزینه‌های برنامه‌ریزی‌شده' },
   { href: '/receivables', label: 'طلب‌ها' },
   { href: '/standby', label: 'کالاهای معوق' },
 ]
@@ -44,8 +45,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-40 border-b px-6 py-3 flex items-center justify-between app-header-glass">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
-            <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
+          <div className="w-7 h-7 rounded-lg overflow-hidden shadow-gold flex-shrink-0">
+            <Image src="/logo.svg" alt="حسابداری شخصی" width={28} height={28} priority />
           </div>
           <div>
             <span className="text-text-primary text-sm tracking-tight" style={{ fontWeight: 'var(--font-weight-heading)' }}>حسابداری شخصی</span>

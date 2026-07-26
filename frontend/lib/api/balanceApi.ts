@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiGet } from './apiClient'
 
 export interface BalanceSummary {
   cash: number
@@ -14,9 +13,6 @@ export interface BalanceSummary {
 
 const BASE = '/api/v1/balance'
 
-export async function getBalance(): Promise<BalanceSummary> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت تراز مالی')
-  const body: ApiResponse<BalanceSummary> = await parseJson(res)
-  return body.data!
+export function getBalance(): Promise<BalanceSummary> {
+  return apiGet<BalanceSummary>(BASE, 'خطا در دریافت تراز مالی')
 }

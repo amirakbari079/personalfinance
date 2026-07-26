@@ -59,7 +59,7 @@ export default function BankPicker({ accountType, value, onChange }: BankPickerP
         className="field-input mb-2 text-sm"
       />
 
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-40 glass-scroll-overlay p-1">
+      <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-32 glass-scroll-overlay p-1 rounded-lg border border-surface-muted/40">
         {filtered.map(bank => {
           const active = value === bank.code
           return (

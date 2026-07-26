@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type Loan,
   type LoanRequest,
@@ -11,15 +11,27 @@ import {
   updateLoan,
   deleteLoan,
   payNextInstallment,
+  undoLastInstallment,
 } from '@/lib/api/loansApi'
 import LoanForm from './LoanForm'
-import { Pencil, Trash2, Check, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Pencil, Trash2, Check, Clock, ChevronDown, ChevronUp, Undo2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
 import { exportLoansCsv } from '@/lib/api/loansApi'
+import ListSortBar from '@/shared/ListSortBar'
+import {
+  BASE_SORT_OPTIONS,
+  DEFAULT_SORT,
+  DOMAIN_DATE_SORT_OPTIONS,
+  sortItems,
+  type SortOptionId,
+} from '@/utils/listSort'
+
+const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 
 export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([])
+  const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
   const [monthlyTotal, setMonthlyTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,6 +39,7 @@ export default function LoansPage() {
   const [editing, setEditing] = useState<Loan | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [payingId, setPayingId] = useState<number | null>(null)
+  const [undoingId, setUndoingId] = useState<number | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
 
   async function load() {
@@ -42,6 +55,16 @@ export default function LoansPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const sortedLoans = useMemo(
+    () => sortItems(loans, sortId, {
+      getName: (l) => l.creditor,
+      getAmount: (l) => l.monthlyAmount,
+      getCreatedAt: (l) => l.createdAt,
+      getDate: (l) => l.startDate,
+    }),
+    [loans, sortId],
+  )
 
   async function handleSave(data: LoanRequest) {
     if (editing) {
@@ -78,6 +101,21 @@ export default function LoansPage() {
     }
   }
 
+  async function handleUndoLast(loan: Loan) {
+    if (!window.confirm(`آخرین قسط پرداخت‌شده «${loan.creditor}» برگردانده شود؟`)) {
+      return
+    }
+    setUndoingId(loan.id)
+    try {
+      await undoLastInstallment(loan.id)
+      load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'خطا در برگرداندن قسط')
+    } finally {
+      setUndoingId(null)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -102,22 +140,28 @@ export default function LoansPage() {
         </p>
       )}
 
+      {loans.length > 0 && (
+        <ListSortBar value={sortId} options={SORT_OPTIONS} onChange={setSortId} />
+      )}
+
       {loans.length === 0 ? (
         <div className="text-center py-16 text-text-muted text-sm">
           هنوز وامی ثبت نشده. اولین وام را اضافه کنید.
         </div>
       ) : (
         <div className="space-y-3">
-          {loans.map(loan => (
+          {sortedLoans.map(loan => (
             <LoanCard
               key={loan.id}
               loan={loan}
               expanded={expandedId === loan.id}
               onToggle={() => setExpandedId(expandedId === loan.id ? null : loan.id)}
               onPayNext={handlePayNext}
+              onUndoLast={handleUndoLast}
               onEdit={() => { setEditing(loan); setShowForm(true) }}
               onDelete={() => handleDelete(loan.id)}
               isPaying={payingId === loan.id}
+              isUndoing={undoingId === loan.id}
               isDeleting={deletingId === loan.id}
             />
           ))}
@@ -140,20 +184,32 @@ interface CardProps {
   expanded: boolean
   onToggle: () => void
   onPayNext: (loan: Loan) => void
+  onUndoLast: (loan: Loan) => void
   onEdit: () => void
   onDelete: () => void
   isPaying: boolean
+  isUndoing: boolean
   isDeleting: boolean
 }
 
-function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPaying, isDeleting }: CardProps) {
+function LoanCard({
+  loan,
+  expanded,
+  onToggle,
+  onPayNext,
+  onUndoLast,
+  onEdit,
+  onDelete,
+  isPaying,
+  isUndoing,
+  isDeleting,
+}: CardProps) {
   const progressPct = loan.totalInstallments > 0
     ? Math.round((loan.paidInstallments / loan.totalInstallments) * 100)
     : 0
 
   return (
     <div className="luxury-card overflow-hidden">
-      {/* Top row */}
       <div className="px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
@@ -204,7 +260,6 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="px-5 pb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[11px] text-text-muted">پیشرفت پرداخت</span>
@@ -218,7 +273,6 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
         </div>
       </div>
 
-      {/* Summary grid */}
       <div className="px-5 pb-4 grid grid-cols-2 gap-3">
         <div className="bg-surface rounded-lg px-3 py-2">
           <p className="text-[11px] text-text-muted">پرداخت‌شده</p>
@@ -238,13 +292,12 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
         </div>
       </div>
 
-      {/* Pay button */}
-      {!loan.completed && (
-        <div className="px-5 pb-4">
+      <div className="px-5 pb-4 flex flex-col sm:flex-row gap-2">
+        {!loan.completed && (
           <button
             onClick={() => onPayNext(loan)}
-            disabled={isPaying}
-            className="w-full bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            disabled={isPaying || isUndoing}
+            className="flex-1 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isPaying ? (
               'در حال ثبت...'
@@ -255,10 +308,25 @@ function LoanCard({ loan, expanded, onToggle, onPayNext, onEdit, onDelete, isPay
               </>
             )}
           </button>
-        </div>
-      )}
+        )}
+        {loan.paidInstallments > 0 && (
+          <button
+            onClick={() => onUndoLast(loan)}
+            disabled={isPaying || isUndoing}
+            className="flex-1 bg-surface-muted hover:bg-surface-muted/80 text-text-muted hover:text-text-primary text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isUndoing ? (
+              'در حال برگرداندن...'
+            ) : (
+              <>
+                <Undo2 className="w-4 h-4" />
+                برگرداندن آخرین قسط
+              </>
+            )}
+          </button>
+        )}
+      </div>
 
-      {/* Installments checklist */}
       {expanded && (
         <div className="px-5 pb-4 border-t border-surface-muted pt-4">
           <p className="text-section-label text-text-primary mb-3">اقساط</p>

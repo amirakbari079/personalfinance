@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/pending-expenses")
@@ -58,22 +57,12 @@ public class PendingExpenseController {
     public ResponseEntity<ApiResponse<PendingExpenseResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody PendingExpenseRequest request) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(pendingExpenseService.update(id, request)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(pendingExpenseService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        try {
-            pendingExpenseService.delete(id);
-            return ResponseEntity.ok(ApiResponse.ok("هزینه حذف شد", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        pendingExpenseService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("هزینه حذف شد", null));
     }
 }

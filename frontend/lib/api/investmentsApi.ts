@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGet, apiGetList, apiPost, apiPut } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export type InvestmentType = 'STOCK' | 'GOLD' | 'CRYPTO' | 'FOREIGN_CURRENCY' | 'OTHER'
@@ -30,75 +29,29 @@ export interface InvestmentRequest {
   nativeUnit: string
   tomanEquivalent: number
   notes: string
+  valueRecordedDate?: string
 }
 
 const BASE = '/api/v1/investments'
 
-export async function getInvestments(): Promise<Investment[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت سرمایه‌گذاری‌ها')
-  const body: ApiResponse<Investment[]> = await parseJson(res)
-  return body.data ?? []
+export function getInvestments(): Promise<Investment[]> {
+  return apiGetList<Investment>(BASE, 'خطا در دریافت سرمایه‌گذاری‌ها')
 }
 
-export async function getTotalTomanValue(): Promise<number> {
-  const res = await fetch(`${BASE}/total`, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت جمع کل')
-  const body: ApiResponse<number> = await parseJson(res)
-  return body.data ?? 0
+export function getTotalTomanValue(): Promise<number> {
+  return apiGet<number>(`${BASE}/total`, 'خطا در دریافت جمع کل').then((v) => v ?? 0)
 }
 
-export async function createInvestment(data: InvestmentRequest): Promise<Investment> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد سرمایه‌گذاری'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Investment> = await parseJson(res)
-  return body.data!
+export function createInvestment(data: InvestmentRequest): Promise<Investment> {
+  return apiPost<Investment>(BASE, data, 'خطا در ایجاد سرمایه‌گذاری')
 }
 
-export async function updateInvestment(id: number, data: InvestmentRequest): Promise<Investment> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش سرمایه‌گذاری'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Investment> = await parseJson(res)
-  return body.data!
+export function updateInvestment(id: number, data: InvestmentRequest): Promise<Investment> {
+  return apiPut<Investment>(`${BASE}/${id}`, data, 'خطا در ویرایش سرمایه‌گذاری')
 }
 
-export async function deleteInvestment(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف سرمایه‌گذاری'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deleteInvestment(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف سرمایه‌گذاری')
 }
 
 export function exportInvestmentsCsv(): Promise<void> {

@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGet, apiGetList, apiPost, apiPut } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export type AccountType = 'BANK' | 'DIGITAL_WALLET' | 'EXCHANGE' | 'CASH' | 'OTHER'
@@ -28,75 +27,29 @@ export interface AccountRequest {
   balance: number
   notes: string
   bankCode: string | null
+  balanceRecordedDate?: string
 }
 
 const BASE = '/api/v1/accounts'
 
-export async function getAccounts(): Promise<Account[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت حساب‌ها')
-  const body: ApiResponse<Account[]> = await parseJson(res)
-  return body.data ?? []
+export function getAccounts(): Promise<Account[]> {
+  return apiGetList<Account>(BASE, 'خطا در دریافت حساب‌ها')
 }
 
-export async function getTotalBalance(): Promise<number> {
-  const res = await fetch(`${BASE}/total`, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت موجودی کل')
-  const body: ApiResponse<number> = await parseJson(res)
-  return body.data ?? 0
+export function getTotalBalance(): Promise<number> {
+  return apiGet<number>(`${BASE}/total`, 'خطا در دریافت موجودی کل').then((v) => v ?? 0)
 }
 
-export async function createAccount(data: AccountRequest): Promise<Account> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد حساب'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Account> = await parseJson(res)
-  return body.data!
+export function createAccount(data: AccountRequest): Promise<Account> {
+  return apiPost<Account>(BASE, data, 'خطا در ایجاد حساب')
 }
 
-export async function updateAccount(id: number, data: AccountRequest): Promise<Account> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش حساب'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Account> = await parseJson(res)
-  return body.data!
+export function updateAccount(id: number, data: AccountRequest): Promise<Account> {
+  return apiPut<Account>(`${BASE}/${id}`, data, 'خطا در ویرایش حساب')
 }
 
-export async function deleteAccount(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف حساب'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deleteAccount(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف حساب')
 }
 
 export function exportAccountsCsv(): Promise<void> {

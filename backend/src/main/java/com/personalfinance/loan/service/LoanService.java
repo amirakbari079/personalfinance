@@ -68,6 +68,21 @@ public class LoanService {
         return toResponse(loanRepository.save(loan));
     }
 
+    /**
+     * Undoes the last recorded installment payment.
+     * Throws IllegalStateException if nothing has been paid yet.
+     */
+    @Transactional
+    public LoanResponse undoLastInstallment(Long id) {
+        Loan loan = loanRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("وام یافت نشد: " + id));
+        if (loan.getPaidInstallments() <= 0) {
+            throw new IllegalStateException("هیچ قسط پرداخت‌شده‌ای برای برگرداندن وجود ندارد");
+        }
+        loan.setPaidInstallments(loan.getPaidInstallments() - 1);
+        return toResponse(loanRepository.save(loan));
+    }
+
     /** Sum of monthly installments across all active (incomplete) loans — for the dashboard. */
     public Long activeMonthlyTotal() {
         return loanRepository.sumActiveMonthlyAmounts();
@@ -79,6 +94,16 @@ public class LoanService {
         loan.setTotalInstallments(request.getTotalInstallments());
         loan.setStartDate(jalali.toGregorian(request.getStartDate()));
         loan.setNotes(request.getNotes());
+
+        if (request.getPaidInstallments() != null) {
+            int paid = request.getPaidInstallments();
+            int total = request.getTotalInstallments();
+            if (paid > total) {
+                throw new IllegalArgumentException(
+                        "اقساط پرداخت‌شده نمی‌تواند بیشتر از تعداد کل اقساط باشد");
+            }
+            loan.setPaidInstallments(paid);
+        }
     }
 
     private LoanResponse toResponse(Loan loan) {

@@ -24,6 +24,9 @@
   --color-status-error: #cf3f57;
   --color-status-error-bg: #fff0f3;
   --color-status-error-border: #ffd2db;
+  --color-status-success: #1f9d6a;
+  --color-status-success-bg: #ecfbf4;
+  --color-status-success-border: #b8ecd4;
   --shadow-card: 0 8px 30px rgba(16, 26, 52, 0.09), inset 0 1px 0 rgba(109, 139, 255, 0.18);
   --shadow-modal: 0 24px 72px rgba(16, 26, 52, 0.22), 0 0 0 1px rgba(91, 124, 255, 0.22);
   --shadow-accent: 0 8px 22px rgba(91, 124, 255, 0.32);
@@ -69,6 +72,9 @@
   --color-status-error: #ff7b95;
   --color-status-error-bg: rgba(255, 123, 149, 0.12);
   --color-status-error-border: rgba(255, 123, 149, 0.34);
+  --color-status-success: #5ee4a8;
+  --color-status-success-bg: rgba(94, 228, 168, 0.1);
+  --color-status-success-border: rgba(94, 228, 168, 0.32);
   --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(145, 179, 255, 0.12);
   --shadow-modal: 0 40px 104px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(122, 162, 255, 0.25);
   --shadow-accent: 0 10px 26px rgba(122, 162, 255, 0.34);
@@ -221,7 +227,7 @@
   }
 
   .luxury-modal-backdrop {
-    @apply fixed inset-0 z-50 flex items-start justify-center px-4 py-8 glass-scroll;
+    @apply fixed inset-0 z-50 flex items-center justify-center px-4 py-6 glass-scroll;
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(6px);
   }
@@ -229,12 +235,49 @@
   .luxury-modal {
     @apply bg-surface-card border border-surface-muted w-full shadow-modal;
     max-width: var(--modal-max-width);
-    max-height: min(90vh, 52rem);
-    padding: var(--modal-padding);
     border-radius: var(--radius-lg);
-    overflow: visible;
     background:
       linear-gradient(180deg, color-mix(in srgb, var(--color-surface-card) 95%, var(--color-brand-accent) 5%), var(--color-surface-card));
+  }
+
+  .luxury-modal--form {
+    display: flex;
+    flex-direction: column;
+    max-height: min(92vh, 52rem);
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .luxury-modal--wide {
+    --modal-max-width: 42rem;
+  }
+
+  .luxury-modal-header {
+    flex-shrink: 0;
+    padding: var(--modal-padding) var(--modal-padding) 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-surface-muted) 55%, transparent);
+  }
+
+  .luxury-modal-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1.25rem var(--modal-padding);
+  }
+
+  .luxury-modal-footer {
+    flex-shrink: 0;
+    padding: 1rem var(--modal-padding) var(--modal-padding);
+    border-top: 1px solid color-mix(in srgb, var(--color-surface-muted) 55%, transparent);
+    background: color-mix(in srgb, var(--color-surface-card) 88%, var(--color-surface-elevated) 12%);
+  }
+
+  /* Legacy modals without --form: keep padded scrollable box */
+  .luxury-modal:not(.luxury-modal--form) {
+    max-height: min(90vh, 52rem);
+    overflow-y: auto;
+    padding: var(--modal-padding);
   }
 
   .text-page-title {
@@ -349,51 +392,8 @@
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-accent) 22%, transparent);
   }
 
-  /* react-multi-date-picker — luxury theme */
-  .jalali-picker-wrap .rmdp-wrapper {
-    background: color-mix(in srgb, var(--color-surface-card) 92%, var(--color-brand-mid) 8%);
-    border: 1px solid var(--color-surface-muted);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-modal);
-  }
-
-  .jalali-picker-wrap .rmdp-header-values,
-  .jalali-picker-wrap .rmdp-day span {
-    color: var(--color-text-primary);
-  }
-
-  .jalali-picker-wrap .rmdp-week-day {
-    color: var(--color-text-muted);
-  }
-
-  .jalali-picker-wrap .rmdp-day.rmdp-selected span:not(.highlight) {
-    background-color: var(--color-brand-accent) !important;
-    color: var(--color-text-on-accent) !important;
-    box-shadow: var(--shadow-accent);
-  }
-
-  .jalali-picker-wrap .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
-    background-color: color-mix(in srgb, var(--color-brand-accent) 18%, transparent) !important;
-    color: var(--color-brand-accent) !important;
-  }
-
-  .jalali-picker-wrap .rmdp-arrow {
-    border-color: var(--color-brand-accent);
-  }
-
-  .jalali-picker-wrap .rmdp-arrow-container:hover {
-    background-color: color-mix(in srgb, var(--color-brand-accent) 12%, transparent);
-    box-shadow: none;
-  }
-
-  .jalali-picker-wrap .rmdp-today span {
-    border: 1px solid var(--color-brand-accent) !important;
-    background: transparent !important;
-    color: var(--color-brand-accent) !important;
-  }
-
   .jalali-picker-wrap .rmdp-container {
-    z-index: 70;
+    z-index: 120;
   }
 }
 
@@ -427,4 +427,120 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* react-multi-date-picker — themed overrides (beats injected library defaults) */
+.pf-jalali-calendar.rmdp-wrapper {
+  background: var(--color-surface-card) !important;
+  border: 1px solid var(--color-surface-muted) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-modal) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.pf-jalali-calendar .rmdp-calendar {
+  background: transparent !important;
+}
+
+.pf-jalali-calendar .rmdp-header-values,
+.pf-jalali-calendar .rmdp-header-values span {
+  color: var(--color-text-primary) !important;
+}
+
+.pf-jalali-calendar .rmdp-week-day {
+  color: var(--color-text-muted) !important;
+}
+
+.pf-jalali-calendar .rmdp-day {
+  color: var(--color-text-primary) !important;
+}
+
+.pf-jalali-calendar .rmdp-day span {
+  color: var(--color-text-primary) !important;
+}
+
+.pf-jalali-calendar .rmdp-day.rmdp-deactive,
+.pf-jalali-calendar .rmdp-day.rmdp-disabled {
+  color: var(--color-text-muted) !important;
+  opacity: 0.55;
+}
+
+.pf-jalali-calendar .rmdp-day.rmdp-selected span:not(.highlight) {
+  background-color: var(--color-brand-accent) !important;
+  color: var(--color-text-on-accent) !important;
+  box-shadow: var(--shadow-accent) !important;
+}
+
+.pf-jalali-calendar .rmdp-today span {
+  border: 1px solid var(--color-brand-accent) !important;
+  background: transparent !important;
+  color: var(--color-brand-accent) !important;
+}
+
+.pf-jalali-calendar .rmdp-arrow {
+  border-color: var(--color-brand-accent) !important;
+}
+
+.pf-jalali-calendar .rmdp-arrow-container:hover {
+  background-color: color-mix(in srgb, var(--color-brand-accent) 14%, transparent) !important;
+  box-shadow: none !important;
+}
+
+.pf-jalali-calendar .rmdp-arrow-container:hover .rmdp-arrow {
+  border-color: var(--color-brand-accent) !important;
+}
+
+.pf-jalali-calendar .rmdp-month-picker,
+.pf-jalali-calendar .rmdp-year-picker {
+  background-color: var(--color-surface-card) !important;
+}
+
+.pf-jalali-calendar .rmdp-month-picker .rmdp-day,
+.pf-jalali-calendar .rmdp-year-picker .rmdp-day {
+  color: var(--color-text-primary) !important;
+}
+
+.pf-jalali-calendar .rmdp-month-picker .rmdp-day span,
+.pf-jalali-calendar .rmdp-year-picker .rmdp-day span {
+  color: var(--color-text-primary) !important;
+  background-color: transparent !important;
+}
+
+.pf-jalali-calendar .rmdp-month-picker .rmdp-day.rmdp-selected span,
+.pf-jalali-calendar .rmdp-year-picker .rmdp-day.rmdp-selected span {
+  background-color: var(--color-brand-accent) !important;
+  color: var(--color-text-on-accent) !important;
+}
+
+@media (hover: hover) {
+  .pf-jalali-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
+    background-color: color-mix(in srgb, var(--color-brand-accent) 18%, transparent) !important;
+    color: var(--color-brand-accent) !important;
+  }
+
+  .pf-jalali-calendar .rmdp-month-picker .rmdp-day:not(.rmdp-disabled) span:hover,
+  .pf-jalali-calendar .rmdp-year-picker .rmdp-day:not(.rmdp-disabled) span:hover {
+    background-color: color-mix(in srgb, var(--color-brand-accent) 18%, transparent) !important;
+    color: var(--color-brand-accent) !important;
+  }
+}
+
+.pf-jalali-calendar .rmdp-ep-arrow:after {
+  background-color: var(--color-surface-card) !important;
+}
+
+.pf-jalali-calendar.rmdp-ep-border:after,
+.pf-jalali-calendar .rmdp-ep-border:after {
+  border-color: var(--color-surface-muted) !important;
+}
+
+/* Live market sidebar panel */
+.market-panel {
+  padding: 0.25rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-brand-accent) 8%, transparent),
+    color-mix(in srgb, var(--color-surface-card) 96%, transparent)
+  );
 }

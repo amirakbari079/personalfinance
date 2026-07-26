@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGet, apiGetList, apiPost, apiPut } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export interface Standby {
@@ -23,71 +22,24 @@ export interface StandbyRequest {
 
 const BASE = '/api/v1/standby'
 
-export async function getStandbyItems(): Promise<Standby[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت کالاهای معوق')
-  const body: ApiResponse<Standby[]> = await parseJson(res)
-  return body.data ?? []
+export function getStandbyItems(): Promise<Standby[]> {
+  return apiGetList<Standby>(BASE, 'خطا در دریافت کالاهای معوق')
 }
 
-export async function getStandbyTotal(): Promise<number> {
-  const res = await fetch(`${BASE}/total`, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت مجموع کالاهای معوق')
-  const body: ApiResponse<number> = await parseJson(res)
-  return body.data ?? 0
+export function getStandbyTotal(): Promise<number> {
+  return apiGet<number>(`${BASE}/total`, 'خطا در دریافت مجموع کالاهای معوق').then((v) => v ?? 0)
 }
 
-export async function createStandbyItem(data: StandbyRequest): Promise<Standby> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد کالا'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Standby> = await parseJson(res)
-  return body.data!
+export function createStandbyItem(data: StandbyRequest): Promise<Standby> {
+  return apiPost<Standby>(BASE, data, 'خطا در ایجاد کالا')
 }
 
-export async function updateStandbyItem(id: number, data: StandbyRequest): Promise<Standby> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش کالا'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Standby> = await parseJson(res)
-  return body.data!
+export function updateStandbyItem(id: number, data: StandbyRequest): Promise<Standby> {
+  return apiPut<Standby>(`${BASE}/${id}`, data, 'خطا در ویرایش کالا')
 }
 
-export async function deleteStandbyItem(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف کالا'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deleteStandbyItem(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف کالا')
 }
 
 export function exportStandbyCsv(): Promise<void> {

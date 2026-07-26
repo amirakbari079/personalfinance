@@ -1,11 +1,11 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/personalfinance
-    username: postgres
-    password: 110
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/personalfinance}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:110}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,8 +25,16 @@ spring:
 
 app:
   jwt:
-    secret: "personalfinance-wan-motor-secret-key-2025"
-    expiration-ms: 86400000
+    secret: ${JWT_SECRET:personalfinance-wan-motor-secret-key-2025}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
     cookie-name: token
   cors:
-    allowed-origin: http://localhost:3000
+    allowed-origin: ${CORS_ORIGIN:http://localhost:3000}
+  market:
+    fetch-interval-ms: ${MARKET_FETCH_INTERVAL_MS:600000}
+    tgju:
+      geram18-widget-key: ${TGJU_GERAM18_KEY:137121}
+      dollar-widget-key: ${TGJU_DOLLAR_KEY:137203}
+    etf:
+      ayar-ins-code: ${ETF_AYAR_INS_CODE:68603452107668866}
+      narange-ins-code: ${ETF_NARANGE_INS_CODE:120079097679462}

@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGet, apiGetList, apiPost, apiPut } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export interface PendingExpense {
@@ -20,71 +19,24 @@ export interface PendingExpenseRequest {
 
 const BASE = '/api/v1/pending-expenses'
 
-export async function getPendingExpenses(): Promise<PendingExpense[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت هزینه‌ها')
-  const body: ApiResponse<PendingExpense[]> = await parseJson(res)
-  return body.data ?? []
+export function getPendingExpenses(): Promise<PendingExpense[]> {
+  return apiGetList<PendingExpense>(BASE, 'خطا در دریافت هزینه‌ها')
 }
 
-export async function getPendingExpensesTotal(): Promise<number> {
-  const res = await fetch(`${BASE}/total`, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت مجموع هزینه‌ها')
-  const body: ApiResponse<number> = await parseJson(res)
-  return body.data ?? 0
+export function getPendingExpensesTotal(): Promise<number> {
+  return apiGet<number>(`${BASE}/total`, 'خطا در دریافت مجموع هزینه‌ها').then((v) => v ?? 0)
 }
 
-export async function createPendingExpense(data: PendingExpenseRequest): Promise<PendingExpense> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد هزینه'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<PendingExpense> = await parseJson(res)
-  return body.data!
+export function createPendingExpense(data: PendingExpenseRequest): Promise<PendingExpense> {
+  return apiPost<PendingExpense>(BASE, data, 'خطا در ایجاد هزینه')
 }
 
-export async function updatePendingExpense(id: number, data: PendingExpenseRequest): Promise<PendingExpense> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش هزینه'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<PendingExpense> = await parseJson(res)
-  return body.data!
+export function updatePendingExpense(id: number, data: PendingExpenseRequest): Promise<PendingExpense> {
+  return apiPut<PendingExpense>(`${BASE}/${id}`, data, 'خطا در ویرایش هزینه')
 }
 
-export async function deletePendingExpense(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف هزینه'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deletePendingExpense(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف هزینه')
 }
 
 export function exportPendingExpensesCsv(): Promise<void> {

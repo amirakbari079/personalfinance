@@ -44,6 +44,9 @@ export default function JalaliDatePicker({
         placeholder={placeholder}
         containerClassName="w-full"
         inputClass="jalali-date-input cursor-pointer pr-10"
+        className="pf-jalali-calendar"
+        arrowClassName="pf-jalali-calendar"
+        zIndex={120}
         arrow={false}
       />
       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-accent/70 pointer-events-none" />

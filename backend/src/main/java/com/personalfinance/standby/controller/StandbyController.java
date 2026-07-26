@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/standby")
@@ -54,22 +53,12 @@ public class StandbyController {
     public ResponseEntity<ApiResponse<StandbyResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody StandbyRequest request) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(standbyService.update(id, request)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(standbyService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        try {
-            standbyService.delete(id);
-            return ResponseEntity.ok(ApiResponse.ok("کالای معوق حذف شد", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        standbyService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("کالای معوق حذف شد", null));
     }
 }

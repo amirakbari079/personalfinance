@@ -1,6 +1,6 @@
 # PersonalFinance Progress Log
 
-Last updated: 2026-07-08
+Last updated: 2026-07-15
 Current branch: `cursor/m1-auth-csv-jalali-theme`
 Base branch: `main`
 
@@ -31,30 +31,33 @@ Base branch: `main`
   - Balance aggregation API at `GET /api/v1/balance`.
   - Formula: `Net Worth = (Cash + Investments + StandBy + Receivables) − Monthly Installments − Pending Expenses`.
   - Dashboard page at `/` with category breakdown and net figure.
+- **M6.1 Value history (accounts + investments)**:
+  - Generic `value_snapshots` table (`V11`, backfill `V12`).
+  - CRUD snapshot API per account/investment; aggregate trend + cash-flow endpoints.
+  - Shared frontend history modal, trend chart, cash-flow card on accounts and investments pages.
+  - Branding: logo, favicon, AppShell metadata.
+  - Snapshot edit bugfix: form state sync, Jalali digit normalize, backend duplicate-date guard.
 
 ## Current state
 
-- **Phase 1 is complete** (M1 through M6).
-- Phase 2 (M7–M12) is not started.
+- **Phase 1 complete** (M1–M6).
+- **Phase 1.5 — History & Market Intelligence (Enterprise Investments)** in progress.
+- **Phase 2 (M7–M12) on hold** until M6.x milestones are complete.
 
-## Next task (for new session)
+## Current focus
 
-Implement **M7 — Product Catalogue & Counterparties** (Phase 2 start).
+Enterprise Investments: live market quotes (BTC, gold, ETFs), sidebar layout, auto toman valuation in investment form, navigation performance.
 
-### Scope
+## Next tasks (Phase 1.5)
 
-1. Backend modules `product` and `counterparty`.
-2. Flyway migrations for product and counterparty tables.
-3. CRUD + CSV export per module.
-4. Counterparty computed balance view (invoiced, received/paid, outstanding).
-5. Frontend pages, forms, API clients, nav items.
-
-### Explicitly out of scope
-
-- Inventory, invoices, receipts/payments (M8–M11).
-- Business dashboard (M12).
+1. ~~Fix snapshot edit duplicate-date bug~~ (done)
+2. Market data backend (`V13`, scheduler, `/api/v1/market/*`)
+3. Investments page: two-column layout + market sidebar + month mini charts
+4. InvestmentForm: live unit price, auto toman calc, manual override
+5. Performance: dynamic recharts import, route loading skeletons
 
 ## Notes for low-token next chats
 
-- Read only: `PROGRESS.md`, `ROADMAP.md`, `REQUIREMENTS.md` (Phase 2 sections).
-- Reuse Phase 1 module patterns; do not rescan entire repo.
+- Read only: `PROGRESS.md`, `ROADMAP.md`, `REQUIREMENTS.md`.
+- Reuse Phase 1 module patterns; market data lives in `backend/.../marketdata/`.
+- Do not start M7 (Product Catalogue) until M6.2–M6.6 are done.

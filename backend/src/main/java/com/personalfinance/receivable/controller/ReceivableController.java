@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/receivables")
@@ -42,36 +41,20 @@ public class ReceivableController {
     @PostMapping
     public ResponseEntity<ApiResponse<ReceivableResponse>> create(
             @Valid @RequestBody ReceivableRequest request) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.ok(receivableService.create(request)));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(receivableService.create(request)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ReceivableResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ReceivableRequest request) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(receivableService.update(id, request)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(receivableService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        try {
-            receivableService.delete(id);
-            return ResponseEntity.ok(ApiResponse.ok("طلب حذف شد", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        receivableService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("طلب حذف شد", null));
     }
 }

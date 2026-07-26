@@ -48,7 +48,7 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
     >
       <div className="luxury-modal">
         <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
-          {initial ? 'ویرایش هزینه معوق' : 'هزینه معوق جدید'}
+          {initial ? 'ویرایش هزینه برنامه‌ریزی‌شده' : 'هزینه برنامه‌ریزی‌شده جدید'}
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">

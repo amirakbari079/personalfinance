@@ -43,7 +43,41 @@ Phases are sequential; Phase 2 starts only after Phase 1 is complete and stable.
 
 ---
 
+## Phase 1.5 — History & Market Intelligence
+
+Phase 2 is **on hold** until Phase 1.5 is complete and stable.
+
+### M6.1 — Value History & Snapshot CRUD
+- Generic `value_snapshots` for accounts and investments
+- Per-entity snapshot CRUD; latest snapshot drives current balance/value
+- Aggregate trend + monthly cash-flow APIs and shared frontend history UI
+- **Status:** Done (snapshot edit bugfix included)
+
+### M6.2 — Market Data Infrastructure
+- `market_price_snapshots` table (Flyway V13)
+- Scheduled fetch from external providers (BTC, gold, ETFs, USD)
+- REST API: quotes, history, valuation calculator
+
+### M6.3 — Investments Page Market Sidebar
+- Two-column desktop layout (portfolio + market sidebar)
+- Live quote cards and month-to-date mini charts
+
+### M6.4 — Auto-Valuation in Investment Form
+- Live unit price pre-fill from market API
+- Auto Toman equivalent with manual override per asset type
+
+### M6.5 — ETF NAV Integration
+- Ayar and Narange fund prices via TSETMC/Rahavard adapters
+
+### M6.6 — Frontend Performance
+- Dynamic import for recharts; per-route loading states
+- Reduced initial JS bundle on accounts/investments routes
+
+---
+
 ## Phase 2 — Business Finance ("The One")
+
+**On hold** until Phase 1.5 (M6.2–M6.6) is complete.
 
 ### M7 — Product Catalogue & Counterparties
 - Product CRUD (code, name, unit, category, default purchase + sale prices)

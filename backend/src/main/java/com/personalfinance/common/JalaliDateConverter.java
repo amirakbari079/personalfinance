@@ -32,7 +32,8 @@ public class JalaliDateConverter {
      */
     public LocalDate toGregorian(String jalali) {
         if (jalali == null || jalali.isBlank()) return null;
-        String[] parts = jalali.split("/");
+        String normalized = normalizeToWesternDigits(jalali.trim());
+        String[] parts = normalized.split("/");
         if (parts.length != 3) {
             throw new IllegalArgumentException("Invalid Jalali date format: " + jalali);
         }
@@ -40,6 +41,23 @@ public class JalaliDateConverter {
         int month = Integer.parseInt(parts[1].trim());
         int day   = Integer.parseInt(parts[2].trim());
         return PersianDate.of(year, month, day).toGregorian();
+    }
+
+    /** Normalizes Persian/Arabic digits to Western digits for parsing. */
+    public String normalizeToWesternDigits(String input) {
+        if (input == null) return null;
+        StringBuilder out = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c >= '۰' && c <= '۹') {
+                out.append((char) ('0' + (c - '۰')));
+            } else if (c >= '٠' && c <= '٩') {
+                out.append((char) ('0' + (c - '٠')));
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
     }
 
     /**

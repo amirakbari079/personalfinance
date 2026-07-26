@@ -15,6 +15,7 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
   const [creditor, setCreditor] = useState(initial?.creditor ?? '')
   const [monthlyAmount, setMonthlyAmount] = useState(formatWithCommas(initial?.monthlyAmount?.toString() ?? '0'))
   const [totalInstallments, setTotalInstallments] = useState(initial?.totalInstallments?.toString() ?? '')
+  const [paidInstallments, setPaidInstallments] = useState(initial?.paidInstallments?.toString() ?? '0')
   const [startDate, setStartDate] = useState<string | null>(initial?.startDate ?? null)
   const [notes, setNotes] = useState(initial?.notes ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -36,6 +37,20 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
       setError('تاریخ شروع الزامی است')
       return
     }
+
+    let paidNum: number | undefined
+    if (initial) {
+      paidNum = parseInt(paidInstallments, 10)
+      if (isNaN(paidNum) || paidNum < 0) {
+        setError('اقساط پرداخت‌شده باید صفر یا بیشتر باشد')
+        return
+      }
+      if (paidNum > installmentsNum) {
+        setError('اقساط پرداخت‌شده نمی‌تواند بیشتر از تعداد کل اقساط باشد')
+        return
+      }
+    }
+
     setError(null)
     setSaving(true)
     try {
@@ -45,9 +60,10 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
         totalInstallments: installmentsNum,
         startDate,
         notes,
+        ...(initial ? { paidInstallments: paidNum } : {}),
       })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'خطا در ذخیره')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'خطا در ذخیره')
       setSaving(false)
     }
   }
@@ -63,7 +79,6 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
         </h2>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* Creditor */}
           <div>
             <label className="field-label">نام طلبکار / بانک</label>
             <input
@@ -77,7 +92,6 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
             />
           </div>
 
-          {/* Monthly amount + total installments */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="field-label">مبلغ قسط (تومان)</label>
@@ -105,13 +119,27 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
             </div>
           </div>
 
-          {/* Start date */}
+          {initial && (
+            <div>
+              <label className="field-label">اقساط پرداخت‌شده</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={paidInstallments}
+                onChange={e => setPaidInstallments(e.target.value.replace(/[^0-9]/g, ''))}
+                className="field-input tabular-nums"
+              />
+              <p className="text-[11px] text-text-muted mt-1">
+                برای اصلاح اشتباه در ثبت قسط، این عدد را کم یا زیاد کنید (۰ تا تعداد کل).
+              </p>
+            </div>
+          )}
+
           <div>
             <label className="field-label">تاریخ شروع قسط اول</label>
             <JalaliDatePicker value={startDate} onChange={setStartDate} />
           </div>
 
-          {/* Notes */}
           <div>
             <label className="field-label">
               یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
@@ -131,7 +159,6 @@ export default function LoanForm({ initial, onSave, onCancel }: Props) {
             </p>
           )}
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="submit"

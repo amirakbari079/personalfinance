@@ -36,11 +36,23 @@ export default {
         'status-error': 'var(--color-status-error)',
         'status-error-bg': 'var(--color-status-error-bg)',
         'status-error-border': 'var(--color-status-error-border)',
+        'status-success': 'var(--color-status-success)',
+        'status-success-bg': 'var(--color-status-success-bg)',
+        'status-success-border': 'var(--color-status-success-border)',
       },
       boxShadow: {
         luxury: 'var(--shadow-card)',
         modal: 'var(--shadow-modal)',
         gold: 'var(--shadow-gold)',
+      },
+      keyframes: {
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in-up': 'fade-in-up 0.35s ease-out both',
       },
     },
   },

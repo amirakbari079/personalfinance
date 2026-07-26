@@ -4,79 +4,44 @@ Persian RTL personal finance app — Spring Boot backend + Next.js frontend.
 
 ## Prerequisites
 
-- Java 21
+- Java 21+
 - Maven 3.9+
 - Node.js 20+
-- PostgreSQL 15+
+- PostgreSQL 15+ (`CREATE DATABASE personalfinance;`)
 
-## Database setup
+Credentials default to `postgres` / `110` (override with env vars — see `.env.example`).
 
-```sql
-CREATE DATABASE personalfinance;
-```
+## Quick start
 
-Update credentials in `backend/src/main/resources/application.yml` if needed (default: `postgres` / `110`).
+| Action | File |
+|--------|------|
+| **Start** | Double-click `start.bat` |
+| **Stop** | Double-click `stop.bat` |
 
-Flyway runs automatically on backend startup and applies all migrations.
+`start.bat` starts PostgreSQL (if the Windows service is stopped), then backend + frontend, waits until ready, and opens `http://localhost:3000`.
 
-## Default login (development)
+If start fails: check `logs/backend.log` (most common cause: Postgres not installed / service needs Admin once).
 
-| Field | Value |
+Logs: `logs/backend.log`, `logs/frontend.log`
+
+| Login | Value |
 |-------|-------|
 | Username | `admin` |
 | Password | `admin` |
 
-Set via migration `V7__set_dev_user_password.sql`. Change before any production deployment.
-
-## Run backend
+## Manual run
 
 ```bash
-cd backend
-mvn spring-boot:run
+# Backend → http://localhost:8080
+cd backend && mvn spring-boot:run
+
+# Frontend → http://localhost:3000
+cd frontend && npm install && npm run dev
 ```
 
-API: `http://localhost:8080/api/v1/`
+## Docs
 
-## Run frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-UI: `http://localhost:3000`
-
-Next.js rewrites `/api/*` to the backend (`frontend/next.config.ts`), so the browser sends cookies on the same origin.
-
-## Authentication
-
-- JWT stored in HttpOnly cookie (`token`)
-- Login: `POST /api/v1/auth/login`
-- Session check: `GET /api/v1/auth/me`
-- Logout: `POST /api/v1/auth/logout`
-- All other `/api/v1/**` endpoints require a valid token
-
-## CSV export (backup)
-
-Authenticated GET endpoints return UTF-8 CSV with BOM:
-
-| Entity | Endpoint |
-|--------|----------|
-| Accounts | `GET /api/v1/accounts/export` |
-| Investments | `GET /api/v1/investments/export` |
-| Incomes | `GET /api/v1/incomes/export` |
-| Loans | `GET /api/v1/loans/export` |
-| Pending expenses | `GET /api/v1/pending-expenses/export` |
-
-## Project docs
-
-- `REQUIREMENTS.md` — feature requirements
-- `ARCHITECTURE.md` — technical design
-- `ROADMAP.md` — milestone order (authoritative)
-
-## Current milestone status
-
-- **M1** — Foundation (auth, Jalali, CSV export, dev docs)
-- **M2–M4** — Accounts, Investments, Income, Loans, Pending expenses
-- **M5–M6** — Receivables, StandBy, Net Worth dashboard (not started)
+- `REQUIREMENTS.md` — features
+- `ARCHITECTURE.md` — design
+- `ROADMAP.md` — milestone order
+- `PROGRESS.md` — current status

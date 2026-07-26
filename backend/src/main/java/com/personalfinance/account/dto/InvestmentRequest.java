@@ -25,6 +25,9 @@ public class InvestmentRequest {
 
     private String notes;
 
+    /** Jalali date YYYY/MM/DD when toman value was recorded. Defaults to today if omitted. */
+    private String valueRecordedDate;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -42,4 +45,7 @@ public class InvestmentRequest {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getValueRecordedDate() { return valueRecordedDate; }
+    public void setValueRecordedDate(String valueRecordedDate) { this.valueRecordedDate = valueRecordedDate; }
 }

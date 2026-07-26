@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/loans")
@@ -54,37 +53,24 @@ public class LoanController {
     public ResponseEntity<ApiResponse<LoanResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody LoanRequest request) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(loanService.update(id, request)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(loanService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        try {
-            loanService.delete(id);
-            return ResponseEntity.ok(ApiResponse.ok("وام حذف شد", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        loanService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("وام حذف شد", null));
     }
 
     /** Records payment of the next (sequential) installment. */
     @PostMapping("/{id}/pay-next")
     public ResponseEntity<ApiResponse<LoanResponse>> payNext(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(loanService.payNextInstallment(id)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        } catch (IllegalStateException e) {
-            // Loan already fully paid → 409 Conflict
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(loanService.payNextInstallment(id)));
+    }
+
+    /** Undoes the last recorded installment payment. */
+    @PostMapping("/{id}/undo-last")
+    public ResponseEntity<ApiResponse<LoanResponse>> undoLast(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(loanService.undoLastInstallment(id)));
     }
 }

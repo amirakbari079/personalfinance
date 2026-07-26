@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/incomes")
@@ -54,22 +53,12 @@ public class IncomeController {
     public ResponseEntity<ApiResponse<IncomeResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody IncomeRequest request) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(incomeService.update(id, request)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(incomeService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        try {
-            incomeService.delete(id);
-            return ResponseEntity.ok(ApiResponse.ok("درآمد حذف شد", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        incomeService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("درآمد حذف شد", null));
     }
 }

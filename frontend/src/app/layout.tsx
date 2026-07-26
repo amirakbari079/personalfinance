@@ -14,6 +14,10 @@ const vazirmatn = Vazirmatn({
 export const metadata: Metadata = {
   title: 'حسابداری شخصی',
   description: 'مدیریت مالی شخصی',
+  icons: {
+    icon: '/logo.svg',
+    apple: '/logo.svg',
+  },
 }
 
 const themeScript = `

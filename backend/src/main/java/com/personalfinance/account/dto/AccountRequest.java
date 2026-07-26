@@ -22,6 +22,9 @@ public class AccountRequest {
     /** Optional key from frontend Iranian bank logo catalog. */
     private String bankCode;
 
+    /** Jalali date YYYY/MM/DD when balance was recorded. Defaults to today if omitted. */
+    private String balanceRecordedDate;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -36,4 +39,7 @@ public class AccountRequest {
 
     public String getBankCode() { return bankCode; }
     public void setBankCode(String bankCode) { this.bankCode = bankCode; }
+
+    public String getBalanceRecordedDate() { return balanceRecordedDate; }
+    public void setBalanceRecordedDate(String balanceRecordedDate) { this.balanceRecordedDate = balanceRecordedDate; }
 }

@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGet, apiGetList, apiPost, apiPut, apiRequest } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export type InstallmentStatus = 'PAID' | 'NEXT' | 'UPCOMING'
@@ -35,93 +34,46 @@ export interface LoanRequest {
   totalInstallments: number
   startDate: string
   notes: string
+  /** Optional; used on edit to correct payment progress. */
+  paidInstallments?: number
 }
 
 const BASE = '/api/v1/loans'
 
-export async function getLoans(): Promise<Loan[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت وام‌ها')
-  const body: ApiResponse<Loan[]> = await parseJson(res)
-  return body.data ?? []
+export function getLoans(): Promise<Loan[]> {
+  return apiGetList<Loan>(BASE, 'خطا در دریافت وام‌ها')
 }
 
-export async function getLoansMonthlyTotal(): Promise<number> {
-  const res = await fetch(`${BASE}/total-monthly`, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت مجموع اقساط ماهانه')
-  const body: ApiResponse<number> = await parseJson(res)
-  return body.data ?? 0
+export function getLoansMonthlyTotal(): Promise<number> {
+  return apiGet<number>(`${BASE}/total-monthly`, 'خطا در دریافت مجموع اقساط ماهانه').then((v) => v ?? 0)
 }
 
-export async function createLoan(data: LoanRequest): Promise<Loan> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد وام'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Loan> = await parseJson(res)
-  return body.data!
+export function createLoan(data: LoanRequest): Promise<Loan> {
+  return apiPost<Loan>(BASE, data, 'خطا در ایجاد وام')
 }
 
-export async function updateLoan(id: number, data: LoanRequest): Promise<Loan> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش وام'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Loan> = await parseJson(res)
-  return body.data!
+export function updateLoan(id: number, data: LoanRequest): Promise<Loan> {
+  return apiPut<Loan>(`${BASE}/${id}`, data, 'خطا در ویرایش وام')
 }
 
-export async function deleteLoan(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف وام'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deleteLoan(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف وام')
 }
 
 /** Records payment of the next (sequential) installment. */
-export async function payNextInstallment(id: number): Promise<Loan> {
-  const res = await fetch(`${BASE}/${id}/pay-next`, {
+export function payNextInstallment(id: number): Promise<Loan> {
+  return apiRequest<Loan>(`${BASE}/${id}/pay-next`, {
     method: 'POST',
-    credentials: 'include',
+    errorMessage: 'خطا در ثبت پرداخت قسط',
   })
-  if (!res.ok) {
-    let message = 'خطا در ثبت پرداخت قسط'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Loan> = await parseJson(res)
-  return body.data!
+}
+
+/** Undoes the last recorded installment payment. */
+export function undoLastInstallment(id: number): Promise<Loan> {
+  return apiRequest<Loan>(`${BASE}/${id}/undo-last`, {
+    method: 'POST',
+    errorMessage: 'خطا در برگرداندن قسط',
+  })
 }
 
 export function exportLoansCsv(): Promise<void> {

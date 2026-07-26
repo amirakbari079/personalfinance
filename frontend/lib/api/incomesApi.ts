@@ -1,5 +1,4 @@
-import type { ApiResponse } from './authApi'
-import { parseJson } from './authApi'
+import { apiDelete, apiGet, apiGetList, apiPost, apiPut } from './apiClient'
 import { downloadCsv } from '@/lib/csvExport'
 
 export type IncomeType = 'RECURRING' | 'ONE_OFF'
@@ -29,71 +28,24 @@ export interface IncomeRequest {
 
 const BASE = '/api/v1/incomes'
 
-export async function getIncomes(): Promise<Income[]> {
-  const res = await fetch(BASE, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت درآمدها')
-  const body: ApiResponse<Income[]> = await parseJson(res)
-  return body.data ?? []
+export function getIncomes(): Promise<Income[]> {
+  return apiGetList<Income>(BASE, 'خطا در دریافت درآمدها')
 }
 
-export async function getMonthlyTotal(): Promise<number> {
-  const res = await fetch(`${BASE}/total-monthly`, { credentials: 'include' })
-  if (!res.ok) throw new Error('خطا در دریافت مجموع درآمد ماهانه')
-  const body: ApiResponse<number> = await parseJson(res)
-  return body.data ?? 0
+export function getMonthlyTotal(): Promise<number> {
+  return apiGet<number>(`${BASE}/total-monthly`, 'خطا در دریافت مجموع درآمد ماهانه').then((v) => v ?? 0)
 }
 
-export async function createIncome(data: IncomeRequest): Promise<Income> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ایجاد درآمد'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Income> = await parseJson(res)
-  return body.data!
+export function createIncome(data: IncomeRequest): Promise<Income> {
+  return apiPost<Income>(BASE, data, 'خطا در ایجاد درآمد')
 }
 
-export async function updateIncome(id: number, data: IncomeRequest): Promise<Income> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    let message = 'خطا در ویرایش درآمد'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
-  const body: ApiResponse<Income> = await parseJson(res)
-  return body.data!
+export function updateIncome(id: number, data: IncomeRequest): Promise<Income> {
+  return apiPut<Income>(`${BASE}/${id}`, data, 'خطا در ویرایش درآمد')
 }
 
-export async function deleteIncome(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    let message = 'خطا در حذف درآمد'
-    try {
-      const err: ApiResponse<null> = await parseJson(res)
-      message = err.message ?? message
-    } catch { /* empty body */ }
-    throw new Error(message)
-  }
+export function deleteIncome(id: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}`, 'خطا در حذف درآمد')
 }
 
 export function exportIncomesCsv(): Promise<void> {

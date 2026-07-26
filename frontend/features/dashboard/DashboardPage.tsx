@@ -23,7 +23,7 @@ const DEDUCTION_ITEMS: {
   icon: string
 }[] = [
   { key: 'monthlyInstallments', label: 'اقساط ماهانه وام', href: '/loans', icon: '🏦' },
-  { key: 'pendingExpenses', label: 'هزینه‌های معوق', href: '/pending-expenses', icon: '⏳' },
+  { key: 'pendingExpenses', label: 'هزینه‌های برنامه‌ریزی‌شده', href: '/pending-expenses', icon: '⏳' },
 ]
 
 export default function DashboardPage() {

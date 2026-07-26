@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type Standby,
   type StandbyRequest,
@@ -15,9 +15,20 @@ import StandbyForm from './StandbyForm'
 import { Pencil, Trash2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import ListSortBar from '@/shared/ListSortBar'
+import {
+  BASE_SORT_OPTIONS,
+  DEFAULT_SORT,
+  DOMAIN_DATE_SORT_OPTIONS,
+  sortItems,
+  type SortOptionId,
+} from '@/utils/listSort'
+
+const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 
 export default function StandbyPage() {
   const [items, setItems] = useState<Standby[]>([])
+  const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
   const [total, setTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,6 +49,16 @@ export default function StandbyPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const sortedItems = useMemo(
+    () => sortItems(items, sortId, {
+      getName: (i) => i.itemLabel,
+      getAmount: (i) => i.totalValue,
+      getCreatedAt: (i) => i.createdAt,
+      getDate: (i) => i.dateAdded,
+    }),
+    [items, sortId],
+  )
 
   async function handleSave(data: StandbyRequest) {
     if (editing) {
@@ -86,13 +107,17 @@ export default function StandbyPage() {
         </p>
       )}
 
+      {items.length > 0 && (
+        <ListSortBar value={sortId} options={SORT_OPTIONS} onChange={setSortId} />
+      )}
+
       {items.length === 0 ? (
         <div className="text-center py-16 text-text-muted text-sm">
           هنوز کالایی ثبت نشده. اولین کالای معوق را اضافه کنید.
         </div>
       ) : (
         <div className="space-y-2">
-          {items.map(item => (
+          {sortedItems.map(item => (
             <div
               key={item.id}
               className="luxury-card px-5 py-4 flex items-center justify-between"

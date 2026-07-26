@@ -1,3 +1,9 @@
+import type { ApiResponse } from './apiClient'
+import { parseJson } from './apiClient'
+
+export type { ApiResponse }
+export { parseJson }
+
 export interface LoginRequest {
   username: string
   password: string
@@ -8,19 +14,7 @@ export interface LoginResponse {
   message: string
 }
 
-export interface ApiResponse<T> {
-  success: boolean
-  message: string | null
-  data: T | null
-}
-
 const BASE = '/api/v1'
-
-export async function parseJson<T>(res: Response): Promise<T> {
-  const text = await res.text()
-  if (!text) throw new Error('پاسخی از سرور دریافت نشد')
-  return JSON.parse(text) as T
-}
 
 export async function login(
   credentials: LoginRequest

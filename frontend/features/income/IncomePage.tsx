@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type Income,
   type IncomeRequest,
@@ -16,9 +16,20 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
 import { exportIncomesCsv } from '@/lib/api/incomesApi'
+import ListSortBar from '@/shared/ListSortBar'
+import {
+  BASE_SORT_OPTIONS,
+  DEFAULT_SORT,
+  DOMAIN_DATE_SORT_OPTIONS,
+  sortItems,
+  type SortOptionId,
+} from '@/utils/listSort'
+
+const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 
 export default function IncomePage() {
   const [incomes, setIncomes] = useState<Income[]>([])
+  const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
   const [monthlyTotal, setMonthlyTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,6 +50,16 @@ export default function IncomePage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const sortedIncomes = useMemo(
+    () => sortItems(incomes, sortId, {
+      getName: (i) => i.source,
+      getAmount: (i) => i.amount,
+      getCreatedAt: (i) => i.createdAt,
+      getDate: (i) => i.receivedDate,
+    }),
+    [incomes, sortId],
+  )
 
   async function handleSave(data: IncomeRequest) {
     if (editing) {
@@ -87,14 +108,17 @@ export default function IncomePage() {
         </p>
       )}
 
-      {/* Income list */}
+      {incomes.length > 0 && (
+        <ListSortBar value={sortId} options={SORT_OPTIONS} onChange={setSortId} />
+      )}
+
       {incomes.length === 0 ? (
         <div className="text-center py-16 text-text-muted text-sm">
           هنوز درآمدی ثبت نشده. اولین درآمد را اضافه کنید.
         </div>
       ) : (
         <div className="space-y-2">
-          {incomes.map(income => (
+          {sortedIncomes.map(income => (
             <div
               key={income.id}
               className="luxury-card px-5 py-4 flex items-center justify-between"

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
@@ -54,22 +53,12 @@ public class AccountController {
     public ResponseEntity<ApiResponse<AccountResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody AccountRequest request) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(accountService.update(id, request)));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(accountService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        try {
-            accountService.delete(id);
-            return ResponseEntity.ok(ApiResponse.ok("حساب حذف شد", null));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        accountService.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("حساب حذف شد", null));
     }
 }

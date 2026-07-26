@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type Receivable,
   type ReceivableRequest,
@@ -14,9 +14,20 @@ import ReceivableForm from './ReceivableForm'
 import { Pencil, Trash2 } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import ListSortBar from '@/shared/ListSortBar'
+import {
+  BASE_SORT_OPTIONS,
+  DEFAULT_SORT,
+  DOMAIN_DATE_SORT_OPTIONS,
+  sortItems,
+  type SortOptionId,
+} from '@/utils/listSort'
+
+const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 
 export default function ReceivablesPage() {
   const [receivables, setReceivables] = useState<Receivable[]>([])
+  const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -37,6 +48,16 @@ export default function ReceivablesPage() {
   useEffect(() => { load() }, [])
 
   const totalOutstanding = receivables.reduce((sum, r) => sum + r.outstanding, 0)
+
+  const sortedReceivables = useMemo(
+    () => sortItems(receivables, sortId, {
+      getName: (r) => r.debtorName,
+      getAmount: (r) => r.outstanding,
+      getCreatedAt: (r) => r.createdAt,
+      getDate: (r) => r.createdDate,
+    }),
+    [receivables, sortId],
+  )
 
   async function handleSave(data: ReceivableRequest) {
     if (editing) {
@@ -85,13 +106,17 @@ export default function ReceivablesPage() {
         </p>
       )}
 
+      {receivables.length > 0 && (
+        <ListSortBar value={sortId} options={SORT_OPTIONS} onChange={setSortId} />
+      )}
+
       {receivables.length === 0 ? (
         <div className="text-center py-16 text-text-muted text-sm">
           هنوز طلبی ثبت نشده. اولین طلب را اضافه کنید.
         </div>
       ) : (
         <div className="space-y-2">
-          {receivables.map(receivable => (
+          {sortedReceivables.map(receivable => (
             <div
               key={receivable.id}
               className="luxury-card px-5 py-4 flex items-center justify-between"
