@@ -3,6 +3,7 @@
 import type { SnapshotEntry } from '@/lib/api/historyApi'
 import type { EntityHistoryConfig } from './historyTypes'
 import { TrendingDown, TrendingUp, Minus, Pencil, Trash2 } from 'lucide-react'
+import StatusTag from '@/shared/StatusTag'
 
 interface Props {
   entries: SnapshotEntry[]
@@ -56,7 +57,7 @@ export default function EntityHistoryList({
         return (
           <div
             key={entry.id}
-            className={`luxury-card px-4 py-3 flex items-center justify-between gap-3 ${
+            className={`glass-card px-4 py-3 flex items-center justify-between gap-3 ${
               entry.isLatest ? 'border-brand-accent/35 ring-1 ring-brand-accent/15' : ''
             }`}
           >
@@ -64,9 +65,9 @@ export default function EntityHistoryList({
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm text-text-primary tabular-nums">{entry.recordedDateJalali}</p>
                 {entry.isLatest && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-brand-accent/12 text-brand-accent border border-brand-accent/25">
+                  <StatusTag variant="primary" className="text-[10px]">
                     {config.latestLabel}
-                  </span>
+                  </StatusTag>
                 )}
               </div>
               {entry.notes && (

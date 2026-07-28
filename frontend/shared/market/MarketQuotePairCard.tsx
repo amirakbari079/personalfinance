@@ -6,6 +6,7 @@ import MarketHistoryMiniChart from './MarketHistoryMiniChart'
 import type { MarketHistoryPoint } from '@/lib/api/marketApi'
 import type { MarketSymbol } from '@/lib/api/marketApi'
 import { Fragment } from 'react'
+import StatusTag from '@/shared/StatusTag'
 
 interface Props {
   title: string
@@ -28,16 +29,10 @@ function QuoteCell({ quote }: { quote: MarketQuote }) {
         {formatMarketValue(Number(quote.value), quote.currency)}
       </p>
       {change != null && (
-        <span
-          className={`inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-            changePositive
-              ? 'text-status-success bg-status-success/10'
-              : 'text-status-error bg-status-error-bg'
-          }`}
-        >
+        <StatusTag variant={changePositive ? 'success' : 'error'} className="mt-1 text-[10px]">
           {changePositive ? '+' : ''}
           {change.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪
-        </span>
+        </StatusTag>
       )}
     </div>
   )
@@ -57,7 +52,7 @@ export default function MarketQuotePairCard({
   const chartQuote = chartSymbol ? quotes.find((q) => q.symbol === chartSymbol) ?? quotes[0] : quotes[0]
 
   return (
-    <div className="luxury-card p-4 space-y-3">
+    <div className="glass-card p-4 space-y-3">
       {title ? <p className="text-[11px] text-text-muted">{title}</p> : null}
 
       <div className="flex items-start">

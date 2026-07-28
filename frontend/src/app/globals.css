@@ -8,34 +8,47 @@
 */
 /* ─── Light theme ─── */
 :root {
-  --color-brand-dark: #10162a;
-  --color-brand-darker: #090e1d;
-  --color-brand-mid: #1d2744;
-  --color-brand-accent: #5b7cff;
-  --color-brand-accent-hover: #6d8bff;
-  --color-surface: #f3f6ff;
+  --color-brand-dark: #0b0f1a;
+  --color-brand-darker: #060810;
+  --color-brand-mid: #151c2e;
+  --color-brand-accent: #3b59ff;
+  --color-brand-accent-hover: #5570ff;
+  --color-secondary: #8b5cf6;
+  --color-secondary-hover: #a78bfa;
+  --color-surface: #f0f2f8;
   --color-surface-card: #ffffff;
-  --color-surface-muted: #d8e1f3;
-  --color-surface-elevated: #eef3ff;
-  --color-text-primary: #101a34;
-  --color-text-muted: #5f6f95;
-  --color-text-on-dark: #eef3ff;
-  --color-text-on-accent: #f8fbff;
-  --color-status-error: #cf3f57;
-  --color-status-error-bg: #fff0f3;
-  --color-status-error-border: #ffd2db;
-  --color-status-success: #1f9d6a;
-  --color-status-success-bg: #ecfbf4;
-  --color-status-success-border: #b8ecd4;
-  --shadow-card: 0 8px 30px rgba(16, 26, 52, 0.09), inset 0 1px 0 rgba(109, 139, 255, 0.18);
-  --shadow-modal: 0 24px 72px rgba(16, 26, 52, 0.22), 0 0 0 1px rgba(91, 124, 255, 0.22);
-  --shadow-accent: 0 8px 22px rgba(91, 124, 255, 0.32);
+  --color-surface-muted: #d4dae8;
+  --color-surface-elevated: #e8ecf6;
+  --color-glass: rgba(255, 255, 255, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.5);
+  --color-text-primary: #0f1525;
+  --color-text-muted: #5a6480;
+  --color-text-on-dark: #eef1ff;
+  --color-text-on-accent: #ffffff;
+  --color-status-error: #f43f5e;
+  --color-status-error-bg: rgba(244, 63, 94, 0.1);
+  --color-status-error-border: rgba(244, 63, 94, 0.28);
+  --color-status-success: #22c55e;
+  --color-status-success-bg: rgba(34, 197, 94, 0.1);
+  --color-status-success-border: rgba(34, 197, 94, 0.28);
+  --color-status-warning: #f59e0b;
+  --color-status-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-status-warning-border: rgba(245, 158, 11, 0.28);
+  --shadow-card: 0 4px 24px rgba(15, 21, 37, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --shadow-modal: 0 24px 64px rgba(15, 21, 37, 0.18), 0 0 0 1px rgba(59, 89, 255, 0.12);
+  --shadow-accent: 0 8px 24px rgba(59, 89, 255, 0.3);
   --shadow-gold: var(--shadow-accent);
-  --shadow-header: 0 10px 26px rgba(16, 26, 52, 0.16);
-  --bg-gradient: radial-gradient(ellipse 90% 60% at 50% -10%, rgba(91, 124, 255, 0.16), transparent 58%);
+  --shadow-header: 0 1px 0 rgba(15, 21, 37, 0.06);
+  --color-header-bg: #ffffff;
+  --color-header-border: rgba(15, 21, 37, 0.08);
+  --color-header-text: #0f1525;
+  --color-nav-pill-bg: #f0f2f8;
+  --color-nav-pill-border: rgba(15, 21, 37, 0.06);
+  --bg-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 89, 255, 0.08), transparent 60%);
   --radius-sm: 0.5rem;
-  --radius-md: 0.5625rem;
-  --radius-lg: 0.75rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --modal-max-width: 35rem;
   --modal-padding: 1.75rem;
   --font-weight-body: 400;
@@ -56,34 +69,47 @@
 
 /* ─── Dark theme (default) ─── */
 .dark {
-  --color-brand-dark: #070b1a;
-  --color-brand-darker: #040713;
-  --color-brand-mid: #16213d;
-  --color-brand-accent: #7aa2ff;
-  --color-brand-accent-hover: #91b3ff;
-  --color-surface: #090f1f;
-  --color-surface-card: #111a30;
-  --color-surface-muted: #223257;
-  --color-surface-elevated: #172443;
-  --color-text-primary: #e8efff;
-  --color-text-muted: #92a7d1;
-  --color-text-on-dark: #eef3ff;
-  --color-text-on-accent: #0b142a;
-  --color-status-error: #ff7b95;
-  --color-status-error-bg: rgba(255, 123, 149, 0.12);
-  --color-status-error-border: rgba(255, 123, 149, 0.34);
-  --color-status-success: #5ee4a8;
-  --color-status-success-bg: rgba(94, 228, 168, 0.1);
-  --color-status-success-border: rgba(94, 228, 168, 0.32);
-  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(145, 179, 255, 0.12);
-  --shadow-modal: 0 40px 104px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(122, 162, 255, 0.25);
-  --shadow-accent: 0 10px 26px rgba(122, 162, 255, 0.34);
+  --color-brand-dark: #0b0f1a;
+  --color-brand-darker: #060810;
+  --color-brand-mid: #151c2e;
+  --color-brand-accent: #3b59ff;
+  --color-brand-accent-hover: #5570ff;
+  --color-secondary: #8b5cf6;
+  --color-secondary-hover: #a78bfa;
+  --color-surface: #0b0b0f;
+  --color-surface-card: rgba(255, 255, 255, 0.04);
+  --color-surface-muted: rgba(255, 255, 255, 0.08);
+  --color-surface-elevated: rgba(255, 255, 255, 0.06);
+  --color-glass: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-text-primary: #f0f2ff;
+  --color-text-muted: #7a84a8;
+  --color-text-on-dark: #eef1ff;
+  --color-text-on-accent: #ffffff;
+  --color-status-error: #f43f5e;
+  --color-status-error-bg: rgba(244, 63, 94, 0.12);
+  --color-status-error-border: rgba(244, 63, 94, 0.32);
+  --color-status-success: #22c55e;
+  --color-status-success-bg: rgba(34, 197, 94, 0.12);
+  --color-status-success-border: rgba(34, 197, 94, 0.32);
+  --color-status-warning: #fbbf24;
+  --color-status-warning-bg: rgba(251, 191, 36, 0.12);
+  --color-status-warning-border: rgba(251, 191, 36, 0.32);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-modal: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(59, 89, 255, 0.2);
+  --shadow-accent: 0 8px 24px rgba(59, 89, 255, 0.35);
   --shadow-gold: var(--shadow-accent);
-  --shadow-header: 0 14px 34px rgba(0, 0, 0, 0.46);
-  --bg-gradient: radial-gradient(ellipse 90% 60% at 50% -10%, rgba(122, 162, 255, 0.22), transparent 58%);
+  --shadow-header: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --color-header-bg: color-mix(in srgb, var(--color-brand-dark) 94%, var(--color-brand-accent) 6%);
+  --color-header-border: color-mix(in srgb, var(--color-brand-accent) 14%, transparent);
+  --color-header-text: #eef1ff;
+  --color-nav-pill-bg: color-mix(in srgb, var(--color-surface-muted) 55%, transparent);
+  --color-nav-pill-border: color-mix(in srgb, var(--color-glass-border) 80%, transparent);
+  --bg-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 89, 255, 0.18), transparent 60%);
   --radius-sm: 0.5rem;
-  --radius-md: 0.5625rem;
-  --radius-lg: 0.75rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --modal-max-width: 35rem;
   --modal-padding: 1.75rem;
   --font-weight-body: 400;
@@ -177,6 +203,20 @@
     box-shadow: var(--shadow-accent);
   }
 
+  .btn-secondary {
+    @apply text-sm px-4 py-2 transition-all duration-200;
+    font-weight: var(--font-weight-label);
+    border-radius: var(--radius-md);
+    color: var(--color-secondary);
+    background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 28%, transparent);
+  }
+
+  .btn-secondary:hover {
+    background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+    border-color: color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  }
+
   .btn-ghost {
     @apply px-4 py-2 text-sm text-text-muted hover:text-text-primary border border-surface-muted transition-colors;
     border-radius: var(--radius-md);
@@ -205,25 +245,129 @@
     border-color: color-mix(in srgb, var(--color-brand-accent) 35%, transparent);
   }
 
-  .luxury-card {
-    @apply border shadow-luxury;
+  .luxury-card,
+  .glass-card {
     border-radius: var(--radius-lg);
-    border-color: color-mix(in srgb, var(--color-surface-muted) 88%, transparent);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--color-surface-card) 96%, var(--color-brand-accent) 4%), var(--color-surface-card));
+    border: 1px solid var(--color-glass-border);
+    background: var(--color-glass);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .glass-card:hover,
+  .luxury-card:hover {
+    border-color: color-mix(in srgb, var(--color-brand-accent) 25%, var(--color-glass-border));
   }
 
   .app-header-glass {
-    border-bottom-color: color-mix(in srgb, var(--color-surface-muted) 68%, transparent);
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-surface-card) 58%, transparent),
-        color-mix(in srgb, var(--color-surface-card) 42%, transparent)
-      );
-    backdrop-filter: blur(18px) saturate(145%);
-    -webkit-backdrop-filter: blur(18px) saturate(145%);
+    border-bottom: 1px solid var(--color-header-border);
+    background: var(--color-header-bg);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     box-shadow: var(--shadow-header);
+    color: var(--color-header-text);
+  }
+
+  .app-nav-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    border-radius: 999px;
+    background: var(--color-nav-pill-bg);
+    border: 1px solid var(--color-nav-pill-border);
+    /* Keep scrollbar hidden so hover never shifts layout */
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .app-nav-pill::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .app-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+    /* Same weight always — prevents hover/active width jump */
+    font-weight: 500;
+    color: var(--color-text-muted);
+    background: transparent;
+    box-shadow: none;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .app-nav-link:hover {
+    color: var(--color-text-primary);
+    background: color-mix(in srgb, var(--color-surface-muted) 70%, transparent);
+  }
+
+  .app-nav-link--active,
+  .app-nav-link--active:hover {
+    color: var(--color-text-on-accent);
+    background: var(--color-brand-accent);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-brand-accent) 28%, transparent);
+  }
+
+  .status-tag {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs rounded-full;
+    font-weight: var(--font-weight-label);
+  }
+
+  .tag-primary {
+    color: var(--color-brand-accent);
+    background: color-mix(in srgb, var(--color-brand-accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-brand-accent) 28%, transparent);
+  }
+
+  .tag-secondary {
+    color: var(--color-secondary);
+    background: color-mix(in srgb, var(--color-secondary) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 28%, transparent);
+  }
+
+  .tag-success {
+    color: var(--color-status-success);
+    background: var(--color-status-success-bg);
+    border: 1px solid var(--color-status-success-border);
+  }
+
+  .tag-error {
+    color: var(--color-status-error);
+    background: var(--color-status-error-bg);
+    border: 1px solid var(--color-status-error-border);
+  }
+
+  .tag-warning {
+    color: var(--color-status-warning);
+    background: var(--color-status-warning-bg);
+    border: 1px solid var(--color-status-warning-border);
+  }
+
+  .tag-neutral {
+    color: var(--color-text-muted);
+    background: color-mix(in srgb, var(--color-surface-muted) 60%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-glass-border) 80%, transparent);
+  }
+
+  .stat-cell {
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    background: color-mix(in srgb, var(--color-glass) 80%, var(--color-surface-elevated) 20%);
+    border: 1px solid var(--color-glass-border);
   }
 
   .luxury-modal-backdrop {
@@ -233,11 +377,13 @@
   }
 
   .luxury-modal {
-    @apply bg-surface-card border border-surface-muted w-full shadow-modal;
+    @apply border w-full shadow-modal;
     max-width: var(--modal-max-width);
     border-radius: var(--radius-lg);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--color-surface-card) 95%, var(--color-brand-accent) 5%), var(--color-surface-card));
+    border-color: var(--color-glass-border);
+    background: var(--color-glass);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
   }
 
   .luxury-modal--form {
@@ -298,9 +444,8 @@
 
   .text-section-label {
     font-weight: var(--font-weight-label);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
   }
 
   .text-amount {

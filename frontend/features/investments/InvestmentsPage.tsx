@@ -19,8 +19,10 @@ import {
 } from '@/lib/api/historyApi'
 import InvestmentForm from './InvestmentForm'
 import InvestmentHistoryModal from './InvestmentHistoryModal'
-import { Pencil, Trash2, History } from 'lucide-react'
+import { Pencil, Trash2, History, TrendingUp, Coins, Bitcoin, CircleDollarSign, FolderOpen } from 'lucide-react'
 import PageHeader from '@/shared/PageHeader'
+import ListIcon from '@/shared/ListIcon'
+import StatusTag from '@/shared/StatusTag'
 import { exportInvestmentsCsv } from '@/lib/api/investmentsApi'
 import CashFlowSummaryCard from '@/shared/history/CashFlowSummaryCard'
 import TrendLineChart from '@/shared/history/TrendLineChartLazy'
@@ -175,15 +177,15 @@ export default function InvestmentsPage() {
               {sortedInvestments.map(investment => (
                 <div
                   key={investment.id}
-                  className="luxury-card px-5 py-4 flex items-center justify-between"
+                  className="glass-card px-5 py-4 flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-brand-accent text-base">{typeIcon(investment.assetType)}</span>
-                    </div>
+                    <InvestmentTypeIcon type={investment.assetType} />
                     <div>
                       <p className="text-sm text-item-title text-text-primary">{investment.name}</p>
-                      <p className="text-xs text-text-muted mt-0.5">{INVESTMENT_TYPE_LABELS[investment.assetType]}</p>
+                      <StatusTag variant="secondary" className="mt-1 text-[10px]">
+                        {INVESTMENT_TYPE_LABELS[investment.assetType]}
+                      </StatusTag>
                     </div>
                   </div>
 
@@ -256,13 +258,13 @@ export default function InvestmentsPage() {
   )
 }
 
-function typeIcon(type: Investment['assetType']): string {
-  const icons: Record<Investment['assetType'], string> = {
-    STOCK:            '📈',
-    GOLD:             '🪙',
-    CRYPTO:           '₿',
-    FOREIGN_CURRENCY: '💱',
-    OTHER:            '📁',
-  }
-  return icons[type]
+function InvestmentTypeIcon({ type }: { type: Investment['assetType'] }) {
+  const icons = {
+    STOCK: TrendingUp,
+    GOLD: Coins,
+    CRYPTO: Bitcoin,
+    FOREIGN_CURRENCY: CircleDollarSign,
+    OTHER: FolderOpen,
+  } as const
+  return <ListIcon icon={icons[type]} variant="primary" />
 }

@@ -4,6 +4,7 @@ import { type FormEvent, useState } from 'react'
 import type { PendingExpense, PendingExpenseRequest } from '@/lib/api/pendingExpensesApi'
 import { formatWithCommas, stripCommas } from '@/utils/numberFormat'
 import JalaliDatePicker from '@/shared/JalaliDatePicker'
+import FormModalShell from '@/shared/FormModalShell'
 
 interface Props {
   initial: PendingExpense | null
@@ -42,91 +43,60 @@ export default function PendingExpenseForm({ initial, onSave, onCancel }: Props)
   }
 
   return (
-    <div
-      className="luxury-modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    <FormModalShell
+      title={initial ? 'ویرایش هزینه برنامه‌ریزی‌شده' : 'هزینه برنامه‌ریزی‌شده جدید'}
+      onClose={onCancel}
+      onSubmit={handleSubmit}
+      error={error}
+      saving={saving}
+      submitLabel={initial ? 'ذخیره تغییرات' : 'افزودن هزینه'}
+      submitDisabled={!label.trim()}
     >
-      <div className="luxury-modal">
-        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
-          {initial ? 'ویرایش هزینه برنامه‌ریزی‌شده' : 'هزینه برنامه‌ریزی‌شده جدید'}
-        </h2>
-
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* Label */}
-          <div>
-            <label className="field-label">عنوان هزینه</label>
-            <input
-              type="text"
-              value={label}
-              onChange={e => setLabel(e.target.value)}
-              required
-              autoFocus
-              placeholder="مثلاً: بیمه خودرو، تعمیرات، خرید لوازم"
-              className="field-input"
-            />
-          </div>
-
-          {/* Amount */}
-          <div>
-            <label className="field-label">مبلغ برنامه‌ریزی‌شده (تومان)</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={plannedAmount}
-              onChange={e => setPlannedAmount(formatWithCommas(e.target.value))}
-              required
-              placeholder="0"
-              className="field-input tabular-nums"
-            />
-          </div>
-
-          {/* Due date */}
-          <div>
-            <label className="field-label">
-              تاریخ سررسید <span className="text-text-muted font-normal">(اختیاری)</span>
-            </label>
-            <JalaliDatePicker value={dueDate} onChange={setDueDate} />
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="field-label">
-              یادداشت / توضیح برای تحلیل <span className="text-text-muted font-normal">(اختیاری)</span>
-            </label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={2}
-              placeholder="مثال: بیمه شخص ثالث سالانه / هزینه تعمیرات ضروری خودرو"
-              className="field-input resize-none"
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5">
-              {error}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={saving || !label.trim()}
-              className="flex-1 btn-primary py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'در حال ذخیره...' : (initial ? 'ذخیره تغییرات' : 'افزودن هزینه')}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="btn-ghost"
-            >
-              انصراف
-            </button>
-          </div>
-        </form>
+      <div>
+        <label className="field-label">عنوان هزینه</label>
+        <input
+          type="text"
+          value={label}
+          onChange={e => setLabel(e.target.value)}
+          required
+          autoFocus
+          placeholder="مثلاً: بیمه خودرو، تعمیرات"
+          className="field-input"
+        />
       </div>
-    </div>
+
+      <div>
+        <label className="field-label">مبلغ برنامه‌ریزی‌شده (تومان)</label>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={plannedAmount}
+          onChange={e => setPlannedAmount(formatWithCommas(e.target.value))}
+          required
+          placeholder="0"
+          className="field-input tabular-nums"
+        />
+      </div>
+
+      <div>
+        <label className="field-label">
+          تاریخ سررسید <span className="text-text-muted font-normal">(اختیاری)</span>
+        </label>
+        <JalaliDatePicker value={dueDate} onChange={setDueDate} />
+      </div>
+
+      <div>
+        <label className="field-label">
+          یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
+        </label>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          rows={2}
+          placeholder="مثال: بیمه شخص ثالث سالانه"
+          className="field-input resize-none"
+        />
+      </div>
+    </FormModalShell>
   )
 }

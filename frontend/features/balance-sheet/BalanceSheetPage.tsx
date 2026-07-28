@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { formatToman } from '@/utils/formatToman'
 import CsvExportButton from '@/shared/CsvExportButton'
+import PageHeader from '@/shared/PageHeader'
+import StatusTag from '@/shared/StatusTag'
 import { exportAiPortfolioJson } from '@/lib/aiExport'
 import { useBalanceSheetData } from './useBalanceSheetData'
 import BalanceSummaryPanel from './BalanceSummaryPanel'
@@ -36,18 +38,18 @@ export default function BalanceSheetPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-brand-accent/70 text-section-label">
-            Balance Sheet
-          </p>
-        </div>
-        <h1 className="text-3xl text-page-title text-text-primary tracking-tight">ترازنامه</h1>
-        <p className="text-sm text-text-muted mt-2">دارایی‌ها و بدهی‌ها</p>
-        <div className="mt-4 flex justify-center">
-          <AiExportButton />
-        </div>
-        <div className="mt-6 gold-line w-16 mx-auto" />
+      <PageHeader
+        title="ترازنامه"
+        subtitle="دارایی‌ها و بدهی‌ها"
+      />
+
+      <div className="mb-8 flex justify-start">
+        <CsvExportButton
+          onExport={exportAiPortfolioJson}
+          label="خروجی AI"
+          title="دانلود فایل JSON یکپارچه برای تحلیل با هوش مصنوعی"
+          className="btn-export px-4"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -76,17 +78,6 @@ export default function BalanceSheetPage() {
   )
 }
 
-function AiExportButton() {
-  return (
-    <CsvExportButton
-      onExport={exportAiPortfolioJson}
-      label="خروجی AI"
-      title="دانلود فایل JSON یکپارچه برای تحلیل با هوش مصنوعی"
-      className="btn-export px-4"
-    />
-  )
-}
-
 interface BalanceColumnProps {
   title: string
   items: BalanceLineItem[]
@@ -100,26 +91,13 @@ function BalanceColumn({ title, items, total, categoryOrder, variant }: BalanceC
   const grouped = groupByCategory(items, categoryOrder)
 
   return (
-    <section
-      className={`rounded-xl border p-4 ${
-        isAsset
-          ? 'border-status-success-border bg-status-success-bg/30'
-          : 'border-status-error-border bg-status-error-bg/30'
-      }`}
-    >
+    <section className={`glass-card p-4 ${isAsset ? 'border-status-success-border/40' : 'border-status-error-border/40'}`}>
       <div className="flex items-center justify-between mb-4 px-1">
-        <h2
-          className={`text-section-label ${
-            isAsset ? 'text-status-success' : 'text-status-error'
-          }`}
-        >
-          {title}
-        </h2>
-        <span
-          className={`text-sm text-amount ${
-            isAsset ? 'text-status-success' : 'text-status-error'
-          }`}
-        >
+        <div className="flex items-center gap-2">
+          <h2 className="text-section-label text-text-primary">{title}</h2>
+          <StatusTag variant={isAsset ? 'success' : 'error'}>{isAsset ? 'دارایی' : 'بدهی'}</StatusTag>
+        </div>
+        <span className={`text-sm text-amount ${isAsset ? 'text-status-success' : 'text-status-error'}`}>
           {isAsset ? '' : '− '}
           {formatToman(total)}
         </span>
@@ -159,13 +137,13 @@ function BalanceRow({
   return (
     <Link
       href={item.href}
-      className="luxury-card px-4 py-3 flex items-center justify-between hover:border-brand-accent/30 transition-colors"
+      className="glass-card px-4 py-3 flex items-center justify-between group"
     >
       <div className="flex items-center gap-2 min-w-0">
         <span className="text-sm text-text-primary truncate">{item.name}</span>
-        <span className="text-[10px] text-text-muted bg-surface-muted/60 px-2 py-0.5 rounded-full flex-shrink-0">
+        <StatusTag variant="neutral" className="text-[10px] flex-shrink-0">
           {item.categoryLabel}
-        </span>
+        </StatusTag>
       </div>
       <span
         className={`text-sm text-amount flex-shrink-0 mr-2 ${

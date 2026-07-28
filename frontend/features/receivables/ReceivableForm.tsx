@@ -4,6 +4,7 @@ import { type FormEvent, useState } from 'react'
 import type { Receivable, ReceivableRequest } from '@/lib/api/receivablesApi'
 import { formatWithCommas, stripCommas } from '@/utils/numberFormat'
 import JalaliDatePicker from '@/shared/JalaliDatePicker'
+import FormModalShell from '@/shared/FormModalShell'
 
 interface Props {
   initial: Receivable | null
@@ -57,100 +58,74 @@ export default function ReceivableForm({ initial, onSave, onCancel }: Props) {
   }
 
   return (
-    <div
-      className="luxury-modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    <FormModalShell
+      title={initial ? 'ویرایش طلب' : 'طلب جدید'}
+      onClose={onCancel}
+      onSubmit={handleSubmit}
+      error={error}
+      saving={saving}
+      submitLabel={initial ? 'ذخیره تغییرات' : 'افزودن طلب'}
+      submitDisabled={!debtorName.trim()}
     >
-      <div className="luxury-modal">
-        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
-          {initial ? 'ویرایش طلب' : 'طلب جدید'}
-        </h2>
-
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <div>
-            <label className="field-label">نام بدهکار</label>
-            <input
-              type="text"
-              value={debtorName}
-              onChange={e => setDebtorName(e.target.value)}
-              required
-              autoFocus
-              placeholder="مثلاً: علی رضایی، شرکت الف"
-              className="field-input"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="field-label">مبلغ اصلی (تومان)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={originalAmount}
-                onChange={e => setOriginalAmount(formatWithCommas(e.target.value))}
-                required
-                placeholder="0"
-                className="field-input tabular-nums"
-              />
-            </div>
-            <div>
-              <label className="field-label">مبلغ دریافتی (تومان)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={receivedAmount}
-                onChange={e => setReceivedAmount(formatWithCommas(e.target.value))}
-                required
-                placeholder="0"
-                className="field-input tabular-nums"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="field-label">
-              تاریخ ایجاد بدهی <span className="text-text-muted font-normal">(اختیاری)</span>
-            </label>
-            <JalaliDatePicker value={createdDate} onChange={setCreatedDate} />
-          </div>
-
-          <div>
-            <label className="field-label">
-              یادداشت / توضیح برای تحلیل <span className="text-text-muted font-normal">(اختیاری)</span>
-            </label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={2}
-              placeholder="مثال: طلب از فروش ماشین / پیش‌پرداخت پروژه کاری"
-              className="field-input resize-none"
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5">
-              {error}
-            </p>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={saving || !debtorName.trim()}
-              className="flex-1 btn-primary py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'در حال ذخیره...' : (initial ? 'ذخیره تغییرات' : 'افزودن طلب')}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="btn-ghost"
-            >
-              انصراف
-            </button>
-          </div>
-        </form>
+      <div>
+        <label className="field-label">نام بدهکار</label>
+        <input
+          type="text"
+          value={debtorName}
+          onChange={e => setDebtorName(e.target.value)}
+          required
+          autoFocus
+          placeholder="مثلاً: علی رضایی، شرکت الف"
+          className="field-input"
+        />
       </div>
-    </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="field-label">مبلغ اصلی (تومان)</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={originalAmount}
+            onChange={e => setOriginalAmount(formatWithCommas(e.target.value))}
+            required
+            placeholder="0"
+            className="field-input tabular-nums"
+          />
+        </div>
+        <div>
+          <label className="field-label">مبلغ دریافتی (تومان)</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={receivedAmount}
+            onChange={e => setReceivedAmount(formatWithCommas(e.target.value))}
+            required
+            placeholder="0"
+            className="field-input tabular-nums"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="field-label">
+          تاریخ ایجاد بدهی <span className="text-text-muted font-normal">(اختیاری)</span>
+        </label>
+        <JalaliDatePicker value={createdDate} onChange={setCreatedDate} />
+      </div>
+
+      <div>
+        <label className="field-label">
+          یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
+        </label>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          rows={2}
+          placeholder="مثال: طلب از فروش ماشین"
+          className="field-input resize-none"
+        />
+      </div>
+    </FormModalShell>
   )
 }

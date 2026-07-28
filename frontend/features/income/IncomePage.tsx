@@ -12,9 +12,11 @@ import {
   deleteIncome,
 } from '@/lib/api/incomesApi'
 import IncomeForm from './IncomeForm'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Banknote } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import ListIcon from '@/shared/ListIcon'
+import StatusTag from '@/shared/StatusTag'
 import { exportIncomesCsv } from '@/lib/api/incomesApi'
 import ListSortBar from '@/shared/ListSortBar'
 import {
@@ -121,18 +123,18 @@ export default function IncomePage() {
           {sortedIncomes.map(income => (
             <div
               key={income.id}
-              className="luxury-card px-5 py-4 flex items-center justify-between"
+              className="glass-card px-5 py-4 flex items-center justify-between group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand-accent text-base">💰</span>
-                </div>
+                <ListIcon icon={Banknote} variant="success" />
                 <div>
                   <p className="text-sm text-item-title text-text-primary">{income.source}</p>
-                  <p className="text-xs text-text-muted mt-0.5">
+                  <StatusTag variant="secondary" className="mt-1 text-[10px]">
                     {INCOME_TYPE_LABELS[income.incomeType]}
-                    {income.receivedDate && ` • ${formatJalali(income.receivedDate)}`}
-                  </p>
+                  </StatusTag>
+                  {income.receivedDate && (
+                    <p className="text-xs text-text-muted mt-0.5">{formatJalali(income.receivedDate)}</p>
+                  )}
                 </div>
               </div>
 

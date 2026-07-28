@@ -28,7 +28,7 @@ export default function MarketReferencePrices({
   const hasMissing = symbols.some((sym) => !quotes.find((q) => q.symbol === sym))
 
   return (
-    <div className="rounded-lg border border-surface-muted bg-surface-muted/30 p-3 space-y-2">
+    <div className="glass-card p-3 space-y-2">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] text-text-muted">{title}</p>
         {onRefresh && (

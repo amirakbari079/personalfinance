@@ -2,6 +2,7 @@
 
 import type { CashFlowSummary } from '@/lib/api/historyApi'
 import { ArrowDownLeft, ArrowUpRight, Minus } from 'lucide-react'
+import StatusTag from '@/shared/StatusTag'
 
 interface Props {
   data: CashFlowSummary | null
@@ -12,7 +13,7 @@ interface Props {
 export default function CashFlowSummaryCard({ data, formatValue, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className="luxury-card p-6 flex items-center justify-center h-36">
+      <div className="glass-card p-6 flex items-center justify-center h-36">
         <div className="w-5 h-5 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -22,18 +23,6 @@ export default function CashFlowSummaryCard({ data, formatValue, isLoading }: Pr
 
   const { positive, delta, percentChange, monthLabel, startOfMonthTotal, currentTotal } = data
   const isNeutral = delta === 0
-
-  const borderClass = positive && !isNeutral
-    ? 'border-status-success-border'
-    : !positive && !isNeutral
-      ? 'border-status-error-border'
-      : 'border-surface-muted'
-
-  const bgClass = positive && !isNeutral
-    ? 'bg-status-success-bg/40'
-    : !positive && !isNeutral
-      ? 'bg-status-error-bg/40'
-      : ''
 
   const accentClass = positive && !isNeutral
     ? 'text-status-success'
@@ -51,20 +40,28 @@ export default function CashFlowSummaryCard({ data, formatValue, isLoading }: Pr
     : null
 
   return (
-    <div className={`luxury-card p-5 border ${borderClass} ${bgClass}`}>
+    <div className="glass-card p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-section-label text-text-muted">جریان نقدینگی</p>
           <p className="text-xs text-text-muted mt-1">نسبت به اول {monthLabel}</p>
         </div>
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${accentClass} ${
-          positive && !isNeutral ? 'bg-status-success-bg' :
-          !positive && !isNeutral ? 'bg-status-error-bg' :
-          'bg-surface-muted/30'
-        }`}>
-          <Icon className="w-3.5 h-3.5" />
-          <span>{isNeutral ? 'بدون تغییر' : positive ? 'مثبت' : 'منفی'}</span>
-        </div>
+        {isNeutral ? (
+          <StatusTag variant="neutral">
+            <Icon className="w-3 h-3" />
+            بدون تغییر
+          </StatusTag>
+        ) : positive ? (
+          <StatusTag variant="success">
+            <Icon className="w-3 h-3" />
+            مثبت
+          </StatusTag>
+        ) : (
+          <StatusTag variant="error">
+            <Icon className="w-3 h-3" />
+            منفی
+          </StatusTag>
+        )}
       </div>
 
       <div className="mt-4 flex items-end justify-between gap-4">
@@ -73,7 +70,9 @@ export default function CashFlowSummaryCard({ data, formatValue, isLoading }: Pr
             {deltaText}
           </p>
           {percentText && (
-            <p className={`text-xs mt-1 tabular-nums ${accentClass}`}>{percentText}</p>
+            <StatusTag variant={positive ? 'success' : 'error'} className="mt-2">
+              {percentText}
+            </StatusTag>
           )}
         </div>
         <div className="text-left text-xs text-text-muted space-y-1">
@@ -90,3 +89,4 @@ export default function CashFlowSummaryCard({ data, formatValue, isLoading }: Pr
     </div>
   )
 }
+

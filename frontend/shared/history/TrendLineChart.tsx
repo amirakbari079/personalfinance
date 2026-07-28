@@ -34,7 +34,7 @@ function formatCompact(value: number): string {
 export default function TrendLineChart({ data, formatValue, title = 'روند موجودی کل', isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className="luxury-card p-6 flex items-center justify-center h-56">
+      <div className="glass-card p-6 flex items-center justify-center h-56">
         <div className="w-5 h-5 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -42,7 +42,7 @@ export default function TrendLineChart({ data, formatValue, title = 'روند م
 
   if (data.length === 0) {
     return (
-      <div className="luxury-card p-6">
+      <div className="glass-card p-6">
         <h3 className="text-section-label text-text-muted mb-4">{title}</h3>
         <p className="text-sm text-text-muted text-center py-8">
           با ثبت موجودی حساب‌ها، نمودار روند اینجا نمایش داده می‌شود.
@@ -58,7 +58,7 @@ export default function TrendLineChart({ data, formatValue, title = 'روند م
   }))
 
   return (
-    <div className="luxury-card p-5">
+    <div className="glass-card p-5">
       <h3 className="text-section-label text-text-muted mb-4">{title}</h3>
       <div className="h-56 w-full" dir="ltr">
         <ResponsiveContainer width="100%" height="100%">

@@ -58,7 +58,7 @@ interface Props {
 function PortfolioStockCard({ quote }: { quote: PortfolioStockQuote }) {
   const hasPrice = quote.value != null && quote.value > 0
   return (
-    <div className="luxury-card p-4 space-y-2 animate-fade-in-up">
+    <div className="glass-card p-4 space-y-2 animate-fade-in-up">
       <div>
         <p className="text-xs text-text-muted truncate">{quote.name}</p>
         <p className="text-sm text-amount text-text-primary mt-0.5 tabular-nums">
@@ -181,7 +181,7 @@ export default function MarketSidebar({ className = '' }: Props) {
       )}
 
       {loading ? (
-        <div className="luxury-card p-8 flex justify-center">
+        <div className="glass-card p-8 flex justify-center">
           <div className="w-5 h-5 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
@@ -200,7 +200,7 @@ export default function MarketSidebar({ className = '' }: Props) {
           )}
 
           {quotes.length === 0 && portfolioStocks.length === 0 ? (
-            <div className="luxury-card p-6 text-center text-sm text-text-muted space-y-3">
+            <div className="glass-card p-6 text-center text-sm text-text-muted space-y-3">
               <p>قیمت بازار در دسترس نیست.</p>
               <MarketRefreshButton onClick={handleRefresh} loading={refreshing} label="تلاش مجدد" />
               <p className="text-[10px]">{VPN_HINT}</p>
@@ -226,7 +226,7 @@ export default function MarketSidebar({ className = '' }: Props) {
                     </div>
 
                     {groupQuotes.length === 0 ? (
-                      <div className="luxury-card p-4 text-xs text-text-muted space-y-2">
+                      <div className="glass-card p-4 text-xs text-text-muted space-y-2">
                         <p>قیمت در دسترس نیست</p>
                         {groupMissingIranian(group.symbols) && (
                           <p className="text-[10px] text-status-error/90">{VPN_HINT}</p>
@@ -288,7 +288,7 @@ export default function MarketSidebar({ className = '' }: Props) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="luxury-card w-full px-4 py-3 flex items-center justify-between text-sm text-text-primary"
+          className="glass-card w-full px-4 py-3 flex items-center justify-between text-sm text-text-primary"
         >
           <span>قیمت‌های بازار</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />

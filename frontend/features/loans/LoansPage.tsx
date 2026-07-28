@@ -14,9 +14,11 @@ import {
   undoLastInstallment,
 } from '@/lib/api/loansApi'
 import LoanForm from './LoanForm'
-import { Pencil, Trash2, Check, Clock, ChevronDown, ChevronUp, Undo2 } from 'lucide-react'
+import { Pencil, Trash2, Check, Clock, ChevronDown, ChevronUp, Undo2, Landmark } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import StatusTag from '@/shared/StatusTag'
+import ListIcon from '@/shared/ListIcon'
 import { exportLoansCsv } from '@/lib/api/loansApi'
 import ListSortBar from '@/shared/ListSortBar'
 import {
@@ -209,19 +211,15 @@ function LoanCard({
     : 0
 
   return (
-    <div className="luxury-card overflow-hidden">
+    <div className="glass-card overflow-hidden">
       <div className="px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-brand-accent text-base">🏦</span>
-          </div>
+          <ListIcon icon={Landmark} variant="primary" />
           <div>
-            <p className="text-sm text-item-title text-text-primary flex items-center gap-2">
+            <p className="text-sm text-item-title text-text-primary flex items-center gap-2 flex-wrap">
               {loan.creditor}
               {loan.completed && (
-                <span className="text-[10px] bg-brand-accent/10 text-brand-accent px-2 py-0.5 rounded-full">
-                  تکمیل شده
-                </span>
+                <StatusTag variant="success" className="text-[10px]">تکمیل شده</StatusTag>
               )}
             </p>
             <p className="text-xs text-text-muted mt-0.5">
@@ -274,19 +272,19 @@ function LoanCard({
       </div>
 
       <div className="px-5 pb-4 grid grid-cols-2 gap-3">
-        <div className="bg-surface rounded-lg px-3 py-2">
+        <div className="stat-cell">
           <p className="text-[11px] text-text-muted">پرداخت‌شده</p>
           <p className="text-sm text-amount text-text-primary">{formatToman(loan.paidAmount)}</p>
         </div>
-        <div className="bg-surface rounded-lg px-3 py-2">
+        <div className="stat-cell">
           <p className="text-[11px] text-text-muted">باقی‌مانده</p>
           <p className="text-sm text-amount text-text-primary">{formatToman(loan.remainingAmount)}</p>
         </div>
-        <div className="bg-surface rounded-lg px-3 py-2">
+        <div className="stat-cell">
           <p className="text-[11px] text-text-muted">قسط باقی‌مانده</p>
           <p className="text-sm text-amount text-text-primary">{toPersian(loan.remainingInstallments)} قسط</p>
         </div>
-        <div className="bg-surface rounded-lg px-3 py-2">
+        <div className="stat-cell">
           <p className="text-[11px] text-text-muted">قسط آخر</p>
           <p className="text-sm text-amount text-text-primary">{formatJalali(loan.lastPaymentDate)}</p>
         </div>

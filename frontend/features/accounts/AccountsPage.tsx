@@ -21,6 +21,7 @@ import AccountForm from './AccountForm'
 import AccountHistoryModal from './AccountHistoryModal'
 import { Pencil, Trash2, History } from 'lucide-react'
 import PageHeader from '@/shared/PageHeader'
+import StatusTag from '@/shared/StatusTag'
 import { exportAccountsCsv } from '@/lib/api/accountsApi'
 import BankLogo from '@/shared/banks/BankLogo'
 import { resolveBankCode } from '@/shared/banks/detectBank'
@@ -178,10 +179,10 @@ export default function AccountsPage() {
               {sortedAccounts.map(account => (
                 <div
                   key={account.id}
-                  className="luxury-card px-5 py-4 flex items-center justify-between"
+                  className="glass-card px-5 py-4 flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-surface-muted/60">
+                    <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center flex-shrink-0 overflow-hidden border border-surface-muted/40">
                       <BankLogo
                         bankCode={resolveBankCode(account.bankCode, account.name)}
                         accountType={account.type}
@@ -190,7 +191,9 @@ export default function AccountsPage() {
                     </div>
                     <div>
                       <p className="text-sm text-item-title text-text-primary">{account.name}</p>
-                      <p className="text-xs text-text-muted mt-0.5">{ACCOUNT_TYPE_LABELS[account.type]}</p>
+                      <StatusTag variant="secondary" className="mt-1 text-[10px]">
+                        {ACCOUNT_TYPE_LABELS[account.type]}
+                      </StatusTag>
                     </div>
                   </div>
 

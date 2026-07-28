@@ -11,9 +11,11 @@ import {
   deletePendingExpense,
 } from '@/lib/api/pendingExpensesApi'
 import PendingExpenseForm from './PendingExpenseForm'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Clock } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import ListIcon from '@/shared/ListIcon'
+import StatusTag from '@/shared/StatusTag'
 import { exportPendingExpensesCsv } from '@/lib/api/pendingExpensesApi'
 import ListSortBar from '@/shared/ListSortBar'
 import {
@@ -120,24 +122,22 @@ export default function PendingExpensesPage() {
           {sortedExpenses.map(expense => (
             <div
               key={expense.id}
-              className="luxury-card px-5 py-4 flex items-center justify-between"
+              className="glass-card px-5 py-4 flex items-center justify-between group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand-accent text-base">⏳</span>
-                </div>
+                <ListIcon icon={Clock} variant="error" />
                 <div>
                   <p className="text-sm text-item-title text-text-primary">{expense.label}</p>
-                  <p className="text-xs text-text-muted mt-0.5">
+                  <StatusTag variant="warning" className="mt-1 text-[10px]">
                     {expense.dueDate ? `سررسید: ${formatJalali(expense.dueDate)}` : 'بدون سررسید'}
-                  </p>
+                  </StatusTag>
                 </div>
               </div>
 
               <div className="flex items-center gap-6">
-                <span className="text-sm text-amount text-text-primary">
-                  <span className="text-status-error">−</span> {formatToman(expense.plannedAmount)}
-                </span>
+                <StatusTag variant="error" className="text-sm tabular-nums">
+                  − {formatToman(expense.plannedAmount)}
+                </StatusTag>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => { setEditing(expense); setShowForm(true) }}

@@ -26,6 +26,18 @@ const themeScript = `
     var t = localStorage.getItem('theme');
     if (t === 'light') document.documentElement.classList.remove('dark');
     else document.documentElement.classList.add('dark');
+    var c = localStorage.getItem('pf-theme-colors');
+    if (c) {
+      var colors = JSON.parse(c);
+      var root = document.documentElement;
+      if (colors.primary) {
+        root.style.setProperty('--color-brand-accent', colors.primary);
+        root.style.setProperty('--color-brand-accent-hover', colors.primary);
+      }
+      if (colors.secondary) root.style.setProperty('--color-secondary', colors.secondary);
+      if (colors.success) root.style.setProperty('--color-status-success', colors.success);
+      if (colors.error) root.style.setProperty('--color-status-error', colors.error);
+    }
   } catch (e) {
     document.documentElement.classList.add('dark');
   }

@@ -40,16 +40,21 @@ export default function LoginPage() {
       </div>
 
       {/* پنل تاریک — دسکتاپ */}
-      <div className="hidden lg:flex lg:w-5/12 bg-brand-dark panel-texture flex-col justify-between p-14 relative overflow-hidden border-l border-brand-accent/15">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-accent/5 via-transparent to-transparent pointer-events-none" />
+      <div className="hidden lg:flex lg:w-5/12 bg-brand-dark flex-col justify-between p-14 relative overflow-hidden border-l border-brand-accent/15">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 80% 60% at 30% 20%, rgba(59,89,255,0.15), transparent 60%)',
+          }}
+        />
 
         <div className="relative">
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-accent to-brand-accent-hover flex items-center justify-center shadow-gold">
-              <div className="w-2.5 h-2.5 rounded-full bg-text-on-accent/90" />
+            <div className="w-8 h-8 rounded-xl bg-brand-accent flex items-center justify-center shadow-gold">
+              <div className="w-3 h-3 rounded-full bg-text-on-accent/90" />
             </div>
-            <span className="text-section-label text-text-on-dark/40">
-              Luxury Finance
+            <span className="text-section-label text-text-on-dark/50">
+              حسابداری شخصی
             </span>
           </div>
 
@@ -58,14 +63,13 @@ export default function LoginPage() {
             <br />
             <span className="text-brand-accent" style={{ fontWeight: 'var(--font-weight-body)' }}>یکجا</span>
           </h2>
-          <p className="mt-5 text-sm text-text-on-dark/35 leading-loose max-w-[280px]" style={{ fontWeight: 'var(--font-weight-caption)' }}>
-            مدیریت کامل دارایی‌ها، درآمد، بدهی و ارزش خالص در محیطی امن و لوکس.
+          <p className="mt-5 text-sm text-text-on-dark/40 leading-loose max-w-[280px]" style={{ fontWeight: 'var(--font-weight-caption)' }}>
+            مدیریت کامل دارایی‌ها، درآمد، بدهی و ارزش خالص.
           </p>
         </div>
 
-        <div className="relative space-y-2">
-          <div className="gold-line w-12" />
-          <p className="text-text-on-dark/20 text-xs pt-2 tracking-wide" style={{ fontWeight: 'var(--font-weight-caption)' }}>نسخه ۱ — شخصی</p>
+        <div className="relative">
+          <p className="text-text-on-dark/20 text-xs tracking-wide" style={{ fontWeight: 'var(--font-weight-caption)' }}>نسخه ۱ — شخصی</p>
         </div>
       </div>
 
@@ -80,7 +84,6 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-9">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-brand-accent/70 mb-2 text-section-label">Welcome</p>
             <h1 className="text-2xl text-page-title text-text-primary tracking-tight">ورود به حساب</h1>
             <p className="mt-2 text-sm text-text-muted">اطلاعات کاربری خود را وارد کنید</p>
           </div>

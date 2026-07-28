@@ -5,6 +5,7 @@ import type { Income, IncomeRequest, IncomeType } from '@/lib/api/incomesApi'
 import { INCOME_TYPE_LABELS } from '@/lib/api/incomesApi'
 import { formatWithCommas, stripCommas } from '@/utils/numberFormat'
 import JalaliDatePicker from '@/shared/JalaliDatePicker'
+import FormModalShell from '@/shared/FormModalShell'
 
 interface Props {
   initial: Income | null
@@ -47,105 +48,74 @@ export default function IncomeForm({ initial, onSave, onCancel }: Props) {
   }
 
   return (
-    <div
-      className="luxury-modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    <FormModalShell
+      title={initial ? 'ویرایش درآمد' : 'درآمد جدید'}
+      onClose={onCancel}
+      onSubmit={handleSubmit}
+      error={error}
+      saving={saving}
+      submitLabel={initial ? 'ذخیره تغییرات' : 'افزودن درآمد'}
+      submitDisabled={!source.trim()}
     >
-      <div className="luxury-modal">
-        <h2 className="text-modal-title text-text-primary mb-6 tracking-tight">
-          {initial ? 'ویرایش درآمد' : 'درآمد جدید'}
-        </h2>
-
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* Source */}
-          <div>
-            <label className="field-label">عنوان درآمد</label>
-            <input
-              type="text"
-              value={source}
-              onChange={e => setSource(e.target.value)}
-              required
-              autoFocus
-              placeholder="مثلاً: حقوق، فروش، پورسانت"
-              className="field-input"
-            />
-          </div>
-
-          {/* Amount + type */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="field-label">مبلغ (تومان)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={amount}
-                onChange={e => setAmount(formatWithCommas(e.target.value))}
-                required
-                placeholder="0"
-                className="field-input tabular-nums"
-              />
-            </div>
-            <div>
-              <label className="field-label">نوع</label>
-              <select
-                value={incomeType}
-                onChange={e => setIncomeType(e.target.value as IncomeType)}
-                className="field-input"
-              >
-                {INCOME_TYPES.map(t => (
-                  <option key={t} value={t}>{INCOME_TYPE_LABELS[t]}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Date */}
-          <div>
-            <label className="field-label">
-              تاریخ دریافت <span className="text-text-muted font-normal">(اختیاری)</span>
-            </label>
-            <JalaliDatePicker value={receivedDate} onChange={setReceivedDate} />
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="field-label">
-              یادداشت / توضیح برای تحلیل <span className="text-text-muted font-normal">(اختیاری)</span>
-            </label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={2}
-              placeholder="مثال: حقوق ماهانه شرکت / درآمد یک‌باره فروش کالا"
-              className="field-input resize-none"
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5">
-              {error}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={saving || !source.trim()}
-              className="flex-1 btn-primary py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'در حال ذخیره...' : (initial ? 'ذخیره تغییرات' : 'افزودن درآمد')}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="btn-ghost"
-            >
-              انصراف
-            </button>
-          </div>
-        </form>
+      <div>
+        <label className="field-label">عنوان درآمد</label>
+        <input
+          type="text"
+          value={source}
+          onChange={e => setSource(e.target.value)}
+          required
+          autoFocus
+          placeholder="مثلاً: حقوق، فروش، پورسانت"
+          className="field-input"
+        />
       </div>
-    </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="field-label">مبلغ (تومان)</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={amount}
+            onChange={e => setAmount(formatWithCommas(e.target.value))}
+            required
+            placeholder="0"
+            className="field-input tabular-nums"
+          />
+        </div>
+        <div>
+          <label className="field-label">نوع</label>
+          <select
+            value={incomeType}
+            onChange={e => setIncomeType(e.target.value as IncomeType)}
+            className="field-input"
+          >
+            {INCOME_TYPES.map(t => (
+              <option key={t} value={t}>{INCOME_TYPE_LABELS[t]}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="field-label">
+          تاریخ دریافت <span className="text-text-muted font-normal">(اختیاری)</span>
+        </label>
+        <JalaliDatePicker value={receivedDate} onChange={setReceivedDate} />
+      </div>
+
+      <div>
+        <label className="field-label">
+          یادداشت <span className="text-text-muted font-normal">(اختیاری)</span>
+        </label>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          rows={2}
+          placeholder="مثال: حقوق ماهانه شرکت"
+          className="field-input resize-none"
+        />
+      </div>
+    </FormModalShell>
   )
 }

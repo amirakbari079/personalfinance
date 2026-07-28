@@ -370,7 +370,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
       {supportsAutoCalc && (
         <>
           {assetType === 'STOCK' ? (
-            <div className="luxury-card p-3 space-y-2 text-xs">
+            <div className="glass-card p-3 space-y-2 text-xs">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-text-muted">{refTitle}</p>
                 <button

@@ -59,7 +59,7 @@ export default function SnapshotEntryForm({
   }
 
   return (
-    <div className="luxury-card p-4 border border-brand-accent/25 mb-4">
+    <div className="glass-card p-4 border-brand-accent/25 mb-4">
       <h3 className="text-sm text-text-primary mb-3" style={{ fontWeight: 'var(--font-weight-title)' }}>
         {initial ? 'ویرایش رکورد' : 'ثبت رکورد جدید'}
       </h3>

@@ -2,6 +2,7 @@
 
 import type { MarketQuote } from '@/lib/api/marketApi'
 import { formatMarketValue, minutesAgo } from '@/lib/api/marketApi'
+import StatusTag from '@/shared/StatusTag'
 
 interface Props {
   quote: MarketQuote
@@ -13,7 +14,7 @@ export default function MarketQuoteCard({ quote, children }: Props) {
   const changePositive = change != null && change >= 0
 
   return (
-    <div className="luxury-card p-4 space-y-2">
+    <div className="glass-card p-4 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs text-text-muted">{quote.label}</p>
@@ -22,16 +23,10 @@ export default function MarketQuoteCard({ quote, children }: Props) {
           </p>
         </div>
         {change != null && (
-          <span
-            className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
-              changePositive
-                ? 'text-status-success bg-status-success/10'
-                : 'text-status-error bg-status-error-bg'
-            }`}
-          >
+          <StatusTag variant={changePositive ? 'success' : 'error'} className="text-[11px]">
             {changePositive ? '+' : ''}
             {change.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪
-          </span>
+          </StatusTag>
         )}
       </div>
       {children}

@@ -1,0 +1,15 @@
+---
+description: Start every frontend/UI/style task from FRONTEND_GUIDE.md before editing
+globs: frontend/**/*.{tsx,ts,css},FRONTEND_GUIDE.md
+alwaysApply: true
+---
+
+# Frontend Work — Mandatory Start
+
+برای هر تسک UI، استایل، چیدمان، رنگ، تایپوگرافی یا تجربه کاربری:
+
+1. اول `FRONTEND_GUIDE.md` را بخوان.
+2. فقط مسیرهای پلی‌بوک همان داک را ویرایش کن.
+3. در تم روشن هدر را با `--color-header-*` هماهنگ نگه دار.
+4. در ناوبری `font-weight` را بین حالت عادی/هاور/اکتیو عوض نکن.
+5. اگر ساختار فرانت عوض شد، همان جلسه `FRONTEND_GUIDE.md` را آپدیت کن.

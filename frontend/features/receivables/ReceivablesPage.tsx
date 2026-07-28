@@ -11,9 +11,11 @@ import {
   exportReceivablesCsv,
 } from '@/lib/api/receivablesApi'
 import ReceivableForm from './ReceivableForm'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, FileText } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import ListIcon from '@/shared/ListIcon'
+import StatusTag from '@/shared/StatusTag'
 import ListSortBar from '@/shared/ListSortBar'
 import {
   BASE_SORT_OPTIONS,
@@ -119,12 +121,10 @@ export default function ReceivablesPage() {
           {sortedReceivables.map(receivable => (
             <div
               key={receivable.id}
-              className="luxury-card px-5 py-4 flex items-center justify-between"
+              className="glass-card px-5 py-4 flex items-center justify-between group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand-accent text-base">📋</span>
-                </div>
+                <ListIcon icon={FileText} variant="primary" />
                 <div>
                   <p className="text-sm text-item-title text-text-primary">{receivable.debtorName}</p>
                   <p className="text-xs text-text-muted mt-0.5">
@@ -139,9 +139,9 @@ export default function ReceivablesPage() {
 
               <div className="flex items-center gap-6">
                 <div className="text-left">
-                  <span className="text-sm text-amount text-text-primary block">
-                    <span className="text-brand-accent">+</span> {formatToman(receivable.outstanding)}
-                  </span>
+                  <StatusTag variant="success" className="text-sm tabular-nums">
+                    + {formatToman(receivable.outstanding)}
+                  </StatusTag>
                   <span className="text-[10px] text-text-muted tabular-nums">
                     از {formatToman(receivable.originalAmount)}
                   </span>

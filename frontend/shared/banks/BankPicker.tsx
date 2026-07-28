@@ -44,7 +44,7 @@ export default function BankPicker({ accountType, value, onChange }: BankPickerP
 
       {selected && (
         <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-surface-muted/40 border border-surface-muted">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-surface-elevated flex items-center justify-center overflow-hidden shrink-0 border border-surface-muted/40">
             <BankLogo bankCode={selected.code} accountType={accountType} size={24} />
           </div>
           <span className="text-xs text-text-primary">{selected.label}</span>
@@ -74,7 +74,7 @@ export default function BankPicker({ accountType, value, onChange }: BankPickerP
                   : 'border-surface-muted hover:border-brand-accent/40 hover:bg-surface-muted/30'
               }`}
             >
-              <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center overflow-hidden">
+              <div className="w-8 h-8 rounded-md bg-surface-elevated flex items-center justify-center overflow-hidden border border-surface-muted/40">
                 <BankLogo bankCode={bank.code} accountType={accountType} size={22} />
               </div>
               <span className="text-[9px] text-text-muted leading-tight text-center line-clamp-2 w-full">

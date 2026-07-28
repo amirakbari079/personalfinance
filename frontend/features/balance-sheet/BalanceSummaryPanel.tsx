@@ -10,6 +10,7 @@ import {
 } from '@/lib/api/balanceSheetHistoryApi'
 import type { CashFlowSummary } from '@/lib/api/historyApi'
 import BalanceTrendChart from './BalanceTrendChartLazy'
+import StatusTag from '@/shared/StatusTag'
 
 interface Props {
   totalAssets: number
@@ -38,18 +39,17 @@ export default function BalanceSummaryPanel({ totalAssets, totalLiabilities, net
   const liabilityPct = total > 0 ? 100 - assetPct : 50
 
   return (
-    <section className="luxury-card overflow-hidden">
-      {/* Hero header */}
-      <div className="relative px-6 pt-8 pb-6 text-center border-b border-surface-muted/40">
+    <section className="glass-card overflow-hidden">
+      <div className="relative px-6 pt-8 pb-6 text-center border-b border-surface-muted/30">
         <div
           className="absolute inset-0 opacity-30 pointer-events-none"
           style={{
             background: isPositive
-              ? 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(94, 228, 168, 0.15), transparent 70%)'
-              : 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 123, 149, 0.15), transparent 70%)',
+              ? 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34, 197, 94, 0.15), transparent 70%)'
+              : 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(244, 63, 94, 0.15), transparent 70%)',
           }}
         />
-        <p className="text-section-label text-text-muted mb-2 relative">بالانس نهایی</p>
+        <StatusTag variant={isPositive ? 'success' : 'error'} className="mb-3 relative">بالانس نهایی</StatusTag>
         <p
           className={`text-4xl md:text-5xl text-amount-hero tracking-tight relative ${
             isPositive ? 'text-status-success' : 'text-status-error'
@@ -60,7 +60,6 @@ export default function BalanceSummaryPanel({ totalAssets, totalLiabilities, net
         <p className="text-xs text-text-muted mt-2 relative">
           {isPositive ? 'وضعیت مثبت — دارایی‌ها بیشتر از بدهی‌هاست' : 'وضعیت منفی — بدهی‌ها بیشتر از دارایی‌هاست'}
         </p>
-        <div className="mt-5 gold-line w-16 mx-auto relative" />
       </div>
 
       {/* Stats row */}
@@ -129,7 +128,7 @@ function StatCard({
   prefix?: string
 }) {
   return (
-    <div className={`px-5 py-4 bg-surface-card ${bgClass}`}>
+    <div className={`stat-cell ${bgClass}`}>
       <p className="text-[11px] text-text-muted mb-1">{label}</p>
       <p className={`text-lg text-amount tracking-tight ${colorClass}`}>
         {prefix}{formatToman(value)}
@@ -147,7 +146,7 @@ function CashFlowStatCard({
 }) {
   if (isLoading) {
     return (
-      <div className="px-5 py-4 bg-surface-card flex items-center justify-center">
+      <div className="stat-cell flex items-center justify-center">
         <div className="w-4 h-4 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -155,7 +154,7 @@ function CashFlowStatCard({
 
   if (!data) {
     return (
-      <div className="px-5 py-4 bg-surface-card">
+      <div className="stat-cell">
         <p className="text-[11px] text-text-muted mb-1">تغییر ماهانه</p>
         <p className="text-lg text-amount text-text-muted">—</p>
       </div>
@@ -176,7 +175,7 @@ function CashFlowStatCard({
     : null
 
   return (
-    <div className={`px-5 py-4 bg-surface-card ${
+    <div className={`stat-cell ${
       positive && !isNeutral ? 'bg-status-success-bg/20' :
       !positive && !isNeutral ? 'bg-status-error-bg/20' : ''
     }`}>
@@ -188,7 +187,9 @@ function CashFlowStatCard({
         {deltaSign}{formatToman(Math.abs(delta))}
       </p>
       {percentText && (
-        <p className={`text-[11px] mt-0.5 tabular-nums ${accentClass}`}>{percentText}</p>
+        <StatusTag variant={positive ? 'success' : 'error'} className="mt-1 text-[10px]">
+          {percentText}
+        </StatusTag>
       )}
     </div>
   )

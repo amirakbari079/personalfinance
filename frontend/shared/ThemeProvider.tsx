@@ -8,12 +8,23 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import {
+  applyThemeColors,
+  DEFAULT_THEME_COLORS,
+  parseStoredColors,
+  THEME_COLORS_STORAGE_KEY,
+  type ThemeColors,
+} from '@/shared/theme/colors'
 
 type Theme = 'dark' | 'light'
 
 interface ThemeContextValue {
   theme: Theme
   toggleTheme: () => void
+  colors: ThemeColors
+  setColor: (key: keyof ThemeColors, value: string) => void
+  applyColors: (colors: ThemeColors) => void
+  resetColors: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
@@ -24,8 +35,17 @@ function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('dark', theme === 'dark')
 }
 
+function persistColors(colors: ThemeColors) {
+  try {
+    localStorage.setItem(THEME_COLORS_STORAGE_KEY, JSON.stringify(colors))
+  } catch {
+    // ignore
+  }
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
+  const [colors, setColors] = useState<ThemeColors>(DEFAULT_THEME_COLORS)
 
   useEffect(() => {
     try {
@@ -36,6 +56,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } catch {
       applyTheme('dark')
     }
+
+    const storedColors = parseStoredColors(localStorage.getItem(THEME_COLORS_STORAGE_KEY))
+    setColors(storedColors)
+    applyThemeColors(storedColors)
   }, [])
 
   const toggleTheme = useCallback(() => {
@@ -51,8 +75,27 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const setColor = useCallback((key: keyof ThemeColors, value: string) => {
+    setColors((prev) => {
+      const next = { ...prev, [key]: value }
+      persistColors(next)
+      applyThemeColors(next)
+      return next
+    })
+  }, [])
+
+  const applyColors = useCallback((next: ThemeColors) => {
+    setColors(next)
+    persistColors(next)
+    applyThemeColors(next)
+  }, [])
+
+  const resetColors = useCallback(() => {
+    applyColors(DEFAULT_THEME_COLORS)
+  }, [applyColors])
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, colors, setColor, applyColors, resetColors }}>
       {children}
     </ThemeContext.Provider>
   )

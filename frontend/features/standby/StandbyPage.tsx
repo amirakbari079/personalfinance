@@ -12,9 +12,11 @@ import {
   exportStandbyCsv,
 } from '@/lib/api/standbyApi'
 import StandbyForm from './StandbyForm'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Package } from 'lucide-react'
 import { formatJalali } from '@/utils/jalaliUtils'
 import PageHeader from '@/shared/PageHeader'
+import ListIcon from '@/shared/ListIcon'
+import StatusTag from '@/shared/StatusTag'
 import ListSortBar from '@/shared/ListSortBar'
 import {
   BASE_SORT_OPTIONS,
@@ -120,12 +122,10 @@ export default function StandbyPage() {
           {sortedItems.map(item => (
             <div
               key={item.id}
-              className="luxury-card px-5 py-4 flex items-center justify-between"
+              className="glass-card px-5 py-4 flex items-center justify-between group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-lg bg-brand-accent/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand-accent text-base">📦</span>
-                </div>
+                <ListIcon icon={Package} variant="secondary" />
                 <div>
                   <p className="text-sm text-item-title text-text-primary">{item.itemLabel}</p>
                   <p className="text-xs text-text-muted mt-0.5">
@@ -136,9 +136,9 @@ export default function StandbyPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <span className="text-sm text-amount text-text-primary">
-                  <span className="text-brand-accent">+</span> {formatToman(item.totalValue)}
-                </span>
+                <StatusTag variant="success" className="text-sm tabular-nums">
+                  + {formatToman(item.totalValue)}
+                </StatusTag>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => { setEditing(item); setShowForm(true) }}
