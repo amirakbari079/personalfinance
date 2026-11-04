@@ -55,6 +55,7 @@ cd frontend && npm install && npm run dev
 
 ## Docs
 
+- [Visual experience](docs/VISUAL-EXPERIENCE.md) — Persian UI guide, chart calculations, design references and validation
 - `REQUIREMENTS.md` — features
 - `ARCHITECTURE.md` — design
 - `ROADMAP.md` — milestone order

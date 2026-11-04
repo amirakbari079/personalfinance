@@ -6,10 +6,10 @@ export type ThemeColors = {
 }
 
 export const DEFAULT_THEME_COLORS: ThemeColors = {
-  primary: '#3b59ff',
-  secondary: '#8b5cf6',
-  success: '#22c55e',
-  error: '#f43f5e',
+  primary: '#08735d',
+  secondary: '#956014',
+  success: '#08735d',
+  error: '#b3423a',
 }
 
 export const THEME_COLORS_STORAGE_KEY = 'pf-theme-colors'
@@ -59,7 +59,11 @@ export function lighten(hex: string, amount = 0.15): string {
 export function darken(hex: string, amount = 0.15): string {
   const rgb = hexToRgb(hex)
   if (!rgb) return hex
-  return rgbToHex(rgb.r * (1 - amount), rgb.g * (1 - amount), rgb.b * (1 - amount))
+  return rgbToHex(
+    rgb.r * (1 - amount),
+    rgb.g * (1 - amount),
+    rgb.b * (1 - amount),
+  )
 }
 
 export function withAlpha(hex: string, alpha: number): string {
@@ -77,7 +81,9 @@ export function parseStoredColors(raw: string | null): ThemeColors {
   try {
     const parsed = JSON.parse(raw) as Partial<ThemeColors>
     const result = { ...DEFAULT_THEME_COLORS }
-    for (const key of Object.keys(DEFAULT_THEME_COLORS) as (keyof ThemeColors)[]) {
+    for (const key of Object.keys(
+      DEFAULT_THEME_COLORS,
+    ) as (keyof ThemeColors)[]) {
       if (typeof parsed[key] === 'string' && isValidHex(parsed[key]!)) {
         result[key] = parsed[key]!
       }
@@ -90,17 +96,62 @@ export function parseStoredColors(raw: string | null): ThemeColors {
 
 export function applyThemeColors(colors: ThemeColors): void {
   const root = document.documentElement
+  if (
+    Object.keys(DEFAULT_THEME_COLORS).every(
+      (k) =>
+        colors[k as keyof ThemeColors] ===
+        DEFAULT_THEME_COLORS[k as keyof ThemeColors],
+    )
+  ) {
+    for (const key of [
+      '--color-brand-accent',
+      '--color-brand-accent-hover',
+      '--color-secondary',
+      '--color-secondary-hover',
+      '--color-status-success',
+      '--color-status-error',
+      '--color-status-success-bg',
+      '--color-status-success-border',
+      '--color-status-error-bg',
+      '--color-status-error-border',
+      '--shadow-accent',
+      '--bg-gradient',
+    ])
+      root.style.removeProperty(key)
+    return
+  }
   root.style.setProperty('--color-brand-accent', colors.primary)
-  root.style.setProperty('--color-brand-accent-hover', lighten(colors.primary, 0.12))
+  root.style.setProperty(
+    '--color-brand-accent-hover',
+    lighten(colors.primary, 0.12),
+  )
   root.style.setProperty('--color-secondary', colors.secondary)
-  root.style.setProperty('--color-secondary-hover', lighten(colors.secondary, 0.12))
+  root.style.setProperty(
+    '--color-secondary-hover',
+    lighten(colors.secondary, 0.12),
+  )
   root.style.setProperty('--color-status-success', colors.success)
   root.style.setProperty('--color-status-error', colors.error)
-  root.style.setProperty('--color-status-success-bg', withAlpha(colors.success, 0.12))
-  root.style.setProperty('--color-status-success-border', withAlpha(colors.success, 0.32))
-  root.style.setProperty('--color-status-error-bg', withAlpha(colors.error, 0.12))
-  root.style.setProperty('--color-status-error-border', withAlpha(colors.error, 0.32))
-  root.style.setProperty('--shadow-accent', `0 8px 24px ${withAlpha(colors.primary, 0.35)}`)
+  root.style.setProperty(
+    '--color-status-success-bg',
+    withAlpha(colors.success, 0.12),
+  )
+  root.style.setProperty(
+    '--color-status-success-border',
+    withAlpha(colors.success, 0.32),
+  )
+  root.style.setProperty(
+    '--color-status-error-bg',
+    withAlpha(colors.error, 0.12),
+  )
+  root.style.setProperty(
+    '--color-status-error-border',
+    withAlpha(colors.error, 0.32),
+  )
+  root.style.setProperty(
+    '--shadow-accent',
+    `0 8px 24px ${withAlpha(colors.primary, 0.35)}`,
+  )
   root.style.setProperty(
     '--bg-gradient',
     `radial-gradient(ellipse 80% 50% at 50% -20%, ${withAlpha(colors.primary, 0.18)}, transparent 60%)`,

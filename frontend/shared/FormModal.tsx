@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { X } from 'lucide-react'
 
 interface Props {
   title: string
@@ -30,21 +31,43 @@ export default function FormModal({
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const dialog = dialogRef.current!
-    const candidates = () => Array.from(dialog.querySelectorAll<HTMLElement>(
-      'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]',
-    )).filter((element) => element.getClientRects().length > 0)
-    ;(candidates()[0] ?? dialog).focus()
+    const candidates = () =>
+      Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]',
+        ),
+      ).filter((element) => element.getClientRects().length > 0)
+    ;(
+      dialog.querySelector<HTMLElement>(
+        '[autofocus], input:not(:disabled), .luxury-modal-body button:not(:disabled)',
+      ) ??
+      candidates()[0] ??
+      dialog
+    ).focus()
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { event.preventDefault(); closeRef.current(); return }
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeRef.current()
+        return
+      }
       if (event.key !== 'Tab') return
       const fields = candidates()
       const first = fields[0]
       const last = fields[fields.length - 1]
-      if (!first) { event.preventDefault(); dialog.focus(); return }
-      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
-        event.preventDefault(); last.focus()
+      if (!first) {
+        event.preventDefault()
+        dialog.focus()
+        return
+      }
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || document.activeElement === dialog)
+      ) {
+        event.preventDefault()
+        last.focus()
       } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault(); first.focus()
+        event.preventDefault()
+        first.focus()
       }
     }
     dialog.addEventListener('keydown', keydown)
@@ -73,9 +96,22 @@ export default function FormModal({
               <h2 id={titleId} className="text-modal-title text-text-primary">
                 {title}
               </h2>
-              {subtitle && <p className="text-xs text-text-muted mt-1">{subtitle}</p>}
+              {subtitle && (
+                <p className="text-xs text-text-muted mt-1">{subtitle}</p>
+              )}
             </div>
-            {headerAction}
+            <div className="flex items-center gap-1">
+              {headerAction ?? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="بستن پنجره"
+                  className="icon-button"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

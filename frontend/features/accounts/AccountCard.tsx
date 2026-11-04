@@ -8,11 +8,11 @@ import BankLogo from '@/shared/banks/BankLogo'
 import { resolveBankCode } from '@/shared/banks/detectBank'
 
 const TYPE_THEMES: Record<Account['type'], string> = {
-  BANK: '#3b59ff',
-  DIGITAL_WALLET: '#8b5cf6',
-  EXCHANGE: '#f59e0b',
-  CASH: '#22c55e',
-  OTHER: '#64748b',
+  BANK: 'var(--finance-chart-1)',
+  DIGITAL_WALLET: 'var(--finance-chart-3)',
+  EXCHANGE: 'var(--finance-chart-2)',
+  CASH: 'var(--finance-chart-1)',
+  OTHER: 'var(--finance-chart-4)',
 }
 
 interface Props {
@@ -38,6 +38,14 @@ export default function AccountCard({
   return (
     <article
       className="account-card group"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          setMenuOpen(false)
+          e.currentTarget
+            .querySelector<HTMLButtonElement>('.account-card-menu-trigger')
+            ?.focus()
+        }
+      }}
       style={{ '--account-accent': accent } as CSSProperties}
     >
       <div className="account-card-shine" aria-hidden />
@@ -57,7 +65,7 @@ export default function AccountCard({
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
-              aria-label="عملیات"
+              aria-label={`عملیات حساب ${account.name}`}
               aria-expanded={menuOpen}
               className="account-card-menu-trigger"
             >
@@ -75,7 +83,10 @@ export default function AccountCard({
                 <div className="account-card-menu-panel">
                   <button
                     type="button"
-                    onClick={() => { setMenuOpen(false); onHistory() }}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onHistory()
+                    }}
                     className="account-card-menu-item"
                   >
                     <History className="w-3.5 h-3.5" />
@@ -83,7 +94,10 @@ export default function AccountCard({
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setMenuOpen(false); onEdit() }}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onEdit()
+                    }}
                     className="account-card-menu-item"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -91,7 +105,10 @@ export default function AccountCard({
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setMenuOpen(false); onDelete() }}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onDelete()
+                    }}
                     disabled={isDeleting}
                     className="account-card-menu-item account-card-menu-item--danger disabled:opacity-40"
                   >
@@ -106,7 +123,9 @@ export default function AccountCard({
 
         <div className="account-card-meta">
           <h3 className="account-card-name">{account.name}</h3>
-          <span className="account-card-type">{ACCOUNT_TYPE_LABELS[account.type]}</span>
+          <span className="account-card-type">
+            {ACCOUNT_TYPE_LABELS[account.type]}
+          </span>
         </div>
 
         <div className="account-card-balance">
@@ -114,7 +133,9 @@ export default function AccountCard({
             <Wallet className="w-3 h-3" />
             موجودی
           </span>
-          <p className="account-card-balance-value">{formatValue(account.balance)}</p>
+          <p className="account-card-balance-value">
+            {formatValue(account.balance)}
+          </p>
         </div>
       </div>
     </article>

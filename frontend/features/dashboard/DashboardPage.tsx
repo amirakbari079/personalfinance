@@ -1,185 +1,247 @@
 'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Wallet,
   TrendingUp,
-  Package,
-  FileText,
   Landmark,
-  Clock,
-  ArrowUpRight,
-  ArrowDownRight,
+  ArrowUpLeft,
+  CalendarDays,
+  RefreshCw,
+  ChartNoAxesCombined,
+  Scale,
 } from 'lucide-react'
-import { getBalance, type BalanceSummary } from '@/lib/api/balanceApi'
+import { useBalanceSheetData } from '@/features/balance-sheet/useBalanceSheetData'
+import { useDashboardExtras } from './useDashboardExtras'
+import { compactMoney } from './analytics'
 import { formatToman } from '@/utils/formatToman'
-import StatusTag from '@/shared/StatusTag'
-
-const CAPITAL_ITEMS: {
-  key: keyof Pick<BalanceSummary, 'cash' | 'investments' | 'standby' | 'receivablesOutstanding'>
-  label: string
-  href: string
-  icon: typeof Wallet
-  tag: string
-}[] = [
-  { key: 'cash', label: 'نقد', href: '/accounts', icon: Wallet, tag: 'نقدینگی' },
-  { key: 'investments', label: 'سرمایه‌گذاری‌ها', href: '/investments', icon: TrendingUp, tag: 'سرمایه' },
-  { key: 'standby', label: 'کالاهای معوق', href: '/standby', icon: Package, tag: 'معوق' },
-  { key: 'receivablesOutstanding', label: 'طلب‌ها', href: '/receivables', icon: FileText, tag: 'طلب' },
-]
-
-const DEDUCTION_ITEMS: {
-  key: keyof Pick<BalanceSummary, 'monthlyInstallments' | 'pendingExpenses'>
-  label: string
-  href: string
-  icon: typeof Landmark
-  tag: string
-}[] = [
-  { key: 'monthlyInstallments', label: 'اقساط ماهانه وام', href: '/loans', icon: Landmark, tag: 'وام' },
-  { key: 'pendingExpenses', label: 'هزینه‌های برنامه‌ریزی‌شده', href: '/pending-expenses', icon: Clock, tag: 'برنامه‌ریزی' },
-]
-
-export default function DashboardPage() {
-  const [balance, setBalance] = useState<BalanceSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    getBalance()
-      .then(setBalance)
-      .catch(e => setError(e instanceof Error ? e.message : 'خطا در بارگذاری'))
-      .finally(() => setIsLoading(false))
-  }, [])
-
-  if (isLoading) {
+import FinanceIllustration from '@/shared/FinanceIllustration'
+import TrendExplorer from './TrendExplorer'
+import AllocationPanel from './AllocationPanel'
+import AssetExplorer from './AssetExplorer'
+import { MonthlyPlan, UpcomingPayments } from './PlanningPanels'
+export default function DashboardPage({
+  reports = false,
+}: {
+  reports?: boolean
+}) {
+  const { data, isLoading, error } = useBalanceSheetData()
+  const extras = useDashboardExtras()
+  const today = new Intl.DateTimeFormat('fa-IR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Asia/Tehran',
+  }).format(new Date())
+  if (isLoading)
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-5 h-5 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
+      <div
+        className="dashboard-page"
+        role="status"
+        aria-label="در حال دریافت تصویر مالی"
+      >
+        <div className="dashboard-skeleton hero-skeleton" />
+        <div className="metric-grid">
+          {[1, 2, 3].map((i) => (
+            <div className="dashboard-skeleton" key={i} />
+          ))}
+        </div>
+        <div className="dashboard-skeleton chart-skeleton" />
       </div>
     )
-  }
-
-  if (error || !balance) {
+  if (error || !data)
     return (
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-6">
-        <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5">
-          {error ?? 'خطا در بارگذاری'}
-        </p>
-      </div>
-    )
-  }
-
-  const isPositive = balance.netWorth >= 0
-
-  return (
-    <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-6 space-y-6">
-      {/* Hero — net worth */}
-      <div className="glass-card px-6 py-7 md:px-8 md:py-8 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none opacity-25"
-          style={{
-            background:
-              'radial-gradient(ellipse 55% 70% at 100% 0%, var(--color-brand-accent), transparent 65%)',
-          }}
-        />
-        <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-5">
-          <div>
-            <StatusTag variant="primary" className="mb-3">ارزش خالص</StatusTag>
-            <p
-              className={`text-3xl md:text-4xl lg:text-[2.75rem] text-amount-hero tracking-tight ${
-                isPositive ? 'text-brand-accent' : 'text-status-error'
-              }`}
-            >
-              {formatToman(balance.netWorth)}
-            </p>
-            <div className="mt-3">
-              {isPositive ? (
-                <StatusTag variant="success">
-                  <ArrowUpRight className="w-3 h-3" />
-                  مثبت
-                </StatusTag>
-              ) : (
-                <StatusTag variant="error">
-                  <ArrowDownRight className="w-3 h-3" />
-                  منفی
-                </StatusTag>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-3 md:gap-4">
-            <div className="stat-cell min-w-[9.5rem]">
-              <p className="text-[11px] text-text-muted mb-1">سرمایه کل</p>
-              <p className="text-sm text-amount text-text-primary">{formatToman(balance.totalCapital)}</p>
-            </div>
-            <div className="stat-cell min-w-[9.5rem]">
-              <p className="text-[11px] text-text-muted mb-1">کسرهای ماهانه</p>
-              <p className="text-sm text-amount text-status-error">
-                − {formatToman(balance.monthlyInstallments + balance.pendingExpenses)}
-              </p>
-            </div>
-          </div>
+      <div className="dashboard-page">
+        <div className="finance-panel calm-empty" role="alert">
+          <RefreshCw size={32} />
+          <h1>تصویر مالی دریافت نشد</h1>
+          <p>{error ?? 'اتصال به برنامه را بررسی کنید.'}</p>
+          <button
+            className="btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            تلاش دوباره
+          </button>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Capital */}
-        <section>
-          <div className="flex items-center justify-between mb-3 px-0.5">
-            <h2 className="text-section-label text-text-muted">سرمایه کل</h2>
-            <span className="text-sm text-amount text-text-primary">{formatToman(balance.totalCapital)}</span>
-          </div>
-          <div className="space-y-2">
-            {CAPITAL_ITEMS.map(({ key, label, href, icon: Icon, tag }) => (
-              <Link
-                key={key}
-                href={href}
-                className="glass-card px-4 py-3.5 flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-brand-accent/10 text-brand-accent group-hover:bg-brand-accent/18 transition-colors flex-shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm text-item-title text-text-primary truncate">{label}</p>
-                    <StatusTag variant="secondary" className="mt-1 text-[10px]">{tag}</StatusTag>
-                  </div>
-                </div>
-                <span className="text-sm text-amount text-text-primary flex-shrink-0 tabular-nums">
-                  {formatToman(balance[key])}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Deductions */}
-        <section>
-          <h2 className="text-section-label text-text-muted mb-3 px-0.5">کسرها</h2>
-          <div className="space-y-2">
-            {DEDUCTION_ITEMS.map(({ key, label, href, icon: Icon, tag }) => (
-              <Link
-                key={key}
-                href={href}
-                className="glass-card px-4 py-3.5 flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-status-error/10 text-status-error group-hover:bg-status-error/16 transition-colors flex-shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm text-item-title text-text-primary truncate">{label}</p>
-                    <StatusTag variant="error" className="mt-1 text-[10px]">{tag}</StatusTag>
-                  </div>
-                </div>
-                <span className="text-sm text-amount text-status-error flex-shrink-0 tabular-nums">
-                  − {formatToman(balance[key])}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
+    )
+  const cash = data.assets
+    .filter((a) => a.category === 'cash')
+    .reduce((s, a) => s + a.amount, 0)
+  const invested = data.assets
+    .filter((a) => a.category === 'investment')
+    .reduce((s, a) => s + a.amount, 0)
+  const paid = extras.loans.reduce((s, l) => s + l.paidAmount, 0)
+  const remaining = extras.loans.reduce((s, l) => s + l.remainingAmount, 0)
+  const debtProgress =
+    paid + remaining > 0 ? (paid / (paid + remaining)) * 100 : 0
+  return (
+    <div className="dashboard-page">
+      <div className="dashboard-heading">
+        <div>
+          <p className="eyebrow">
+            {reports ? 'از عددها به شناخت بهتر' : 'امروز، با خیال روشن‌تر'}
+          </p>
+          <h1>{reports ? 'تحلیل و مقایسه' : 'تصویر مالی شما'}</h1>
+          <p>
+            {reports
+              ? 'روندها را ببینید، ترکیب دارایی را بشناسید و برنامهٔ ماه را مقایسه کنید.'
+              : 'دارایی‌ها، تعهدات و قدم بعدی؛ همه در یک نگاه.'}
+          </p>
+        </div>
+        <span className="date-label">
+          <CalendarDays size={17} />
+          {today}
+        </span>
       </div>
+      {!reports && (
+        <section className="wealth-hero">
+          <div className="hero-content">
+            <span className="hero-kicker">
+              <span /> بر پایهٔ اطلاعات ثبت‌شدهٔ شما
+            </span>
+            <h2>تراز خالص دارایی و تعهدات</h2>
+            <p className="hero-amount">
+              <bdi>{data.netBalance.toLocaleString('fa-IR')}</bdi>
+              <span>تومان</span>
+            </p>
+            <p className="hero-description">
+              دارایی‌ها منهای ماندهٔ وام‌ها و همهٔ هزینه‌های برنامه‌ریزی‌شده
+            </p>
+            <div className="hero-bottom">
+              <div>
+                <small>کل دارایی‌ها</small>
+                <strong>{compactMoney(data.totalAssets)} تومان</strong>
+              </div>
+              <div>
+                <small>کل تعهدات</small>
+                <strong>{compactMoney(data.totalLiabilities)} تومان</strong>
+              </div>
+              <Link href="/balance-sheet">
+                جزئیات ترازنامه <ArrowUpLeft size={18} />
+              </Link>
+            </div>
+          </div>
+          <FinanceIllustration />
+        </section>
+      )}
+      <div className="metric-grid">
+        {[
+          {
+            label: 'موجودی نقدی',
+            value: cash,
+            hint: 'مجموع حساب‌ها و کیف پول‌ها',
+            href: '/accounts',
+            Icon: Wallet,
+            color: 'green',
+          },
+          {
+            label: 'سرمایه‌گذاری‌ها',
+            value: invested,
+            hint: 'آخرین ارزش ثبت‌شده',
+            href: '/investments',
+            Icon: TrendingUp,
+            color: 'gold',
+          },
+          {
+            label: 'تعهدات ثبت‌شده',
+            value: data.totalLiabilities,
+            hint: 'وام باقی‌مانده و هزینه‌های آینده',
+            href: '/balance-sheet',
+            Icon: Landmark,
+            color: 'coral',
+          },
+        ].map(({ label, value, hint, href, Icon, color }) => (
+          <Link
+            className={`metric-card metric-${color}`}
+            href={href}
+            key={label}
+          >
+            <div>
+              <span className="finance-icon">
+                <Icon size={22} />
+              </span>
+              <ArrowUpLeft size={17} className="muted" />
+            </div>
+            <p>{label}</p>
+            <strong title={formatToman(value)}>
+              {compactMoney(value)} <small>تومان</small>
+            </strong>
+            <span className="metric-hint">{hint}</span>
+          </Link>
+        ))}
+      </div>
+      <div className="dashboard-charts">
+        <TrendExplorer
+          history={extras.history}
+          loading={extras.loading}
+          error={extras.errors.includes('تاریخچه')}
+          retry={extras.retry}
+          expanded={reports}
+        />
+        <AllocationPanel assets={data.assets} />
+      </div>
+      {extras.errors.some((e) => e !== 'تاریخچه') ? (
+        <div className="finance-panel inline-notice" role="alert">
+          اطلاعات {extras.errors.filter((e) => e !== 'تاریخچه').join('، ')}{' '}
+          دریافت نشد.{' '}
+          <button className="btn-ghost" onClick={extras.retry}>
+            تلاش دوباره
+          </button>
+        </div>
+      ) : extras.loading ? (
+        <div className="chart-skeleton" />
+      ) : (
+        <div className="dashboard-bottom">
+          <MonthlyPlan
+            incomes={extras.incomes}
+            loans={extras.loans}
+            expenses={extras.expenses}
+          />
+          <UpcomingPayments loans={extras.loans} expenses={extras.expenses} />
+        </div>
+      )}
+      <AssetExplorer data={data} />
+      {reports && !extras.loading && !extras.errors.includes('وام‌ها') && (
+        <section className="finance-panel debt-panel">
+          <div className="finance-icon">
+            <Scale size={26} />
+          </div>
+          <div>
+            <p className="eyebrow">قدم‌به‌قدم تا تسویه</p>
+            <h2>مسیر بازپرداخت وام‌ها</h2>
+            <p>
+              {paid + remaining > 0
+                ? `${debtProgress.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪ از مبلغ اقساط ثبت‌شده پرداخت شده است.`
+                : 'برای نمایش پیشرفت، یک وام ثبت کنید.'}
+            </p>
+            <div className="plan-track">
+              <span
+                style={{
+                  width: `${debtProgress}%`,
+                  background: 'var(--finance-chart-1)',
+                }}
+              />
+            </div>
+          </div>
+          <Link href="/loans" className="btn-secondary">
+            بررسی اقساط <ArrowUpLeft size={16} />
+          </Link>
+        </section>
+      )}
+      {!reports && (
+        <Link href="/reports" className="insight-banner">
+          <span className="finance-icon">
+            <ChartNoAxesCombined size={24} />
+          </span>
+          <span>
+            <strong>پشت این عددها چه خبر است؟</strong>
+            <small>
+              مقایسهٔ دارایی و تعهدات، روند ثبت‌ها و پیشرفت بازپرداخت
+            </small>
+          </span>
+          <ArrowUpLeft size={24} />
+        </Link>
+      )}
     </div>
   )
 }

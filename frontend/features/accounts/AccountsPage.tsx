@@ -62,7 +62,7 @@ export default function AccountsPage() {
     try {
       const accs = await getAccounts()
       setAccounts(accs)
-      await loadAnalytics()
+      void loadAnalytics()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
     } finally {

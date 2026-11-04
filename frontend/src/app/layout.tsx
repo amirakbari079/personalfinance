@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import type { ReactNode } from 'react'
 import { Providers } from './providers'
 import './globals.css'
+import './finance.css'
 
 const vazirmatn = localFont({
   src: [

@@ -57,7 +57,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       applyTheme('dark')
     }
 
-    const storedColors = parseStoredColors(localStorage.getItem(THEME_COLORS_STORAGE_KEY))
+    let storedColors = DEFAULT_THEME_COLORS
+    try {
+      storedColors = parseStoredColors(
+        localStorage.getItem(THEME_COLORS_STORAGE_KEY),
+      )
+    } catch {
+      /* Browser storage may be unavailable. */
+    }
     setColors(storedColors)
     applyThemeColors(storedColors)
   }, [])
@@ -95,7 +102,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [applyColors])
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, colors, setColor, applyColors, resetColors }}>
+    <ThemeContext.Provider
+      value={{ theme, toggleTheme, colors, setColor, applyColors, resetColors }}
+    >
       {children}
     </ThemeContext.Provider>
   )

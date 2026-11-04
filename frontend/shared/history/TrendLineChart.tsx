@@ -1,9 +1,11 @@
 'use client'
 
+import { useId } from 'react'
+import { compactMoney } from '@/features/dashboard/analytics'
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -21,17 +23,19 @@ interface Props {
 function shortDate(jalali: string): string {
   const parts = jalali.split('/')
   if (parts.length !== 3) return jalali
-  return `${parts[1]}/${parts[2]}`
+  return `${parts[1]}/${parts[2]}`.replace(
+    /\d/g,
+    (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)],
+  )
 }
 
-function formatCompact(value: number): string {
-  if (value >= 1_000_000_000) return (value / 1_000_000_000).toLocaleString('fa-IR', { maximumFractionDigits: 1 }) + 'B'
-  if (value >= 1_000_000) return (value / 1_000_000).toLocaleString('fa-IR', { maximumFractionDigits: 1 }) + 'M'
-  if (value >= 1_000) return (value / 1_000).toLocaleString('fa-IR', { maximumFractionDigits: 0 }) + 'K'
-  return value.toLocaleString('fa-IR')
-}
-
-export default function TrendLineChart({ data, formatValue, title = 'روند موجودی کل', isLoading }: Props) {
+export default function TrendLineChart({
+  data,
+  formatValue,
+  title = 'روند موجودی کل',
+  isLoading,
+}: Props) {
+  const gradientId = useId().replace(/:/g, '')
   if (isLoading) {
     return (
       <div className="glass-card p-6 flex items-center justify-center h-56">
@@ -62,8 +66,29 @@ export default function TrendLineChart({ data, formatValue, title = 'روند م
       <h3 className="text-section-label text-text-muted mb-4">{title}</h3>
       <div className="h-56 w-full" dir="ltr">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid stroke="var(--color-surface-muted)" strokeDasharray="3 3" vertical={false} />
+          <AreaChart
+            data={chartData}
+            margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--color-brand-accent)"
+                  stopOpacity={0.2}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--color-brand-accent)"
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid
+              stroke="var(--color-surface-muted)"
+              strokeDasharray="3 3"
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
               tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }}
@@ -71,11 +96,11 @@ export default function TrendLineChart({ data, formatValue, title = 'روند م
               tickLine={false}
             />
             <YAxis
-              tickFormatter={formatCompact}
+              tickFormatter={compactMoney}
               tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              width={48}
+              width={78}
             />
             <Tooltip
               contentStyle={{
@@ -85,18 +110,22 @@ export default function TrendLineChart({ data, formatValue, title = 'روند م
                 fontSize: '12px',
                 direction: 'rtl',
               }}
-              labelFormatter={(_, payload) => payload?.[0]?.payload?.fullDate ?? ''}
+              labelFormatter={(_, payload) =>
+                payload?.[0]?.payload?.fullDate ?? ''
+              }
               formatter={(value) => [formatValue(Number(value)), 'موجودی کل']}
             />
-            <Line
-              type="monotone"
+            <Area
+              type="linear"
+              fill={`url(#${gradientId})`}
+              isAnimationActive={false}
               dataKey="total"
               stroke="var(--color-brand-accent)"
               strokeWidth={2.5}
               dot={{ fill: 'var(--color-brand-accent)', r: 4, strokeWidth: 0 }}
               activeDot={{ r: 6, fill: 'var(--color-brand-accent-hover)' }}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>

@@ -16,8 +16,9 @@ import {
   type CashFlowSummary,
   type TotalSeriesPoint,
 } from '@/lib/api/historyApi'
-import InvestmentForm from './InvestmentForm'
-import InvestmentHistoryModal from './InvestmentHistoryModal'
+import dynamic from 'next/dynamic'
+const InvestmentForm = dynamic(() => import('./InvestmentForm'))
+const InvestmentHistoryModal = dynamic(() => import('./InvestmentHistoryModal'))
 import { Pencil, Trash2, History, TrendingUp, Coins, Bitcoin, CircleDollarSign, FolderOpen } from 'lucide-react'
 import PageHeader from '@/shared/PageHeader'
 import ListIcon from '@/shared/ListIcon'
@@ -68,7 +69,7 @@ export default function InvestmentsPage() {
     try {
       const items = await getInvestments()
       setInvestments(items)
-      await loadAnalytics()
+      void loadAnalytics()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
     } finally {
