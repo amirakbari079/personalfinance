@@ -158,7 +158,7 @@ h3 {
   color: var(--color-text-primary);
 }
 .rail-link.is-active {
-  background: var(--color-status-success-bg);
+  background: var(--finance-accent-bg, var(--color-status-success-bg));
   color: var(--color-brand-accent);
   font-weight: 600;
 }
@@ -467,7 +467,7 @@ h3 {
   width: 44px;
   height: 44px;
   border-radius: 13px;
-  background: var(--color-status-success-bg);
+  background: var(--finance-accent-bg, var(--color-status-success-bg));
   color: var(--color-brand-accent);
   flex-shrink: 0;
 }
@@ -1146,7 +1146,7 @@ h3 {
   }
   .mobile-dock a[aria-current='page'] {
     color: var(--color-brand-accent);
-    background: var(--color-status-success-bg);
+    background: var(--finance-accent-bg, var(--color-status-success-bg));
   }
   .finance-toast {
     inset-block-end: 90px;

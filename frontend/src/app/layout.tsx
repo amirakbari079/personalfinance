@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Providers } from './providers'
 import './globals.css'
 import './finance.css'
+import './palettes.css'
 
 const vazirmatn = localFont({
   src: [
@@ -32,9 +33,12 @@ const themeScript = `
     if (t === 'light') document.documentElement.classList.remove('dark');
     else document.documentElement.classList.add('dark');
     var c = localStorage.getItem('pf-theme-colors');
+    var p = localStorage.getItem('pf-dark-palette');
+    document.documentElement.dataset.darkPalette = p === 'midnight' || p === 'amethyst' ? p : 'evergreen';
     if (c) {
       var colors = JSON.parse(c);
       var root = document.documentElement;
+      if (colors.primary === '#08735d' && colors.secondary === '#956014' && colors.success === '#08735d' && colors.error === '#b3423a') return;
       if (colors.primary) {
         root.style.setProperty('--color-brand-accent', colors.primary);
         root.style.setProperty('--color-brand-accent-hover', colors.primary);
@@ -51,7 +55,12 @@ const themeScript = `
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" className={`${vazirmatn.variable} dark`} suppressHydrationWarning>
+    <html
+      lang="fa"
+      dir="rtl"
+      className={`${vazirmatn.variable} dark`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
