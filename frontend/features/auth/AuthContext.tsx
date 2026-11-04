@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { getMe, login as apiLogin, logout as apiLogout } from '@/lib/api/authApi'
+import { clearApiCache } from '@/lib/api/apiClient'
 
 interface AuthState {
   isAuthenticated: boolean
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback(async (username: string, password: string) => {
+    clearApiCache()
     const res = await apiLogin({ username, password })
     setState({
       isAuthenticated: true,
@@ -59,7 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await apiLogout()
+    clearApiCache()
     setState({ isAuthenticated: false, username: null, isLoading: false })
+  }, [])
+
+  useEffect(() => {
+    const expire = () => {
+      clearApiCache()
+      setState({ isAuthenticated: false, username: null, isLoading: false })
+    }
+    window.addEventListener('pf-session-expired', expire)
+    return () => window.removeEventListener('pf-session-expired', expire)
   }, [])
 
   return (

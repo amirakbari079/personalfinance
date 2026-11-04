@@ -35,7 +35,7 @@ export function useBalanceSheetData() {
             category: 'cash' as const,
             categoryLabel: CATEGORY_LABELS.cash,
             name: a.name,
-            amount: a.balance,
+            amount: Number(a.balance) || 0,
             href: '/accounts',
           })),
           ...investments.map((i) => ({
@@ -44,7 +44,7 @@ export function useBalanceSheetData() {
             category: 'investment' as const,
             categoryLabel: CATEGORY_LABELS.investment,
             name: i.name,
-            amount: i.tomanEquivalent,
+            amount: Number(i.tomanEquivalent) || 0,
             href: '/investments',
           })),
           ...standby.map((s) => ({
@@ -53,7 +53,7 @@ export function useBalanceSheetData() {
             category: 'standby' as const,
             categoryLabel: CATEGORY_LABELS.standby,
             name: s.itemLabel,
-            amount: s.totalValue,
+            amount: Number(s.totalValue) || 0,
             href: '/standby',
           })),
           ...receivables
@@ -64,7 +64,7 @@ export function useBalanceSheetData() {
               category: 'receivable' as const,
               categoryLabel: CATEGORY_LABELS.receivable,
               name: r.debtorName,
-              amount: r.outstanding,
+              amount: Number(r.outstanding) || 0,
               href: '/receivables',
             })),
         ]
@@ -78,7 +78,7 @@ export function useBalanceSheetData() {
               category: 'loan' as const,
               categoryLabel: CATEGORY_LABELS.loan,
               name: l.creditor,
-              amount: l.remainingAmount,
+              amount: Number(l.remainingAmount) || 0,
               href: '/loans',
             })),
           ...expenses.map((e) => ({
@@ -87,7 +87,7 @@ export function useBalanceSheetData() {
             category: 'expense' as const,
             categoryLabel: CATEGORY_LABELS.expense,
             name: e.label,
-            amount: e.plannedAmount,
+            amount: Number(e.plannedAmount) || 0,
             href: '/pending-expenses',
           })),
         ]

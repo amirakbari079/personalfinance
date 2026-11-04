@@ -2,6 +2,9 @@ package com.personalfinance.marketdata.controller;
 
 import com.personalfinance.common.ApiResponse;
 import com.personalfinance.marketdata.MarketSymbol;
+import com.personalfinance.marketdata.dto.BourseInstrumentDto;
+import com.personalfinance.marketdata.dto.BourseInstrumentQuoteDto;
+import com.personalfinance.marketdata.dto.BourseWatchlistRequest;
 import com.personalfinance.marketdata.dto.MarketCalcResponse;
 import com.personalfinance.marketdata.dto.MarketHistoryPointDto;
 import com.personalfinance.marketdata.dto.MarketQuoteDto;
@@ -42,6 +45,18 @@ public class MarketDataController {
     @PostMapping("/portfolio-stocks/refresh")
     public ResponseEntity<ApiResponse<List<PortfolioStockQuoteDto>>> refreshPortfolioStocks() {
         return ResponseEntity.ok(ApiResponse.ok(marketDataService.refreshPortfolioStockQuotes()));
+    }
+
+    @GetMapping("/instruments/search")
+    public ResponseEntity<ApiResponse<List<BourseInstrumentDto>>> searchInstruments(
+            @RequestParam String q) {
+        return ResponseEntity.ok(ApiResponse.ok(marketDataService.searchInstruments(q)));
+    }
+
+    @PostMapping("/instruments/quotes")
+    public ResponseEntity<ApiResponse<List<BourseInstrumentQuoteDto>>> getWatchlistQuotes(
+            @RequestBody BourseWatchlistRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(marketDataService.getWatchlistQuotes(request)));
     }
 
     @GetMapping("/history/{symbol}")

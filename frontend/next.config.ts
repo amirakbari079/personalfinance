@@ -1,8 +1,9 @@
 import type { NextConfig } from 'next'
 
-const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:8080'
+const backendUrl = process.env.BACKEND_URL ?? 'http://127.0.0.1:8080'
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   async rewrites() {
     return [
       {

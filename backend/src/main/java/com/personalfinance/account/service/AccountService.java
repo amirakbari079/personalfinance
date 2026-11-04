@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -32,6 +33,15 @@ public class AccountService {
     public List<AccountResponse> findAll() {
         return accountRepository.findAll()
                 .stream()
+                .map(account -> enrich(AccountResponse.from(account)))
+                .toList();
+    }
+
+    public List<AccountResponse> findByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return accountRepository.findAllById(ids).stream()
                 .map(account -> enrich(AccountResponse.from(account)))
                 .toList();
     }

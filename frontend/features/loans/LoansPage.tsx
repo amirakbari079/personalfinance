@@ -6,7 +6,6 @@ import {
   type LoanRequest,
   type InstallmentView,
   getLoans,
-  getLoansMonthlyTotal,
   createLoan,
   updateLoan,
   deleteLoan,
@@ -21,6 +20,8 @@ import StatusTag from '@/shared/StatusTag'
 import ListIcon from '@/shared/ListIcon'
 import { exportLoansCsv } from '@/lib/api/loansApi'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
+import { formatToman, sumAmounts } from '@/utils/formatToman'
 import {
   BASE_SORT_OPTIONS,
   DEFAULT_SORT,
@@ -34,7 +35,6 @@ const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([])
   const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
-  const [monthlyTotal, setMonthlyTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -46,9 +46,8 @@ export default function LoansPage() {
 
   async function load() {
     try {
-      const [items, total] = await Promise.all([getLoans(), getLoansMonthlyTotal()])
+      const items = await getLoans()
       setLoans(items)
-      setMonthlyTotal(total)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
     } finally {
@@ -57,6 +56,10 @@ export default function LoansPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const activeLoans = loans.filter((l) => !l.completed)
+  const monthlyTotal = sumAmounts(activeLoans.map((l) => l.monthlyAmount))
+  const remainingTotal = sumAmounts(activeLoans.map((l) => l.remainingAmount))
 
   const sortedLoans = useMemo(
     () => sortItems(loans, sortId, {
@@ -130,7 +133,7 @@ export default function LoansPage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <PageHeader
         title="وام‌ها"
-        subtitle={`مجموع قسط ماهانه فعال: ${formatToman(monthlyTotal)}`}
+        subtitle={`مانده کل: ${formatToman(remainingTotal)} · قسط ماهانه: ${formatToman(monthlyTotal)}`}
         addLabel="+ وام جدید"
         onAdd={() => { setEditing(null); setShowForm(true) }}
         onExport={exportLoansCsv}
@@ -168,6 +171,10 @@ export default function LoansPage() {
             />
           ))}
         </div>
+      )}
+
+      {loans.length > 0 && (
+        <TotalFooter label="جمع مانده وام‌ها" value={remainingTotal} formatValue={formatToman} />
       )}
 
       {showForm && (
@@ -362,10 +369,6 @@ function InstallmentGrid({ installments }: { installments: InstallmentView[] }) 
       ))}
     </div>
   )
-}
-
-function formatToman(amount: number): string {
-  return amount.toLocaleString('fa-IR') + ' تومان'
 }
 
 function toPersian(value: number): string {

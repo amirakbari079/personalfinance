@@ -1,6 +1,6 @@
 # PersonalFinance Progress Log
 
-Last updated: 2026-07-15
+Last updated: 2026-08-17
 Current branch: `cursor/m1-auth-csv-jalali-theme`
 Base branch: `main`
 
@@ -37,27 +37,61 @@ Base branch: `main`
   - Shared frontend history modal, trend chart, cash-flow card on accounts and investments pages.
   - Branding: logo, favicon, AppShell metadata.
   - Snapshot edit bugfix: form state sync, Jalali digit normalize, backend duplicate-date guard.
+- **M6.7 Slice 1 — Financial Intelligence catalog:**
+  - Flyway `V16`: `fi_assets`, providers, source routes, immutable `fi_asset_prices`, daily OHLC, jobs, quality/conflict tables.
+  - Seeded USD, USDT, GOLD_18K, GOLD_SPOT, COIN_EMAMI, PAXG, BTC, ETF_AYAR, ETF_NARANGE.
+  - Migrated `market_price_snapshots` into `fi_asset_prices` (currency normalized to `IRT`/`USD`).
+  - Dual-write from `MarketDataService` so `/api/v1/market` is unchanged.
+  - `GET /api/v1/financial-intelligence/assets`.
+- **M6.7 Slices 2–4 + overview UI:**
+  - `FinancialDataProvider` adapters (TGJU, CoinGecko, Nobitex, TSETMC) with route fallback.
+  - Async `POST /api/v1/financial-intelligence/updates` (202) + job history; scheduler/manual market refresh use the same pipeline.
+  - Daily OHLC rollup; `GET /prices`, `/history`, `/metrics/premiums`.
+  - Overview page at `/intelligence` (بروزرسانی اطلاعات).
+  - V17 pauses Coin Emami route until a live adapter exists.
+- **M6.7 Slice 5–6 — quality + Update Center:**
+  - Conflict detector (threshold 0.5%, symmetric %); primary kept, conflict recorded (`CONFLICT_PRIMARY_KEPT`).
+  - Reference values + market snapshot per update job.
+  - `GET /quality`, `GET /conflicts`; Flyway `V18` adds conflict currency.
+  - Pages: `/intelligence/updates`, `/intelligence/quality`.
+- **M6.7 Slice 7 — macro:**
+  - Flyway `V19`: `fi_macro_indicators`, `fi_macro_observations`, `fi_economic_events` (events schema-only).
+  - World Bank CPI YoY for IR/US; delta ingest, skipped if observations are newer than 7 days; failures do not fail the market job.
+  - `GET /api/v1/financial-intelligence/macro`; page `/intelligence/macro`.
+- **M6.7 Slice 8 — advisor context + LLM interface:**
+  - `GET /api/v1/advisor/context?symbols=` returns latest price, 30d/1y return, ≤12 monthly closes, premiums, latest macro, open conflict count, `marketSnapshotId`.
+  - `POST /api/v1/advisor/draft`: Claude if `ADVISOR_LLM_API_KEY` is set, otherwise fake client. No ChatGPT.
+- **M6.7 Slice 9 — recommendation audit:**
+  - Flyway `V20`: sessions, recommendations, theses, prompt versions.
+  - Draft persists as `ACTIVE`, bound to `market_snapshot_id` + prompt `1.0`.
+  - Cache: same decision + same snapshot + same prompt reuses the row (`reuse_count`).
+  - New snapshot for the same decision marks previous open rows `SUPERSEDED`.
+  - Lifecycle: `ACTIVE` → `COMPLETED` / `EXPIRED` / `INVALIDATED` (supersede is system-only).
+  - Page: `/intelligence/advisor`.
+- **M6.7 Slice 10 — evaluation foundation:**
+  - Flyway `V21`: `advisor_recommendation_evaluations` + reserved `advisor_strategy_definitions` (no runner).
+  - `GET /api/v1/advisor/recommendations/{id}/evaluation` recomputes returns from daily OHLC (thesis asset vs GOLD_18K / USD / BTC). Does not judge whether the AI was “right”.
+  - Advisor page shows the evaluation under the selected recommendation.
 
 ## Current state
 
 - **Phase 1 complete** (M1–M6).
-- **Phase 1.5 — History & Market Intelligence (Enterprise Investments)** in progress.
-- **Phase 2 (M7–M12) on hold** until M6.x milestones are complete.
+- **Phase 1.5 — History & Market Intelligence** complete for M6.7 slices 1–10.
+- **Phase 2 (M7–M12) on hold.**
 
 ## Current focus
 
-Enterprise Investments: live market quotes (BTC, gold, ETFs), sidebar layout, auto toman valuation in investment form, navigation performance.
+Advisor page now requires a market-context preview and a real portfolio (accounts, investments, optional session-only holdings) before draft. Flyway `V23` stores `portfolio_json` and activates prompt `1.1`.
 
-## Next tasks (Phase 1.5)
+## Next task (for new session)
 
-1. ~~Fix snapshot edit duplicate-date bug~~ (done)
-2. Market data backend (`V13`, scheduler, `/api/v1/market/*`)
-3. Investments page: two-column layout + market sidebar + month mini charts
-4. InvestmentForm: live unit price, auto toman calc, manual override
-5. Performance: dynamic recharts import, route loading skeletons
+Do not start Phase 2 M7 unless explicitly requested. Optional later: backtest engine on `advisor_strategy_definitions`, compare-normalized charts.
 
 ## Notes for low-token next chats
 
 - Read only: `PROGRESS.md`, `ROADMAP.md`, `REQUIREMENTS.md`.
-- Reuse Phase 1 module patterns; market data lives in `backend/.../marketdata/`.
-- Do not start M7 (Product Catalogue) until M6.2–M6.6 are done.
+- Market facade stays in `marketdata`; catalog/history live in `intelligence` (`fi_*` tables).
+- Advisor context is summaries only — never send raw ticks or provider payloads to an LLM.
+- Advisor preview is `POST /api/v1/advisor/context` with selected account/investment IDs; draft uses the same payload plus the question.
+- Advisor LLM: Anthropic HTTP if `ADVISOR_LLM_API_KEY` is set; otherwise Cursor `agent` CLI (`--mode ask`). Fake only if neither is available.
+- Do not start M7 until M6.7 data-platform slices are stable.

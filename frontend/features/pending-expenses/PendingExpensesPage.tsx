@@ -5,7 +5,6 @@ import {
   type PendingExpense,
   type PendingExpenseRequest,
   getPendingExpenses,
-  getPendingExpensesTotal,
   createPendingExpense,
   updatePendingExpense,
   deletePendingExpense,
@@ -18,6 +17,8 @@ import ListIcon from '@/shared/ListIcon'
 import StatusTag from '@/shared/StatusTag'
 import { exportPendingExpensesCsv } from '@/lib/api/pendingExpensesApi'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
+import { formatToman, sumAmounts } from '@/utils/formatToman'
 import {
   BASE_SORT_OPTIONS,
   DEFAULT_SORT,
@@ -31,7 +32,6 @@ const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 export default function PendingExpensesPage() {
   const [expenses, setExpenses] = useState<PendingExpense[]>([])
   const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
-  const [total, setTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -40,9 +40,8 @@ export default function PendingExpensesPage() {
 
   async function load() {
     try {
-      const [items, tot] = await Promise.all([getPendingExpenses(), getPendingExpensesTotal()])
+      const items = await getPendingExpenses()
       setExpenses(items)
-      setTotal(tot)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
     } finally {
@@ -51,6 +50,8 @@ export default function PendingExpensesPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const total = sumAmounts(expenses.map((e) => e.plannedAmount))
 
   const sortedExpenses = useMemo(
     () => sortItems(expenses, sortId, {
@@ -163,6 +164,10 @@ export default function PendingExpensesPage() {
         </div>
       )}
 
+      {expenses.length > 0 && (
+        <TotalFooter value={total} formatValue={formatToman} />
+      )}
+
       {showForm && (
         <PendingExpenseForm
           initial={editing}
@@ -172,8 +177,4 @@ export default function PendingExpensesPage() {
       )}
     </div>
   )
-}
-
-function formatToman(amount: number): string {
-  return amount.toLocaleString('fa-IR') + ' تومان'
 }

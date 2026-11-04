@@ -17,6 +17,8 @@ import PageHeader from '@/shared/PageHeader'
 import ListIcon from '@/shared/ListIcon'
 import StatusTag from '@/shared/StatusTag'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
+import { formatToman, sumAmounts } from '@/utils/formatToman'
 import {
   BASE_SORT_OPTIONS,
   DEFAULT_SORT,
@@ -49,7 +51,7 @@ export default function ReceivablesPage() {
 
   useEffect(() => { load() }, [])
 
-  const totalOutstanding = receivables.reduce((sum, r) => sum + r.outstanding, 0)
+  const totalOutstanding = sumAmounts(receivables.map((r) => r.outstanding))
 
   const sortedReceivables = useMemo(
     () => sortItems(receivables, sortId, {
@@ -171,6 +173,10 @@ export default function ReceivablesPage() {
         </div>
       )}
 
+      {receivables.length > 0 && (
+        <TotalFooter label="جمع باقی‌مانده" value={totalOutstanding} formatValue={formatToman} />
+      )}
+
       {showForm && (
         <ReceivableForm
           initial={editing}
@@ -180,8 +186,4 @@ export default function ReceivablesPage() {
       )}
     </div>
   )
-}
-
-function formatToman(amount: number): string {
-  return amount.toLocaleString('fa-IR') + ' تومان'
 }

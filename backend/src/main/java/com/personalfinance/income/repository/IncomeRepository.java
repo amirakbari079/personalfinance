@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface IncomeRepository extends JpaRepository<Income, Long> {
 
     /** Sum of all active recurring (monthly) income sources. */
-    @Query("SELECT COALESCE(SUM(i.amount), 0) FROM Income i WHERE i.incomeType = :type")
+    @Query("SELECT COALESCE(SUM(i.amount), 0L) FROM Income i WHERE i.incomeType = :type")
     Long sumByType(IncomeType type);
 }

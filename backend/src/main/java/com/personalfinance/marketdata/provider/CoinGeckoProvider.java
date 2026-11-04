@@ -24,42 +24,49 @@ public class CoinGeckoProvider {
         this.objectMapper = objectMapper;
     }
 
-    public Optional<QuoteFetch> fetchBtcUsd() {
-        try {
-            String body = restClient.get()
-                    .uri("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
-                    .retrieve()
-                    .body(String.class);
-            JsonNode root = objectMapper.readTree(body);
-            BigDecimal usd = root.path("bitcoin").path("usd").decimalValue();
-            if (usd.compareTo(BigDecimal.ZERO) <= 0) return Optional.empty();
-            return Optional.of(new QuoteFetch(MarketSymbol.BTC_USD, usd, "USD", "CoinGecko"));
-        } catch (Exception e) {
-            log.warn("CoinGecko BTC/USD fetch failed: {}", e.getMessage());
-            return Optional.empty();
+    private JsonNode prices;
+    private java.time.Instant nextFetchAt = java.time.Instant.EPOCH;
+
+    // Both assets share one request; failures also have a cooldown to avoid 429 storms.
+    private synchronized Optional<QuoteFetch> fetch(String id, MarketSymbol symbol, String source) {
+        if (!java.time.Instant.now().isBefore(nextFetchAt)) {
+            prices = null;
+            nextFetchAt = java.time.Instant.now().plusSeconds(60);
+            try {
+                String body = restClient.get()
+                        .uri("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,pax-gold&vs_currencies=usd&include_last_updated_at=true")
+                        .retrieve().body(String.class);
+                prices = objectMapper.readTree(body);
+            } catch (Exception e) {
+                log.warn("CoinGecko batch fetch failed: {}", e.getMessage());
+            }
         }
+        if (prices == null) return Optional.empty();
+        JsonNode value = prices.path(id).path("usd");
+        if (!value.isNumber() || value.decimalValue().signum() <= 0) return Optional.empty();
+        long timestamp = prices.path(id).path("last_updated_at").asLong(0);
+        if (timestamp <= 0) return Optional.empty();
+        return Optional.of(new QuoteFetch(symbol, value.decimalValue(), "USD", source,
+                java.time.Instant.ofEpochSecond(timestamp)));
+    }
+
+    public Optional<QuoteFetch> fetchBtcUsd() {
+        return fetch("bitcoin", MarketSymbol.BTC_USD, "CoinGecko");
     }
 
     public Optional<QuoteFetch> fetchGoldXauUsd() {
         return fetchPaxgUsd().map(q -> new QuoteFetch(
-                MarketSymbol.GOLD_XAU_USD, q.value(), q.currency(), q.source()));
+                MarketSymbol.GOLD_XAU_USD, q.value(), q.currency(), q.source(), q.observedAt()));
     }
 
     public Optional<QuoteFetch> fetchPaxgUsd() {
-        try {
-            String body = restClient.get()
-                    .uri("https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd")
-                    .retrieve()
-                    .body(String.class);
-            JsonNode root = objectMapper.readTree(body);
-            BigDecimal usd = root.path("pax-gold").path("usd").decimalValue();
-            if (usd.compareTo(BigDecimal.ZERO) <= 0) return Optional.empty();
-            return Optional.of(new QuoteFetch(MarketSymbol.PAXG_USD, usd, "USD", "CoinGecko-PAXG"));
-        } catch (Exception e) {
-            log.warn("CoinGecko PAXG/USD fetch failed: {}", e.getMessage());
-            return Optional.empty();
-        }
+        return fetch("pax-gold", MarketSymbol.PAXG_USD, "CoinGecko-PAXG");
     }
 
-    public record QuoteFetch(MarketSymbol symbol, BigDecimal value, String currency, String source) {}
+    public record QuoteFetch(MarketSymbol symbol, BigDecimal value, String currency, String source,
+            java.time.Instant observedAt) {
+        public QuoteFetch(MarketSymbol symbol, BigDecimal value, String currency, String source) {
+            this(symbol, value, currency, source, java.time.Instant.now());
+        }
+    }
 }

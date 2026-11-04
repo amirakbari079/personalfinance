@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   type Account,
   type AccountRequest,
-  ACCOUNT_TYPE_LABELS,
   getAccounts,
-  getTotalBalance,
   createAccount,
   updateAccount,
   deleteAccount,
+  exportAccountsCsv,
 } from '@/lib/api/accountsApi'
 import {
   getAccountCashFlow,
@@ -17,25 +16,22 @@ import {
   type CashFlowSummary,
   type TotalSeriesPoint,
 } from '@/lib/api/historyApi'
-import AccountForm from './AccountForm'
-import AccountHistoryModal from './AccountHistoryModal'
-import { Pencil, Trash2, History } from 'lucide-react'
+import dynamic from 'next/dynamic'
+const AccountForm = dynamic(() => import('./AccountForm'))
+import AccountCard from './AccountCard'
+const AccountHistoryModal = dynamic(() => import('./AccountHistoryModal'))
 import PageHeader from '@/shared/PageHeader'
-import StatusTag from '@/shared/StatusTag'
-import { exportAccountsCsv } from '@/lib/api/accountsApi'
-import BankLogo from '@/shared/banks/BankLogo'
-import { resolveBankCode } from '@/shared/banks/detectBank'
 import CashFlowSummaryCard from '@/shared/history/CashFlowSummaryCard'
 import TrendLineChart from '@/shared/history/TrendLineChartLazy'
-import MarketSidebar from '@/shared/market/MarketSidebar'
 import { ACCOUNT_HISTORY_CONFIG } from '@/shared/history/historyTypes'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
 import { BASE_SORT_OPTIONS, DEFAULT_SORT, sortItems, type SortOptionId } from '@/utils/listSort'
+import { sumAmounts } from '@/utils/formatToman'
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
-  const [total, setTotal] = useState<number>(0)
   const [totalSeries, setTotalSeries] = useState<TotalSeriesPoint[]>([])
   const [cashFlow, setCashFlow] = useState<CashFlowSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -64,9 +60,8 @@ export default function AccountsPage() {
 
   async function load() {
     try {
-      const [accs, tot] = await Promise.all([getAccounts(), getTotalBalance()])
+      const accs = await getAccounts()
       setAccounts(accs)
-      setTotal(tot)
       await loadAnalytics()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
@@ -116,6 +111,7 @@ export default function AccountsPage() {
   }
 
   const formatValue = ACCOUNT_HISTORY_CONFIG.formatValue
+  const total = sumAmounts(accounts.map((a) => a.balance))
 
   const sortedAccounts = useMemo(
     () => sortItems(accounts, sortId, {
@@ -135,7 +131,7 @@ export default function AccountsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-[88rem] mx-auto px-4 py-8">
       <PageHeader
         title="حساب‌های نقدی"
         subtitle={`مجموع موجودی: ${formatValue(total)}`}
@@ -164,86 +160,35 @@ export default function AccountsPage() {
         />
       </section>
 
-      {/* Account list + live market (aligned with first account row) */}
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-        <div className="flex-1 min-w-0">
-          {accounts.length > 0 && (
-            <ListSortBar value={sortId} options={BASE_SORT_OPTIONS} onChange={setSortId} />
-          )}
-          {accounts.length === 0 ? (
-            <div className="text-center py-16 text-text-muted text-sm">
-              هنوز حسابی ثبت نشده. اولین حساب را اضافه کنید.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {sortedAccounts.map(account => (
-                <div
-                  key={account.id}
-                  className="glass-card px-5 py-4 flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center flex-shrink-0 overflow-hidden border border-surface-muted/40">
-                      <BankLogo
-                        bankCode={resolveBankCode(account.bankCode, account.name)}
-                        accountType={account.type}
-                        size={26}
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm text-item-title text-text-primary">{account.name}</p>
-                      <StatusTag variant="secondary" className="mt-1 text-[10px]">
-                        {ACCOUNT_TYPE_LABELS[account.type]}
-                      </StatusTag>
-                    </div>
-                  </div>
+      {/* Account cards grid */}
+      <section>
+        {accounts.length > 0 && (
+          <ListSortBar value={sortId} options={BASE_SORT_OPTIONS} onChange={setSortId} />
+        )}
+        {accounts.length === 0 ? (
+          <div className="text-center py-16 text-text-muted text-sm">
+            هنوز حسابی ثبت نشده. اولین حساب را اضافه کنید.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
+            {sortedAccounts.map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                formatValue={formatValue}
+                onHistory={() => setHistoryAccount(account)}
+                onEdit={() => openEdit(account)}
+                onDelete={() => handleDelete(account.id)}
+                isDeleting={deletingId === account.id}
+              />
+            ))}
+          </div>
+        )}
 
-                  <div className="flex items-center gap-4 md:gap-6">
-                    <span className="text-sm text-amount text-text-primary">
-                      {formatValue(account.balance)}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setHistoryAccount(account)}
-                        title="تاریخچه"
-                        aria-label="تاریخچه"
-                        className="text-text-muted hover:text-brand-accent transition-colors p-1.5 rounded"
-                      >
-                        <History className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => openEdit(account)}
-                        title="ویرایش"
-                        aria-label="ویرایش"
-                        className="text-text-muted hover:text-brand-accent transition-colors p-1.5 rounded"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(account.id)}
-                        disabled={deletingId === account.id}
-                        title="حذف"
-                        aria-label="حذف"
-                        className="text-text-muted hover:text-status-error transition-colors p-1.5 rounded disabled:opacity-40"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {accounts.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-surface-muted flex justify-between items-center">
-              <span className="text-sm text-text-muted">جمع کل</span>
-              <span className="text-sm text-amount text-text-primary">{formatValue(total)}</span>
-            </div>
-          )}
-        </div>
-
-        <MarketSidebar className="lg:sticky lg:top-20 self-start" />
-      </div>
+        {accounts.length > 0 && (
+          <TotalFooter value={total} formatValue={formatValue} />
+        )}
+      </section>
 
       {showForm && (
         <AccountForm

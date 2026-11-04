@@ -44,6 +44,9 @@
 | `receivable` | Receivables with partial-payment tracking |
 | `standby` | StandBy goods for sale |
 | `balance` | Net worth calculation (aggregates all modules above) |
+| `marketdata` | Live quotes facade for investments (`/api/v1/market`) |
+| `intelligence` | Financial Intelligence catalog, historical prices, jobs, quality |
+| `advisor` | Advisor context, recommendations, thesis, snapshot binding, evaluation |
 
 ### Phase 2 — Business
 | Module | Responsibility |
@@ -135,6 +138,7 @@ Single-user, simple username + password login secured with Spring Security.
 
 ## Data Export / Backup
 - CSV export endpoint per entity, for backup purposes.
+- Full-app JSON backup/restore at `/api/v1/backups`, files stored in project `backups/`.
 
 ---
 

@@ -6,7 +6,6 @@ import {
   type IncomeRequest,
   INCOME_TYPE_LABELS,
   getIncomes,
-  getMonthlyTotal,
   createIncome,
   updateIncome,
   deleteIncome,
@@ -19,6 +18,8 @@ import ListIcon from '@/shared/ListIcon'
 import StatusTag from '@/shared/StatusTag'
 import { exportIncomesCsv } from '@/lib/api/incomesApi'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
+import { formatToman, sumAmounts } from '@/utils/formatToman'
 import {
   BASE_SORT_OPTIONS,
   DEFAULT_SORT,
@@ -32,7 +33,6 @@ const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 export default function IncomePage() {
   const [incomes, setIncomes] = useState<Income[]>([])
   const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
-  const [monthlyTotal, setMonthlyTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -41,9 +41,8 @@ export default function IncomePage() {
 
   async function load() {
     try {
-      const [items, total] = await Promise.all([getIncomes(), getMonthlyTotal()])
+      const items = await getIncomes()
       setIncomes(items)
-      setMonthlyTotal(total)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
     } finally {
@@ -52,6 +51,11 @@ export default function IncomePage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const monthlyTotal = sumAmounts(
+    incomes.filter((i) => i.incomeType === 'RECURRING').map((i) => i.amount),
+  )
+  const allTotal = sumAmounts(incomes.map((i) => i.amount))
 
   const sortedIncomes = useMemo(
     () => sortItems(incomes, sortId, {
@@ -98,7 +102,7 @@ export default function IncomePage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <PageHeader
         title="درآمدها"
-        subtitle={`درآمد ماهانه (مکرر): ${formatToman(monthlyTotal)}`}
+        subtitle={`جمع کل: ${formatToman(allTotal)} · درآمد ماهانه مکرر: ${formatToman(monthlyTotal)}`}
         addLabel="+ درآمد جدید"
         onAdd={() => { setEditing(null); setShowForm(true) }}
         onExport={exportIncomesCsv}
@@ -167,6 +171,10 @@ export default function IncomePage() {
         </div>
       )}
 
+      {incomes.length > 0 && (
+        <TotalFooter value={allTotal} formatValue={formatToman} />
+      )}
+
       {showForm && (
         <IncomeForm
           initial={editing}
@@ -176,8 +184,4 @@ export default function IncomePage() {
       )}
     </div>
   )
-}
-
-function formatToman(amount: number): string {
-  return amount.toLocaleString('fa-IR') + ' تومان'
 }

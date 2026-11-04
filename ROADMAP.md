@@ -73,6 +73,17 @@ Phase 2 is **on hold** until Phase 1.5 is complete and stable.
 - Dynamic import for recharts; per-route loading states
 - Reduced initial JS bundle on accounts/investments routes
 
+### M6.7 — Financial Intelligence Platform
+- Persistent asset catalog, historical prices with provenance, update jobs, quality, advisor later
+- Does not replace `/api/v1/market`; that API remains the investments/market facade
+- **Slice 1:** Flyway `V16` catalog + price/job/quality tables, V13 backfill, dual-write ingest, `GET /api/v1/financial-intelligence/assets`
+- **Slices 2–4:** provider fallback, async update jobs, daily history API, `/intelligence` overview
+- **Slices 5–6:** conflict/reference/snapshot, Update Center + quality pages
+- **Slice 7:** World Bank CPI (`IRN`/`USA`) into `fi_macro_*`; event table schema-only; `/intelligence/macro`
+- **Slice 8 foundation:** `GET /api/v1/advisor/context` summaries only; Claude via `ADVISOR_LLM_API_KEY` or fake client; `POST /api/v1/advisor/draft`
+- **Slice 9:** recommendation persist + lifecycle, thesis, snapshot binding, response cache, `/intelligence/advisor`
+- **Slice 10:** recommendation evaluation vs daily OHLC + Gold/USD/BTC; strategy catalog schema only (no backtest engine)
+
 ---
 
 ## Phase 2 — Business Finance ("The One")

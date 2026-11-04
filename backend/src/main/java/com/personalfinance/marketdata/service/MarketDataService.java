@@ -3,25 +3,29 @@ package com.personalfinance.marketdata.service;
 import com.github.mfathi91.time.PersianDate;
 import com.personalfinance.common.JalaliDateConverter;
 import com.personalfinance.marketdata.MarketSymbol;
+import com.personalfinance.marketdata.dto.BourseInstrumentDto;
+import com.personalfinance.marketdata.dto.BourseInstrumentQuoteDto;
+import com.personalfinance.marketdata.dto.BourseWatchlistRequest;
 import com.personalfinance.marketdata.dto.MarketCalcResponse;
 import com.personalfinance.marketdata.dto.MarketHistoryPointDto;
 import com.personalfinance.marketdata.dto.MarketQuoteDto;
 import com.personalfinance.marketdata.entity.MarketPriceSnapshot;
 import com.personalfinance.marketdata.provider.CoinGeckoProvider;
-import com.personalfinance.marketdata.provider.NobitexProvider;
 import com.personalfinance.marketdata.dto.PortfolioStockQuoteDto;
 import com.personalfinance.marketdata.provider.BourseInstrumentResolver;
-import com.personalfinance.marketdata.provider.TgjuProvider;
+import com.personalfinance.marketdata.provider.TsetmcInstrumentSearchProvider;
 import com.personalfinance.marketdata.provider.TsetmcBourseProvider;
+import com.personalfinance.marketdata.provider.TsetmcBourseQuote;
 import com.personalfinance.account.entity.Investment;
 import com.personalfinance.account.entity.InvestmentType;
 import com.personalfinance.account.repository.InvestmentRepository;
 import com.personalfinance.marketdata.repository.MarketPriceSnapshotRepository;
+import com.personalfinance.intelligence.service.FinancialDataUpdateService;
+import com.personalfinance.intelligence.service.MarketPriceIngestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -39,19 +43,19 @@ public class MarketDataService {
             MarketSymbol.BTC_USD, "بیت‌کوین (دلار)",
             MarketSymbol.BTC_IRR, "بیت‌کوین (تومان)",
             MarketSymbol.GOLD_18K_IRR, "طلای ۱۸ عیار ایران (هر گرم)",
-            MarketSymbol.GOLD_XAU_USD, "طلای جهانی (XAU/oz)",
+            MarketSymbol.GOLD_XAU_USD, "برآورد اونس طلا (PAXG)",
             MarketSymbol.PAXG_USD, "PAXG (دلار)",
             MarketSymbol.USD_IRR, "دلار (تومان)",
             MarketSymbol.ETF_AYAR, "صندوق عیار (ETF بورس)",
             MarketSymbol.ETF_NARANGE, "صندوق نارنج (ETF بورس)");
     private final MarketPriceSnapshotRepository repository;
-    private final CoinGeckoProvider coinGeckoProvider;
-    private final NobitexProvider nobitexProvider;
-    private final TgjuProvider tgjuProvider;
     private final TsetmcBourseProvider tsetmcBourseProvider;
+    private final TsetmcInstrumentSearchProvider tsetmcInstrumentSearchProvider;
     private final BourseInstrumentResolver bourseInstrumentResolver;
     private final InvestmentRepository investmentRepository;
     private final JalaliDateConverter jalaliDateConverter;
+    private final MarketPriceIngestService marketPriceIngestService;
+    private final FinancialDataUpdateService financialDataUpdateService;
 
     private final Map<MarketSymbol, MarketQuoteDto> quoteCache = new ConcurrentHashMap<>();
     private final Map<Long, PortfolioStockQuoteDto> portfolioStockCache = new ConcurrentHashMap<>();
@@ -60,31 +64,25 @@ public class MarketDataService {
 
     public MarketDataService(
             MarketPriceSnapshotRepository repository,
-            CoinGeckoProvider coinGeckoProvider,
-            NobitexProvider nobitexProvider,
-            TgjuProvider tgjuProvider,
             TsetmcBourseProvider tsetmcBourseProvider,
+            TsetmcInstrumentSearchProvider tsetmcInstrumentSearchProvider,
             BourseInstrumentResolver bourseInstrumentResolver,
             InvestmentRepository investmentRepository,
-            JalaliDateConverter jalaliDateConverter) {
+            JalaliDateConverter jalaliDateConverter,
+            MarketPriceIngestService marketPriceIngestService,
+            FinancialDataUpdateService financialDataUpdateService) {
         this.repository = repository;
-        this.coinGeckoProvider = coinGeckoProvider;
-        this.nobitexProvider = nobitexProvider;
-        this.tgjuProvider = tgjuProvider;
         this.tsetmcBourseProvider = tsetmcBourseProvider;
+        this.tsetmcInstrumentSearchProvider = tsetmcInstrumentSearchProvider;
         this.bourseInstrumentResolver = bourseInstrumentResolver;
         this.investmentRepository = investmentRepository;
         this.jalaliDateConverter = jalaliDateConverter;
+        this.marketPriceIngestService = marketPriceIngestService;
+        this.financialDataUpdateService = financialDataUpdateService;
     }
 
     public List<MarketQuoteDto> getQuotes() {
         if (quoteCache.isEmpty() || cacheExpired()) {
-            refreshFromDb();
-        }
-        if (quoteCache.isEmpty() || needsLiveRefresh()) {
-            fetchAllQuotes();
-        }
-        if (quoteCache.isEmpty()) {
             refreshFromDb();
         }
         return MarketSymbol.values().length == 0
@@ -102,7 +100,7 @@ public class MarketDataService {
     }
 
     public List<PortfolioStockQuoteDto> getPortfolioStockQuotes() {
-        if (portfolioStockCache.isEmpty() || portfolioCacheExpired()) {
+        if (portfolioCacheExpired()) {
             refreshPortfolioStockQuotes();
         }
         return investmentRepository.findByAssetType(InvestmentType.STOCK).stream()
@@ -110,6 +108,70 @@ public class MarketDataService {
                 .map(portfolioStockCache::get)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    public List<BourseInstrumentDto> searchInstruments(String query) {
+        return tsetmcInstrumentSearchProvider.search(query);
+    }
+
+    public List<BourseInstrumentQuoteDto> getWatchlistQuotes(BourseWatchlistRequest request) {
+        if (request == null || request.items() == null || request.items().isEmpty()) {
+            return List.of();
+        }
+        Instant now = Instant.now();
+        Set<String> fetched = new HashSet<>();
+        List<BourseInstrumentQuoteDto> results = new ArrayList<>();
+
+        for (BourseWatchlistRequest.WatchlistItem item : request.items()) {
+            if (item == null || item.insCode() == null || item.insCode().isBlank()) {
+                continue;
+            }
+            String insCode = item.insCode().trim();
+            String symbol = item.symbol() != null ? item.symbol() : "";
+            String name = item.name() != null ? item.name() : symbol;
+
+            BigDecimal price = null;
+            BigDecimal changePercent = null;
+            String source = null;
+            String error = null;
+            Instant observedAt = null;
+
+            if (fetched.add(insCode)) {
+                Optional<TsetmcBourseQuote> quote = tsetmcBourseProvider.fetchQuote(insCode);
+                if (quote.isPresent()) {
+                    price = quote.get().priceToman();
+                    changePercent = quote.get().changePercent();
+                    source = "TSETMC";
+                    observedAt = quote.get().observedAt();
+                    persistPortfolioEtfSnapshot(insCode, price, observedAt);
+                } else {
+                    error = "دریافت از TSETMC ناموفق";
+                }
+            } else {
+                Optional<BourseInstrumentQuoteDto> prior = results.stream()
+                        .filter(q -> insCode.equals(q.insCode()))
+                        .findFirst();
+                if (prior.isPresent()) {
+                    price = prior.get().value();
+                    changePercent = prior.get().changePercent();
+                    source = prior.get().source();
+                    error = prior.get().errorMessage();
+                    observedAt = prior.get().recordedAt();
+                }
+            }
+
+            results.add(new BourseInstrumentQuoteDto(
+                    insCode,
+                    symbol,
+                    name,
+                    price,
+                    "TOMAN",
+                    changePercent,
+                    source,
+                    observedAt,
+                    error));
+        }
+        return results;
     }
 
     public List<PortfolioStockQuoteDto> refreshPortfolioStockQuotes() {
@@ -144,13 +206,15 @@ public class MarketDataService {
             BigDecimal price = null;
             String source = null;
             String error = null;
+            Instant observedAt = null;
 
             if (fetchedInsCodes.add(instrument.insCode())) {
-                Optional<BigDecimal> fetched = tsetmcBourseProvider.fetchUnitPriceToman(instrument.insCode());
+                Optional<TsetmcBourseQuote> fetched = tsetmcBourseProvider.fetchQuote(instrument.insCode());
                 if (fetched.isPresent()) {
-                    price = fetched.get();
+                    price = fetched.get().priceToman();
+                    observedAt = fetched.get().observedAt();
                     source = "TSETMC";
-                    persistPortfolioEtfSnapshot(instrument.insCode(), price, now);
+                    persistPortfolioEtfSnapshot(instrument.insCode(), price, observedAt);
                 } else {
                     error = "دریافت از TSETMC ناموفق — backend.log را بررسی کنید";
                 }
@@ -163,6 +227,7 @@ public class MarketDataService {
                     price = prior.value();
                     source = prior.source();
                     error = prior.errorMessage();
+                    observedAt = prior.recordedAt();
                 }
             }
 
@@ -173,7 +238,7 @@ public class MarketDataService {
                     price,
                     "TOMAN",
                     source,
-                    price != null ? now : null,
+                    observedAt,
                     error));
         }
 
@@ -278,65 +343,18 @@ public class MarketDataService {
         return quote.value();
     }
 
-    @Scheduled(fixedRateString = "${app.market.fetch-interval-ms:600000}")
-    @Transactional
+    @Scheduled(initialDelayString = "${app.market.fetch-interval-ms:600000}",
+            fixedDelayString = "${app.market.fetch-interval-ms:600000}")
     public void scheduledFetch() {
-        fetchAllQuotes();
+        financialDataUpdateService.runSynchronous("SCHEDULED");
+        refreshFromDb();
         refreshPortfolioStockQuotes();
     }
 
-    @Transactional
     public void fetchAllQuotes() {
-        List<CoinGeckoProvider.QuoteFetch> fetched = new ArrayList<>();
-
-        // Live Iranian prices (TGJU widget — same source as tgju.org profile pages)
-        fetched.addAll(tgjuProvider.fetchLiveIranianQuotes());
-
-        coinGeckoProvider.fetchBtcUsd().ifPresent(fetched::add);
-        coinGeckoProvider.fetchPaxgUsd().ifPresent(paxg -> {
-            fetched.add(paxg);
-            fetched.add(new CoinGeckoProvider.QuoteFetch(
-                    MarketSymbol.GOLD_XAU_USD, paxg.value(), paxg.currency(), paxg.source()));
-        });
-
-        resolveBtcIrr(fetched);
-
-        Instant now = Instant.now();
-        for (CoinGeckoProvider.QuoteFetch q : fetched) {
-            persistQuote(q, now);
-        }
+        financialDataUpdateService.runSynchronous("MANUAL");
         refreshFromDb();
-        log.info("Market quotes refreshed: {} symbols fetched", fetched.size());
-    }
-
-    /**
-     * BTC toman = BTC/USD × TGJU live dollar (consistent with sidebar USD quote).
-     */
-    private void resolveBtcIrr(List<CoinGeckoProvider.QuoteFetch> fetched) {
-        BigDecimal btcUsd = valueOf(fetched, MarketSymbol.BTC_USD);
-        BigDecimal usdIrr = valueOf(fetched, MarketSymbol.USD_IRR);
-        if (btcUsd == null || usdIrr == null) {
-            return;
-        }
-        BigDecimal calculated = btcUsd.multiply(usdIrr).setScale(0, RoundingMode.HALF_UP);
-        fetched.removeIf(q -> q.symbol() == MarketSymbol.BTC_IRR);
-        fetched.add(new CoinGeckoProvider.QuoteFetch(
-                MarketSymbol.BTC_IRR, calculated, "TOMAN", "BTC_USD×USD_IRR"));
-    }
-
-    /** Re-fetch when DB still holds pre-fix TGJU table snapshots or data is stale. */
-    private boolean needsLiveRefresh() {
-        MarketQuoteDto gold = quoteCache.get(MarketSymbol.GOLD_18K_IRR);
-        MarketQuoteDto usd = quoteCache.get(MarketSymbol.USD_IRR);
-        if (gold == null || usd == null) {
-            return true;
-        }
-        if (!"TGJU-Live".equals(gold.source()) || !"TGJU-Live".equals(usd.source())) {
-            log.info("Iranian quotes need refresh: goldSource={} usdSource={}", gold.source(), usd.source());
-            return true;
-        }
-        Instant staleAfter = Instant.now().minusSeconds(900);
-        return gold.recordedAt().isBefore(staleAfter) || usd.recordedAt().isBefore(staleAfter);
+        log.info("Market quotes refreshed via financial intelligence update");
     }
 
     private boolean portfolioCacheExpired() {
@@ -357,14 +375,6 @@ public class MarketDataService {
         persistQuote(new CoinGeckoProvider.QuoteFetch(symbol, toman, "TOMAN", "TSETMC"), recordedAt);
     }
 
-    private BigDecimal valueOf(List<CoinGeckoProvider.QuoteFetch> fetched, MarketSymbol symbol) {
-        return fetched.stream()
-                .filter(q -> q.symbol() == symbol)
-                .map(CoinGeckoProvider.QuoteFetch::value)
-                .findFirst()
-                .orElse(null);
-    }
-
     private void persistQuote(CoinGeckoProvider.QuoteFetch q, Instant recordedAt) {
         MarketPriceSnapshot snapshot = new MarketPriceSnapshot();
         snapshot.setSymbol(q.symbol());
@@ -373,12 +383,18 @@ public class MarketDataService {
         snapshot.setRecordedAt(recordedAt);
         snapshot.setSource(q.source());
         repository.save(snapshot);
+        try {
+            marketPriceIngestService.ingestLegacy(
+                    q.symbol().name(), q.value(), q.currency(), q.source(), recordedAt);
+        } catch (Exception e) {
+            log.warn("Financial intelligence ingest skipped for {}: {}", q.symbol(), e.getMessage());
+        }
     }
 
     private void refreshFromDb() {
         Instant monthStart = currentJalaliMonthStart();
         for (MarketSymbol symbol : MarketSymbol.values()) {
-            repository.findFirstBySymbolOrderByRecordedAtDesc(symbol).ifPresent(latest -> {
+            repository.findFirstBySymbolOrderByIdDesc(symbol).ifPresent(latest -> {
                 BigDecimal monthChange = computeMonthChangePercent(symbol, latest.getValue(), monthStart);
                 quoteCache.put(symbol, new MarketQuoteDto(
                         symbol,
@@ -404,6 +420,6 @@ public class MarketDataService {
     }
 
     private boolean cacheExpired() {
-        return cacheUpdatedAt.plusSeconds(120).isBefore(Instant.now());
+        return cacheUpdatedAt.plusSeconds(10).isBefore(Instant.now());
     }
 }

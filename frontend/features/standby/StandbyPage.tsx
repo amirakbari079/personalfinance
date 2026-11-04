@@ -5,7 +5,6 @@ import {
   type Standby,
   type StandbyRequest,
   getStandbyItems,
-  getStandbyTotal,
   createStandbyItem,
   updateStandbyItem,
   deleteStandbyItem,
@@ -18,6 +17,8 @@ import PageHeader from '@/shared/PageHeader'
 import ListIcon from '@/shared/ListIcon'
 import StatusTag from '@/shared/StatusTag'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
+import { formatToman, sumAmounts } from '@/utils/formatToman'
 import {
   BASE_SORT_OPTIONS,
   DEFAULT_SORT,
@@ -31,7 +32,6 @@ const SORT_OPTIONS = [...BASE_SORT_OPTIONS, ...DOMAIN_DATE_SORT_OPTIONS]
 export default function StandbyPage() {
   const [items, setItems] = useState<Standby[]>([])
   const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
-  const [total, setTotal] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -40,9 +40,8 @@ export default function StandbyPage() {
 
   async function load() {
     try {
-      const [list, tot] = await Promise.all([getStandbyItems(), getStandbyTotal()])
+      const list = await getStandbyItems()
       setItems(list)
-      setTotal(tot)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
     } finally {
@@ -51,6 +50,8 @@ export default function StandbyPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const total = sumAmounts(items.map((i) => i.totalValue))
 
   const sortedItems = useMemo(
     () => sortItems(items, sortId, {
@@ -164,6 +165,10 @@ export default function StandbyPage() {
         </div>
       )}
 
+      {items.length > 0 && (
+        <TotalFooter value={total} formatValue={formatToman} />
+      )}
+
       {showForm && (
         <StandbyForm
           initial={editing}
@@ -173,8 +178,4 @@ export default function StandbyPage() {
       )}
     </div>
   )
-}
-
-function formatToman(amount: number): string {
-  return amount.toLocaleString('fa-IR') + ' تومان'
 }

@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ReceivableRepository extends JpaRepository<Receivable, Long> {
 
-    @Query("SELECT COALESCE(SUM(r.originalAmount - r.receivedAmount), 0) FROM Receivable r")
+    @Query("SELECT COALESCE(SUM(r.originalAmount - r.receivedAmount), 0L) FROM Receivable r")
     Long sumOutstanding();
 }

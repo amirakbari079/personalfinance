@@ -19,6 +19,7 @@ export interface Investment {
   nativeUnit: string | null
   tomanEquivalent: number
   notes: string | null
+  valueRecordedDate?: string | null
   createdAt: string
 }
 

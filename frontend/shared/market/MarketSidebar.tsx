@@ -1,23 +1,25 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   type MarketQuote,
   type MarketSymbol,
   type MarketHistoryPoint,
-  type PortfolioStockQuote,
+  type BourseInstrumentQuote,
+  type WatchlistItem,
   getMarketQuotes,
   getMarketHistory,
   refreshMarketQuotes,
-  getPortfolioStockQuotes,
-  refreshPortfolioStockQuotes,
+  getWatchlistQuotes,
 } from '@/lib/api/marketApi'
+import { getInvestmentsPinnedWatchlist } from '@/lib/marketWatchlist'
+import WatchlistStockCard from '@/features/market/WatchlistStockCard'
 import MarketQuoteCard from './MarketQuoteCard'
 import MarketQuotePairCard from './MarketQuotePairCard'
 import MarketRefreshButton from './MarketRefreshButton'
 import MarketHistoryMiniChart from './MarketHistoryMiniChart'
 import { ChevronDown, TrendingUp } from 'lucide-react'
-import { formatMarketValue, minutesAgo } from '@/lib/api/marketApi'
 
 const CHART_SYMBOLS: MarketSymbol[] = ['BTC_IRR', 'GOLD_18K_IRR']
 
@@ -48,44 +50,35 @@ const SINGLE_GROUPS: { title: string; symbols: MarketSymbol[] }[] = [
 const VPN_HINT =
   'قیمت‌های TGJU با VPN روشن ممکن است لود نشوند. VPN را خاموش کنید و «بروزرسانی» بزنید.'
 
-const BOURSE_HINT =
-  'قیمت بورس از TSETMC توسط backend دریافت می‌شود (در Network مرورگر فقط /api/v1/market/portfolio-stocks دیده می‌شود).'
-
 interface Props {
   className?: string
 }
 
-function PortfolioStockCard({ quote }: { quote: PortfolioStockQuote }) {
-  const hasPrice = quote.value != null && quote.value > 0
-  return (
-    <div className="glass-card p-4 space-y-2 animate-fade-in-up">
-      <div>
-        <p className="text-xs text-text-muted truncate">{quote.name}</p>
-        <p className="text-sm text-amount text-text-primary mt-0.5 tabular-nums">
-          {hasPrice ? formatMarketValue(quote.value!, quote.currency) : '—'}
-        </p>
-      </div>
-      {quote.errorMessage && (
-        <p className="text-[10px] text-status-error/90 leading-relaxed">{quote.errorMessage}</p>
-      )}
-      <p className="text-[10px] text-text-muted">
-        {quote.source ?? 'TSETMC'}
-        {quote.insCode && ` · insCode ${quote.insCode}`}
-        {quote.recordedAt && ` · ${minutesAgo(quote.recordedAt)}`}
-      </p>
-    </div>
-  )
-}
-
 export default function MarketSidebar({ className = '' }: Props) {
   const [quotes, setQuotes] = useState<MarketQuote[]>([])
-  const [portfolioStocks, setPortfolioStocks] = useState<PortfolioStockQuote[]>([])
+  const [pinnedItems, setPinnedItems] = useState<WatchlistItem[]>([])
+  const [pinnedQuotes, setPinnedQuotes] = useState<BourseInstrumentQuote[]>([])
   const [history, setHistory] = useState<Record<string, MarketHistoryPoint[]>>({})
   const [loading, setLoading] = useState(true)
   const [historyLoading, setHistoryLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(false)
+
+  const loadPinned = useCallback(async () => {
+    const pinned = getInvestmentsPinnedWatchlist()
+    setPinnedItems(pinned)
+    if (pinned.length === 0) {
+      setPinnedQuotes([])
+      return
+    }
+    try {
+      const wlQuotes = await getWatchlistQuotes(pinned)
+      setPinnedQuotes(wlQuotes)
+    } catch {
+      setPinnedQuotes([])
+    }
+  }, [])
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true)
@@ -109,14 +102,11 @@ export default function MarketSidebar({ className = '' }: Props) {
     async function load() {
       setLoading(true)
       try {
-        const [q, stocks] = await Promise.all([
-          getMarketQuotes(),
-          getPortfolioStockQuotes(),
-        ])
+        const q = await getMarketQuotes()
         if (!cancelled) {
           setQuotes(q)
-          setPortfolioStocks(stocks)
-          await loadHistory()
+          void loadHistory()
+          void loadPinned()
         }
       } catch {
         /* optional */
@@ -126,19 +116,25 @@ export default function MarketSidebar({ className = '' }: Props) {
     }
     load()
     return () => { cancelled = true }
-  }, [loadHistory])
+  }, [loadHistory, loadPinned])
+
+  useEffect(() => {
+    const onChange = () => loadPinned()
+    window.addEventListener('storage', onChange)
+    window.addEventListener('pf-watchlist-changed', onChange)
+    return () => {
+      window.removeEventListener('storage', onChange)
+      window.removeEventListener('pf-watchlist-changed', onChange)
+    }
+  }, [loadPinned])
 
   async function handleRefresh() {
     setRefreshing(true)
     setRefreshError(null)
     try {
-      const [q, stocks] = await Promise.all([
-        refreshMarketQuotes(),
-        refreshPortfolioStockQuotes(),
-      ])
+      const q = await refreshMarketQuotes()
       setQuotes(q)
-      setPortfolioStocks(stocks)
-      await loadHistory()
+      await Promise.all([loadHistory(), loadPinned()])
     } catch (e) {
       setRefreshError(e instanceof Error ? e.message : 'خطا در بروزرسانی')
     } finally {
@@ -161,6 +157,8 @@ export default function MarketSidebar({ className = '' }: Props) {
       return acc
     }, undefined)
   }
+
+  const hasMarketData = quotes.length > 0 || pinnedItems.length > 0
 
   const content = (
     <div className="market-panel space-y-4">
@@ -186,20 +184,27 @@ export default function MarketSidebar({ className = '' }: Props) {
         </div>
       ) : (
         <>
-          {portfolioStocks.length > 0 && (
+          {pinnedItems.length > 0 && (
             <div className="space-y-2 animate-fade-in-up">
-              <div className="flex items-center justify-between px-1">
-                <p className="text-[11px] text-text-muted">سهام/صندوق‌های شما (TSETMC)</p>
-                <MarketRefreshButton onClick={handleRefresh} loading={refreshing} />
+              <div className="flex items-center justify-between px-1 gap-2">
+                <p className="text-[11px] text-text-muted">سهام/صندوق‌ها</p>
+                <Link href="/market" className="text-[10px] text-brand-accent hover:underline">
+                  مدیریت
+                </Link>
               </div>
-              {portfolioStocks.map((stock) => (
-                <PortfolioStockCard key={stock.investmentId} quote={stock} />
-              ))}
-              <p className="text-[10px] text-text-muted px-1">{BOURSE_HINT}</p>
+              <div className="watchlist-stock-grid">
+                {pinnedItems.map((item) => (
+                  <WatchlistStockCard
+                    key={item.insCode}
+                    item={item}
+                    quote={pinnedQuotes.find((q) => q.insCode === item.insCode)}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
-          {quotes.length === 0 && portfolioStocks.length === 0 ? (
+          {!hasMarketData ? (
             <div className="glass-card p-6 text-center text-sm text-text-muted space-y-3">
               <p>قیمت بازار در دسترس نیست.</p>
               <MarketRefreshButton onClick={handleRefresh} loading={refreshing} label="تلاش مجدد" />

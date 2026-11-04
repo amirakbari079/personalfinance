@@ -23,6 +23,11 @@ spring:
     baseline-on-migrate: false
     validate-on-migrate: true
 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
 app:
   jwt:
     secret: ${JWT_SECRET:personalfinance-wan-motor-secret-key-2025}
@@ -36,5 +41,16 @@ app:
       geram18-widget-key: ${TGJU_GERAM18_KEY:137121}
       dollar-widget-key: ${TGJU_DOLLAR_KEY:137203}
     etf:
-      ayar-ins-code: ${ETF_AYAR_INS_CODE:68603452107668866}
-      narange-ins-code: ${ETF_NARANGE_INS_CODE:120079097679462}
+      ayar-ins-code: ${ETF_AYAR_INS_CODE:34144395039913458}
+      narange-ins-code: ${ETF_NARANGE_INS_CODE:35831329532779850}
+    conflict-threshold-percent: ${MARKET_CONFLICT_THRESHOLD_PERCENT:0.5}
+  advisor:
+    llm:
+      api-key: ${ADVISOR_LLM_API_KEY:}
+      model: ${ADVISOR_LLM_MODEL:claude-sonnet-4-20250514}
+      cli-enabled: ${ADVISOR_LLM_CLI:true}
+      cli-command: ${ADVISOR_LLM_CLI_COMMAND:}
+      cli-model: ${ADVISOR_LLM_CLI_MODEL:}
+      cli-timeout-seconds: ${ADVISOR_LLM_CLI_TIMEOUT_SECONDS:180}
+  backup:
+    dir: ${BACKUP_DIR:}

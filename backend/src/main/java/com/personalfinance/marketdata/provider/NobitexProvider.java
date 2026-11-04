@@ -27,7 +27,7 @@ public class NobitexProvider {
     public Optional<CoinGeckoProvider.QuoteFetch> fetchBtcIrr() {
         try {
             String body = restClient.get()
-                    .uri("https://api.nobitex.ir/v2/orderbook/BTCIRT")
+                    .uri("https://apiv2.nobitex.ir/v3/orderbook/BTCIRT")
                     .retrieve()
                     .body(String.class);
             JsonNode root = objectMapper.readTree(body);
@@ -50,11 +50,11 @@ public class NobitexProvider {
     public Optional<CoinGeckoProvider.QuoteFetch> fetchUsdIrr() {
         try {
             String body = restClient.get()
-                    .uri("https://api.nobitex.ir/market/stats?srcCurrency=usdt&dstCurrency=rls")
+                    .uri("https://apiv2.nobitex.ir/market/stats?srcCurrency=usdt&dstCurrency=rls")
                     .retrieve()
                     .body(String.class);
             JsonNode root = objectMapper.readTree(body);
-            JsonNode bestSell = root.path("stats").path("bestSell");
+            JsonNode bestSell = root.path("stats").path("usdt-rls").path("latest");
             if (bestSell.isMissingNode() || bestSell.isNull()) return Optional.empty();
             BigDecimal rial = new BigDecimal(bestSell.asText());
             BigDecimal toman = rial.divide(BigDecimal.TEN, 0, RoundingMode.HALF_UP);

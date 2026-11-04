@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -32,6 +33,15 @@ public class InvestmentService {
     public List<InvestmentResponse> findAll() {
         return investmentRepository.findAll()
                 .stream()
+                .map(investment -> enrich(InvestmentResponse.from(investment)))
+                .toList();
+    }
+
+    public List<InvestmentResponse> findByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return investmentRepository.findAllById(ids).stream()
                 .map(investment -> enrich(InvestmentResponse.from(investment)))
                 .toList();
     }

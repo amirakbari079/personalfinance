@@ -6,7 +6,6 @@ import {
   type InvestmentRequest,
   INVESTMENT_TYPE_LABELS,
   getInvestments,
-  getTotalTomanValue,
   createInvestment,
   updateInvestment,
   deleteInvestment,
@@ -29,12 +28,13 @@ import TrendLineChart from '@/shared/history/TrendLineChartLazy'
 import MarketSidebar from '@/shared/market/MarketSidebar'
 import { INVESTMENT_HISTORY_CONFIG } from '@/shared/history/historyTypes'
 import ListSortBar from '@/shared/ListSortBar'
+import TotalFooter from '@/shared/TotalFooter'
 import { BASE_SORT_OPTIONS, DEFAULT_SORT, sortItems, type SortOptionId } from '@/utils/listSort'
+import { sumAmounts } from '@/utils/formatToman'
 
 export default function InvestmentsPage() {
   const [investments, setInvestments] = useState<Investment[]>([])
   const [sortId, setSortId] = useState<SortOptionId>(DEFAULT_SORT)
-  const [total, setTotal] = useState<number>(0)
   const [totalSeries, setTotalSeries] = useState<TotalSeriesPoint[]>([])
   const [cashFlow, setCashFlow] = useState<CashFlowSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -46,6 +46,7 @@ export default function InvestmentsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const formatValue = INVESTMENT_HISTORY_CONFIG.formatValue
+  const total = sumAmounts(investments.map((i) => i.tomanEquivalent))
 
   async function loadAnalytics() {
     setAnalyticsLoading(true)
@@ -65,9 +66,8 @@ export default function InvestmentsPage() {
 
   async function load() {
     try {
-      const [items, tot] = await Promise.all([getInvestments(), getTotalTomanValue()])
+      const items = await getInvestments()
       setInvestments(items)
-      setTotal(tot)
       await loadAnalytics()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در بارگذاری')
@@ -227,10 +227,7 @@ export default function InvestmentsPage() {
           )}
 
           {investments.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-surface-muted flex justify-between items-center">
-              <span className="text-sm text-text-muted">جمع کل</span>
-              <span className="text-sm text-amount text-text-primary">{formatValue(total)}</span>
-            </div>
+            <TotalFooter value={total} formatValue={formatValue} />
           )}
         </div>
 

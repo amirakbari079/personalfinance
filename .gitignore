@@ -33,3 +33,14 @@ frontend/.env.*.local
 .aider*
 *.xlsx
 ~$*.xlsx
+tools/maven/
+backups/*.json
+
+
+backups/*
+!backups/.gitkeep
+frontend/build-output.txt
+frontend/.next-dev/
+.cursor/settings.json
+backend/tmp-*.md
+frontend/shared/banks/_refs/

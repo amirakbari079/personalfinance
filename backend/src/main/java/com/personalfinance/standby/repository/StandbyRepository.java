@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface StandbyRepository extends JpaRepository<Standby, Long> {
 
-    @Query("SELECT COALESCE(SUM(s.quantity * s.expectedUnitPrice), 0) FROM Standby s")
+    @Query("SELECT COALESCE(SUM(s.quantity * s.expectedUnitPrice), 0L) FROM Standby s")
     Long sumTotalValue();
 }

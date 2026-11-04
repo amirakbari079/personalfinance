@@ -158,7 +158,15 @@ public class TgjuProvider {
         }
         BigDecimal toman = rial.divide(TEN, 0, RoundingMode.HALF_UP);
         log.info("TGJU live {}: {} Rial -> {} Toman", name, rial, toman);
-        return Optional.of(new CoinGeckoProvider.QuoteFetch(symbol, toman, "TOMAN", "TGJU-Live"));
+        try {
+            var observedAt = java.time.LocalDateTime.parse(indicator.path("updated_at").asText(),
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    .atZone(java.time.ZoneId.of("Asia/Tehran")).toInstant();
+            return Optional.of(new CoinGeckoProvider.QuoteFetch(symbol, toman, "TOMAN", "TGJU-Live", observedAt));
+        } catch (java.time.DateTimeException e) {
+            log.warn("TGJU indicator {} has no valid observation timestamp", name);
+            return Optional.empty();
+        }
     }
 
     private static BigDecimal parseNumber(String raw) {

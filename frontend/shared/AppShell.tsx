@@ -10,6 +10,8 @@ import ThemeToggle from '@/shared/ThemeToggle'
 
 const NAV_ITEMS: { href: string; label: string; exact?: boolean }[] = [
   { href: '/', label: 'داشبورد', exact: true },
+  { href: '/market', label: 'قیمت‌ها' },
+  { href: '/intelligence', label: 'هوش مالی' },
   { href: '/balance-sheet', label: 'ترازنامه' },
   { href: '/accounts', label: 'حساب‌ها' },
   { href: '/investments', label: 'سرمایه‌گذاری‌ها' },
@@ -39,6 +41,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <a href="#main-content" className="skip-link">رفتن به محتوای صفحه</a>
       <header className="sticky top-0 z-40 px-4 md:px-6 h-14 flex items-center justify-between gap-3 app-header-glass">
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 min-w-0">
           <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-brand-accent/20">
@@ -52,27 +55,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </span>
         </Link>
 
-        <nav className="hidden lg:flex app-nav-pill max-w-[56vw]" aria-label="منوی اصلی">
-          {NAV_ITEMS.map(({ href, label, exact }) => {
-            const active = isNavActive(pathname, href, exact)
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`app-nav-link ${active ? 'app-nav-link--active' : ''}`}
-              >
-                {label}
-              </Link>
-            )
-          })}
-        </nav>
-
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <Link
             href="/settings"
-            title="تنظیمات ظاهر"
-            aria-label="تنظیمات ظاهر"
-            className={`w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 ${
+            title="تنظیمات"
+            aria-label="تنظیمات"
+            className={`w-11 h-11 flex items-center justify-center rounded-xl transition-colors duration-150 ${
               settingsActive
                 ? 'bg-brand-accent text-text-on-accent'
                 : 'text-text-muted hover:text-brand-accent hover:bg-surface-muted/60'
@@ -84,7 +72,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="text-xs text-text-muted hover:text-text-primary transition-colors px-3 h-9 rounded-xl hover:bg-surface-muted/60 hidden sm:inline-flex items-center"
+            className="text-xs text-text-muted hover:text-text-primary transition-colors px-3 h-11 rounded-xl hover:bg-surface-muted/60 inline-flex items-center"
           >
             خروج
           </button>
@@ -92,9 +80,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <nav
-        className="lg:hidden flex items-center gap-1 px-3 py-2 border-b border-surface-muted/40 overflow-x-auto"
+        className="flex items-center gap-1 px-3 py-2 border-b border-surface-muted/40 overflow-x-auto lg:flex-wrap lg:justify-center"
         style={{ scrollbarWidth: 'none' }}
-        aria-label="منوی موبایل"
+        aria-label="منوی اصلی"
       >
         {NAV_ITEMS.map(({ href, label, exact }) => {
           const active = isNavActive(pathname, href, exact)
@@ -102,6 +90,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={href}
               href={href}
+                aria-current={active ? 'page' : undefined}
               className={`app-nav-link ${active ? 'app-nav-link--active' : ''}`}
             >
               {label}
@@ -110,7 +99,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         })}
       </nav>
 
-      <main className="flex-1 pt-4 md:pt-6 pb-10">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 pt-4 md:pt-6 pb-10">{children}</main>
     </div>
   )
 }

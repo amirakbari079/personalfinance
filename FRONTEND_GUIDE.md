@@ -11,7 +11,11 @@
 | توکن‌های تم | `frontend/src/app/globals.css` (`:root` و `.dark`) |
 | هدر و ناوبری | `frontend/shared/AppShell.tsx` + کلاس‌های `.app-header-glass` / `.app-nav-link` |
 | داشبورد | `frontend/features/dashboard/DashboardPage.tsx` |
+| هوش مالی | `frontend/features/intelligence/` · `/intelligence` · `/intelligence/macro` · `/intelligence/advisor` · `/intelligence/updates` · `/intelligence/quality` |
 | تم / رنگ سفارشی | `frontend/shared/ThemeProvider.tsx` · `frontend/shared/theme/colors.ts` |
+| بکاپ و بازیابی | `frontend/features/settings/BackupPanel.tsx` · `frontend/features/settings/SettingsPage.tsx` |
+| جمع کل صفحات | `frontend/shared/TotalFooter.tsx` + `frontend/utils/formatToman.ts` |
+| آیکون بانک / کارگزاری | `frontend/shared/banks/` |
 | Tailwind tokens | `frontend/tailwind.config.ts` |
 
 ## 2) Design tokens مهم
@@ -36,10 +40,17 @@
 | رنگ هدر / تم روشن | `:root` و `.dark` → `--color-header-*` |
 | لرزش منو | `.app-nav-link` در `globals.css` |
 | چیدمان داشبورد | `DashboardPage.tsx` |
+| هوش مالی / قیمت تاریخی | `features/intelligence/` |
+| شاخص کلان | `features/intelligence/MacroPage.tsx` |
+| مشاور مالی | `features/advisor/AdvisorPage.tsx` · `ContextPreview.tsx` · `PortfolioEditor.tsx` |
+| مرکز بروزرسانی / کیفیت داده | `features/intelligence/UpdateCenterPage.tsx` · `QualityPage.tsx` |
 | رنگ کل اپ | `:root` / Settings colors |
+| بکاپ / بازیابی | `features/settings/BackupPanel.tsx` |
+| آیکون بانک / کارگزاری | `shared/banks/bankCatalog.ts` · `customIcons.tsx` |
 
 ## 5) چک‌لیست
 
 - [ ] تم روشن و تیره هر دو هماهنگ‌اند
 - [ ] هاور منو بدون جابه‌جایی
 - [ ] RTL و موبایل درست است
+- [ ] صفحه مشاور: پیش‌نمایش اسنپ‌شات قبل از تحلیل، و انتخاب حساب/سرمایه‌گذاری بدون فیلد متنی نماد

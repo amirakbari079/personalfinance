@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface PendingExpenseRepository extends JpaRepository<PendingExpense, Long> {
 
-    @Query("SELECT COALESCE(SUM(e.plannedAmount), 0) FROM PendingExpense e")
+    @Query("SELECT COALESCE(SUM(e.plannedAmount), 0L) FROM PendingExpense e")
     Long sumAllPlannedAmounts();
 }

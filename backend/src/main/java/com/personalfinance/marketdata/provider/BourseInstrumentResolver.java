@@ -16,8 +16,8 @@ public class BourseInstrumentResolver {
     private final String narangeInsCode;
 
     public BourseInstrumentResolver(
-            @Value("${app.market.etf.ayar-ins-code:68603452107668866}") String ayarInsCode,
-            @Value("${app.market.etf.narange-ins-code:120079097679462}") String narangeInsCode) {
+            @Value("${app.market.etf.ayar-ins-code:34144395039913458}") String ayarInsCode,
+            @Value("${app.market.etf.narange-ins-code:35831329532779850}") String narangeInsCode) {
         this.ayarInsCode = ayarInsCode;
         this.narangeInsCode = narangeInsCode;
     }
@@ -33,6 +33,8 @@ public class BourseInstrumentResolver {
         String unit = investment.getNativeUnit();
         if (unit != null && unit.startsWith("b:")) {
             String insCode = unit.substring(2).trim();
+            if ("68603452107668866".equals(insCode)) insCode = ayarInsCode;
+            if ("120079097679462".equals(insCode)) insCode = narangeInsCode;
             if (!insCode.isBlank()) {
                 return Optional.of(new ResolvedInstrument(insCode, investment.getName()));
             }

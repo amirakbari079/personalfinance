@@ -9,6 +9,7 @@
 - Catalogue prices are **reference/default** values; per-invoice overrides are always allowed.
 - Account labels, asset names, income sources, expense categories — all are **user-defined**, not hardcoded.
 - Data export to CSV/Excel is supported for all entities, for backup purposes.
+- Full database backup and restore from Settings (JSON files in the project `backups/` folder).
 ---
 
 ## Phase 1 — Personal Finance

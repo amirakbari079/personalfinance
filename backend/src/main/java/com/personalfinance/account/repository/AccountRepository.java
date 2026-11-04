@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    @Query("SELECT COALESCE(SUM(a.balance), 0) FROM Account a")
+    @Query("SELECT COALESCE(SUM(a.balance), 0L) FROM Account a")
     Long sumAllBalances();
 }

@@ -1,4 +1,4 @@
-export type BankCategory = 'bank' | 'wallet' | 'psp'
+export type BankCategory = 'bank' | 'wallet' | 'psp' | 'broker'
 
 export interface BankDefinition {
   code: string
@@ -8,8 +8,12 @@ export interface BankDefinition {
   keywords: string[]
 }
 
-/** Iranian banks + digital wallets/PSPs — icons from @iran-utils/iranian-banks-react-icons */
+/** Iranian banks + digital wallets/PSPs + brokers — bank icons from @iran-utils/iranian-banks-icons-core */
 export const BANK_CATALOG: BankDefinition[] = [
+  // کارگزاری
+  { code: 'easytrader', label: 'ایزی‌تریدر (مفید)', iconKey: 'EasyTrader', category: 'broker', keywords: ['ایزی تریدر', 'ایزیتریدر', 'easytrader', 'easy trader', 'مفید', 'کارگزاری مفید', 'emofid', 'mofid'] },
+  { code: 'kian_trader', label: 'کیان تریدر', iconKey: 'KianTrader', category: 'broker', keywords: ['کیان تریدر', 'کیانتریدر', 'کیان تردر', 'kian trader', 'kiantrader', 'کارگزاری کیان', 'کیان'] },
+
   // بانک‌ها
   { code: 'melli', label: 'بانک ملی', iconKey: 'Melli', category: 'bank', keywords: ['ملی', 'بانک ملی', 'melli', 'bmi'] },
   { code: 'mellat', label: 'بانک ملت', iconKey: 'Mellat', category: 'bank', keywords: ['ملت', 'بانک ملت', 'mellat'] },
@@ -86,7 +90,7 @@ export function banksForAccountType(type: 'BANK' | 'DIGITAL_WALLET' | 'EXCHANGE'
     return BANK_CATALOG.filter(b => b.category === 'wallet' || b.category === 'psp' || b.code === 'blu_bank' || b.code === 'bankino')
   }
   if (type === 'BANK') {
-    return BANK_CATALOG.filter(b => b.category === 'bank')
+    return BANK_CATALOG.filter(b => b.category === 'bank' || b.category === 'broker')
   }
   return BANK_CATALOG
 }

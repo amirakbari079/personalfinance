@@ -11,6 +11,7 @@ import {
 import { RotateCcw, Palette } from 'lucide-react'
 import PageHeader from '@/shared/PageHeader'
 import StatusTag from '@/shared/StatusTag'
+import BackupPanel from './BackupPanel'
 
 const PRESET_PALETTES: { name: string; colors: ThemeColors }[] = [
   { name: 'آبی الکتریک', colors: DEFAULT_THEME_COLORS },
@@ -73,15 +74,17 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-8">
       <PageHeader
-        title="تنظیمات ظاهر"
-        subtitle="رنگ‌های تم را شخصی‌سازی کنید"
+        title="تنظیمات"
+        subtitle="پشتیبان داده و ظاهر برنامه"
       />
+
+      <BackupPanel />
 
       {/* Live preview */}
       <section className="mb-8">
-        <h2 className="text-xs text-text-muted mb-3 px-1">پیش‌نمایش</h2>
+        <h2 className="text-xs text-text-muted mb-3 px-1">پیش‌نمایش ظاهر</h2>
         <div className="glass-card p-6 space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
             <button type="button" className="btn-primary text-xs">دکمه اصلی</button>

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface MarketPriceSnapshotRepository extends JpaRepository<MarketPriceSnapshot, Long> {
 
-    Optional<MarketPriceSnapshot> findFirstBySymbolOrderByRecordedAtDesc(MarketSymbol symbol);
+    Optional<MarketPriceSnapshot> findFirstBySymbolOrderByIdDesc(MarketSymbol symbol);
 
     List<MarketPriceSnapshot> findBySymbolAndRecordedAtGreaterThanEqualOrderByRecordedAtAsc(
             MarketSymbol symbol, Instant from);

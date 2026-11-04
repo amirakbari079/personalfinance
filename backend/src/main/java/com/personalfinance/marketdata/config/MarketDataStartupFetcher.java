@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Async;
 
 @Component
 public class MarketDataStartupFetcher implements ApplicationRunner {
@@ -18,6 +19,7 @@ public class MarketDataStartupFetcher implements ApplicationRunner {
     }
 
     @Override
+    @Async("fiExecutor")
     public void run(ApplicationArguments args) {
         try {
             marketDataService.fetchAllQuotes();

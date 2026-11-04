@@ -30,7 +30,7 @@ export default function BankPicker({ accountType, value, onChange }: BankPickerP
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="field-label">لوگوی بانک / کیف پول</label>
+        <label className="field-label">لوگوی بانک / کیف پول / کارگزاری</label>
         {value && (
           <button
             type="button"

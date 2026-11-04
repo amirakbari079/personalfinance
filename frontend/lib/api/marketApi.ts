@@ -46,6 +46,42 @@ export interface PortfolioStockQuote {
   errorMessage: string | null
 }
 
+export interface BourseInstrument {
+  insCode: string
+  symbol: string
+  name: string
+  marketLabel: string
+}
+
+export interface BourseInstrumentQuote {
+  insCode: string
+  symbol: string
+  name: string
+  value: number | null
+  currency: string
+  changePercent: number | null
+  source: string | null
+  recordedAt: string | null
+  errorMessage: string | null
+}
+
+export interface WatchlistItem {
+  insCode: string
+  symbol: string
+  /** نام اصلی از TSETMC — برای جستجو دست نخورده می‌ماند */
+  name: string
+  /** نام نمایشی شخصی (اختیاری) */
+  displayName?: string
+  /** نمایش در صفحه سرمایه‌گذاری‌ها */
+  showOnInvestments?: boolean
+}
+
+export function watchlistLabel(item: WatchlistItem): string {
+  const custom = item.displayName?.trim()
+  if (custom) return custom
+  return item.name || item.symbol
+}
+
 const BASE = '/api/v1/market'
 
 export async function getMarketQuotes(): Promise<MarketQuote[]> {
@@ -76,6 +112,31 @@ export async function refreshPortfolioStockQuotes(): Promise<PortfolioStockQuote
     errorMessage: 'خطا در بروزرسانی قیمت بورس',
   })
   return (data ?? []).map(normalizePortfolioQuote)
+}
+
+export async function searchBourseInstruments(query: string): Promise<BourseInstrument[]> {
+  const qs = new URLSearchParams({ q: query })
+  return apiGetList<BourseInstrument>(
+    `${BASE}/instruments/search?${qs}`,
+    'خطا در جستجوی نماد بورس',
+  )
+}
+
+export async function getWatchlistQuotes(items: WatchlistItem[]): Promise<BourseInstrumentQuote[]> {
+  const data = await apiRequest<BourseInstrumentQuote[] | null>(`${BASE}/instruments/quotes`, {
+    method: 'POST',
+    body: JSON.stringify({ items }),
+    errorMessage: 'خطا در دریافت قیمت نمادها',
+  })
+  return (data ?? []).map(normalizeBourseQuote)
+}
+
+function normalizeBourseQuote(raw: BourseInstrumentQuote): BourseInstrumentQuote {
+  return {
+    ...raw,
+    value: raw.value != null ? Number(raw.value) : null,
+    changePercent: raw.changePercent != null ? Number(raw.changePercent) : null,
+  }
 }
 
 function normalizePortfolioQuote(raw: PortfolioStockQuote): PortfolioStockQuote {

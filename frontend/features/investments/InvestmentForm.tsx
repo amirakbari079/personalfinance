@@ -8,6 +8,7 @@ import JalaliDatePicker from '@/shared/JalaliDatePicker'
 import { getTodayJalali } from '@/utils/jalaliToday'
 import FormModalShell from '@/shared/FormModalShell'
 import MarketReferencePrices from '@/shared/market/MarketReferencePrices'
+import BourseSymbolSearch from '@/features/market/BourseSymbolSearch'
 import {
   getMarketQuotes,
   refreshMarketQuotes,
@@ -15,9 +16,12 @@ import {
   minutesAgo,
   getPortfolioStockQuotes,
   refreshPortfolioStockQuotes,
+  getWatchlistQuotes,
   type MarketQuote,
   type MarketSymbol,
   type PortfolioStockQuote,
+  type BourseInstrument,
+  type WatchlistItem,
 } from '@/lib/api/marketApi'
 
 const ETF_INS_CODES = {
@@ -33,17 +37,29 @@ interface Props {
 
 const INVESTMENT_TYPES: InvestmentType[] = ['STOCK', 'GOLD', 'CRYPTO', 'FOREIGN_CURRENCY', 'OTHER']
 
-type EtfChoice = 'AYAR' | 'NARANGE'
 type CryptoKind = 'BTC' | 'PAXG'
+
+const STOCK_PRESETS: WatchlistItem[] = [
+  { insCode: ETF_INS_CODES.AYAR, symbol: 'عیار', name: 'صندوق طلای عیار' },
+  { insCode: ETF_INS_CODES.NARANGE, symbol: 'نارنج', name: 'صندوق درآمد ثابت نارنج' },
+]
 
 const VPN_HINT =
   'قیمت‌های ایرانی (TGJU) با VPN روشن ممکن است لود نشوند. VPN را خاموش کنید و «بروزرسانی» بزنید.'
 
-function detectEtfChoice(initial: Investment | null): EtfChoice {
-  if (!initial) return 'AYAR'
+function detectInitialStock(initial: Investment | null): WatchlistItem | null {
+  if (!initial || initial.assetType !== 'STOCK') return STOCK_PRESETS[0]
   const unit = initial.nativeUnit ?? ''
-  if (unit.includes(ETF_INS_CODES.NARANGE) || unit.includes('نارنج')) return 'NARANGE'
-  return 'AYAR'
+  if (unit.startsWith('b:')) {
+    const insCode = unit.slice(2).trim()
+    if (insCode) {
+      const preset = STOCK_PRESETS.find((p) => p.insCode === insCode)
+      return preset ?? { insCode, symbol: initial.name.slice(0, 8), name: initial.name }
+    }
+  }
+  if (unit.includes(ETF_INS_CODES.NARANGE) || unit.includes('نارنج')) return STOCK_PRESETS[1]
+  if (unit.includes(ETF_INS_CODES.AYAR) || unit.includes('عیار')) return STOCK_PRESETS[0]
+  return STOCK_PRESETS[0]
 }
 
 function detectCryptoKind(initial: Investment | null): CryptoKind {
@@ -59,10 +75,20 @@ function quoteValue(quotes: MarketQuote[], symbol: MarketSymbol): number | null 
   return Number.isFinite(v) && v > 0 ? v : null
 }
 
-function portfolioEtfPrice(stocks: PortfolioStockQuote[], etf: EtfChoice): number | null {
-  const insCode = ETF_INS_CODES[etf]
+function portfolioStockPrice(stocks: PortfolioStockQuote[], insCode: string): number | null {
   const match = stocks.find((s) => s.insCode === insCode && s.value != null && s.value > 0)
   return match?.value ?? null
+}
+
+/** TSETMC sometimes returns ETF prices with extra zeros (millions per unit). */
+function normalizeStockUnitToman(price: number): number {
+  let value = price
+  let scaled = 0
+  while (value >= 1_000_000 && scaled < 3) {
+    value = Math.round(value / 1000)
+    scaled += 1
+  }
+  return value
 }
 
 function paxgTomanPrice(quotes: MarketQuote[]): number | null {
@@ -77,7 +103,8 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
   const [assetType, setAssetType] = useState<InvestmentType>(initial?.assetType ?? 'GOLD')
   const [cryptoKind, setCryptoKind] = useState<CryptoKind>(detectCryptoKind(initial))
   const [quantity, setQuantity] = useState(initial?.nativeAmount?.toString() ?? '')
-  const [etfChoice, setEtfChoice] = useState<EtfChoice>(detectEtfChoice(initial))
+  const [selectedStock, setSelectedStock] = useState<WatchlistItem | null>(detectInitialStock(initial))
+  const [stockLivePrice, setStockLivePrice] = useState<number | null>(null)
   const [unitPrice, setUnitPrice] = useState('')
   const [manualUnitPrice, setManualUnitPrice] = useState(false)
   const [tomanEquivalent, setTomanEquivalent] = useState(formatWithCommas(initial?.tomanEquivalent?.toString() ?? '0'))
@@ -109,14 +136,14 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
       default:
         return []
     }
-  }, [assetType, cryptoKind, etfChoice])
+  }, [assetType, cryptoKind])
 
   const refTitle = useMemo(() => {
     switch (assetType) {
       case 'GOLD': return 'طلای ۱۸ عیار ایران'
       case 'CRYPTO': return cryptoKind === 'PAXG' ? 'PAXG (دلاری)' : 'بیت‌کوین'
       case 'FOREIGN_CURRENCY': return 'نرخ دلار'
-      case 'STOCK': return 'قیمت ETF بورس'
+      case 'STOCK': return selectedStock ? `${selectedStock.symbol} — TSETMC` : 'قیمت ETF بورس'
       default: return 'قیمت مرجع'
     }
   }, [assetType, cryptoKind])
@@ -131,17 +158,37 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
           : quoteValue(quotes, 'BTC_IRR')
       case 'FOREIGN_CURRENCY':
         return quoteValue(quotes, 'USD_IRR')
-      case 'STOCK':
-        return portfolioEtfPrice(portfolioStocks, etfChoice)
+      case 'STOCK': {
+        const raw = stockLivePrice ?? (selectedStock ? portfolioStockPrice(portfolioStocks, selectedStock.insCode) : null)
+        return raw != null ? normalizeStockUnitToman(raw) : null
+      }
       default:
         return null
     }
-  }, [assetType, cryptoKind, etfChoice, quotes, portfolioStocks])
+  }, [assetType, cryptoKind, selectedStock, stockLivePrice, quotes, portfolioStocks])
 
   const applyQuotes = useCallback((q: MarketQuote[]) => {
     setQuotes(q)
     setQuotesUpdatedAt(latestQuoteTime(q))
   }, [])
+
+  useEffect(() => {
+    if (assetType !== 'STOCK' || !selectedStock) {
+      setStockLivePrice(null)
+      return
+    }
+    let cancelled = false
+    getWatchlistQuotes([selectedStock])
+      .then((items) => {
+        if (cancelled) return
+        const price = items[0]?.value
+        setStockLivePrice(price != null && price > 0 ? normalizeStockUnitToman(price) : null)
+      })
+      .catch(() => {
+        if (!cancelled) setStockLivePrice(null)
+      })
+    return () => { cancelled = true }
+  }, [assetType, selectedStock])
 
   useEffect(() => {
     let cancelled = false
@@ -164,7 +211,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
     if (price != null) {
       setUnitPrice(formatWithCommas(String(price)))
     }
-  }, [supportsAutoCalc, manualUnitPrice, resolveDefaultUnitPrice, quotesLoading, assetType, cryptoKind, etfChoice])
+  }, [supportsAutoCalc, manualUnitPrice, resolveDefaultUnitPrice, quotesLoading, assetType, cryptoKind, selectedStock, stockLivePrice])
 
   useEffect(() => {
     if (!supportsAutoCalc || manualToman) return
@@ -179,19 +226,25 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
     setRefreshError(null)
     resetAutoCalc()
     try {
-      const [q, stocks] = await Promise.all([
+      const [q, stocks, stockQuotes] = await Promise.all([
         refreshMarketQuotes(),
         refreshPortfolioStockQuotes(),
+        selectedStock ? getWatchlistQuotes([selectedStock]) : Promise.resolve([]),
       ])
       applyQuotes(q)
       setPortfolioStocks(stocks)
+      const stockPrice = stockQuotes[0]?.value
+      if (stockPrice != null && stockPrice > 0) setStockLivePrice(normalizeStockUnitToman(stockPrice))
       const price = (() => {
         switch (assetType) {
           case 'GOLD': return quoteValue(q, 'GOLD_18K_IRR')
           case 'CRYPTO':
             return cryptoKind === 'PAXG' ? paxgTomanPrice(q) : quoteValue(q, 'BTC_IRR')
           case 'FOREIGN_CURRENCY': return quoteValue(q, 'USD_IRR')
-          case 'STOCK': return portfolioEtfPrice(stocks, etfChoice)
+          case 'STOCK':
+            return selectedStock
+              ? (stockLivePrice ?? portfolioStockPrice(stocks, selectedStock.insCode))
+              : null
           default: return null
         }
       })()
@@ -226,6 +279,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
     resetAutoCalc()
     setUnitPrice('')
     if (type !== 'CRYPTO') setCryptoKind('BTC')
+    if (type === 'STOCK' && !selectedStock) setSelectedStock(STOCK_PRESETS[0])
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -248,7 +302,12 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
     try {
       let resolvedUnit = ''
       if (assetType === 'STOCK') {
-        resolvedUnit = `b:${ETF_INS_CODES[etfChoice]}`
+        if (!selectedStock) {
+          setError('نماد بورسی را انتخاب کنید')
+          setSaving(false)
+          return
+        }
+        resolvedUnit = `b:${selectedStock.insCode}`
       } else if (assetType === 'GOLD') {
         resolvedUnit = 'گرم'
       } else if (assetType === 'CRYPTO') {
@@ -350,20 +409,48 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
       )}
 
       {assetType === 'STOCK' && (
-        <div>
-          <label className="field-label">صندوق ETF</label>
-          <select
-            value={etfChoice}
-            onChange={e => {
-              setEtfChoice(e.target.value as EtfChoice)
+        <div className="space-y-3">
+          <label className="field-label">نماد بورسی / صندوق</label>
+          <div className="flex flex-wrap gap-2">
+            {STOCK_PRESETS.map((preset) => (
+              <button
+                key={preset.insCode}
+                type="button"
+                onClick={() => {
+                  setSelectedStock(preset)
+                  resetAutoCalc()
+                  setUnitPrice('')
+                  if (!name.trim()) setName(preset.name)
+                }}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                  selectedStock?.insCode === preset.insCode
+                    ? 'border-brand-accent bg-brand-accent/10 text-brand-accent'
+                    : 'border-surface-muted/60 text-text-muted hover:text-text-primary'
+                }`}
+              >
+                {preset.symbol}
+              </button>
+            ))}
+          </div>
+          <BourseSymbolSearch
+            onSelect={(item: BourseInstrument) => {
+              setSelectedStock({
+                insCode: item.insCode,
+                symbol: item.symbol,
+                name: item.name,
+              })
               resetAutoCalc()
               setUnitPrice('')
+              if (!name.trim()) setName(item.name)
             }}
-            className="field-input"
-          >
-            <option value="AYAR">طلای عیار</option>
-            <option value="NARANGE">درآمد ثابت نارنج</option>
-          </select>
+            excludeInsCodes={selectedStock ? [selectedStock.insCode] : []}
+            placeholder="جستجو: نام یا نماد — مثلاً فملی، سیمانا..."
+          />
+          {selectedStock && (
+            <p className="text-[10px] text-text-muted">
+              انتخاب‌شده: {selectedStock.symbol} — {selectedStock.name} · insCode {selectedStock.insCode}
+            </p>
+          )}
         </div>
       )}
 
@@ -390,7 +477,7 @@ export default function InvestmentForm({ initial, onSave, onCancel }: Props) {
                     : 'قیمت در دسترس نیست'}
               </p>
               <p className="text-[10px] text-text-muted">
-                فقط صندوق انتخاب‌شده از TSETMC لود می‌شود (insCode: {ETF_INS_CODES[etfChoice]}).
+                قیمت از TSETMC — insCode: {selectedStock?.insCode ?? '—'}
               </p>
             </div>
           ) : (

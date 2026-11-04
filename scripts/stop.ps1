@@ -1,54 +1,28 @@
 #Requires -Version 5.1
-$ErrorActionPreference = 'SilentlyContinue'
-
-$Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$RunDir = Join-Path $Root '.run'
-$BackendPidFile = Join-Path $RunDir 'backend.pid'
-$FrontendPidFile = Join-Path $RunDir 'frontend.pid'
-
-function Stop-ProcessTree([int]$RootPid) {
-    Get-CimInstance Win32_Process -Filter "ParentProcessId=$RootPid" -ErrorAction SilentlyContinue |
-        ForEach-Object { Stop-ProcessTree $_.ProcessId }
-    Stop-Process -Id $RootPid -Force -ErrorAction SilentlyContinue
+$ErrorActionPreference = 'Stop'
+$Root = Split-Path -Parent $PSScriptRoot
+function Stop-Tree([int]$ProcessId) {
+    $children = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId" -ErrorAction SilentlyContinue)
+    Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+    foreach ($child in $children) { Stop-Tree $child.ProcessId }
 }
-
-function Stop-ByPort([int]$Port, [string]$Label) {
-    $conns = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
-    if (-not $conns) { return $false }
-    $processIds = $conns | Select-Object -ExpandProperty OwningProcess -Unique
-    foreach ($p in $processIds) {
-        Stop-Process -Id $p -Force -ErrorAction SilentlyContinue
-        Write-Host "  Stopped $Label (port $Port, PID $p)" -ForegroundColor Green
+foreach ($name in @('frontend','backend')) {
+    $file = Join-Path $Root ".run\$name.pid"
+    if (-not (Test-Path -LiteralPath $file)) { continue }
+    $idText = (Get-Content -LiteralPath $file -Raw).Trim()
+    if ($idText -notmatch '^\d+$') { continue }
+    $proc = Get-Process -Id ([int]$idText) -ErrorAction SilentlyContinue
+    $owned = $false
+    if ($proc -and (Test-Path -LiteralPath "$file.json")) {
+        $record = Get-Content -LiteralPath "$file.json" -Raw | ConvertFrom-Json
+        $owned = $record.root -eq $Root -and $proc.StartTime.ToUniversalTime().Ticks -eq [long]$record.startTicks
+    } elseif ($proc) {
+        # Compatibility with the previous launcher; do not trust a recycled PID alone.
+        $info = Get-CimInstance Win32_Process -Filter "ProcessId=$idText"
+        $owned = $info.CommandLine -and $info.CommandLine.Contains($Root)
     }
-    return $true
+    if ($owned) { Stop-Tree $proc.Id; Write-Host "Stopped PersonalFinance $name." }
+    elseif ($proc) { Write-Warning "Skipped ${name}: process ownership could not be verified."; continue }
+    Remove-Item -LiteralPath $file -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath "$file.json") { Remove-Item -LiteralPath "$file.json" }
 }
-
-Write-Host ''
-Write-Host '========================================'
-Write-Host '  PersonalFinance - STOP'
-Write-Host '========================================'
-Write-Host ''
-
-$stopped = $false
-
-foreach ($file in @($FrontendPidFile, $BackendPidFile)) {
-    if (Test-Path $file) {
-        $processId = Get-Content $file -ErrorAction SilentlyContinue
-        if ($processId -match '^\d+$') {
-            Stop-ProcessTree ([int]$processId)
-            $stopped = $true
-        }
-        Remove-Item $file -Force -ErrorAction SilentlyContinue
-    }
-}
-
-if (Stop-ByPort 3000 'frontend') { $stopped = $true }
-if (Stop-ByPort 8080 'backend')  { $stopped = $true }
-
-Write-Host ''
-if ($stopped) {
-    Write-Host 'PersonalFinance stopped.' -ForegroundColor Green
-} else {
-    Write-Host 'Nothing was running.' -ForegroundColor Yellow
-}
-Write-Host ''

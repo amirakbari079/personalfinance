@@ -11,6 +11,6 @@ public interface InvestmentRepository extends JpaRepository<Investment, Long> {
 
     List<Investment> findByAssetType(InvestmentType assetType);
 
-    @Query("SELECT COALESCE(SUM(a.tomanEquivalent), 0) FROM Investment a")
+    @Query("SELECT COALESCE(SUM(a.tomanEquivalent), 0L) FROM Investment a")
     Long sumAllTomanEquivalents();
 }

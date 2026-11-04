@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
-import { Vazirmatn } from 'next/font/google'
+import localFont from 'next/font/local'
 import type { ReactNode } from 'react'
 import { Providers } from './providers'
 import './globals.css'
 
-const vazirmatn = Vazirmatn({
-  subsets: ['arabic', 'latin'],
-  weight: ['300', '400', '500', '600', '700'],
+const vazirmatn = localFont({
+  src: [
+    { path: './fonts/Vazirmatn-Regular.ttf', weight: '400' },
+    { path: './fonts/Vazirmatn-Medium.ttf', weight: '500' },
+    { path: './fonts/Vazirmatn-SemiBold.ttf', weight: '600' },
+    { path: './fonts/Vazirmatn-Bold.ttf', weight: '700' },
+  ],
   display: 'swap',
   variable: '--font-vazirmatn',
 })

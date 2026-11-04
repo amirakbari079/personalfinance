@@ -18,6 +18,7 @@ export interface Account {
   balance: number
   notes: string | null
   bankCode: string | null
+  balanceRecordedDate?: string | null
   createdAt: string
 }
 
