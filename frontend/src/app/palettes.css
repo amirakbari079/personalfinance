@@ -67,6 +67,12 @@
   --finance-chart-3: #8ccad5;
   --finance-chart-4: #edabc8;
 }
+.dark[data-dark-palette='evergreen'] {
+  --color-secondary: #70c6e8;
+  --color-secondary-hover: #9bdcf3;
+  --finance-gold: #70c6e8;
+  --finance-chart-2: #70c6e8;
+}
 .dark[data-dark-palette='midnight'],
 .dark[data-dark-palette='amethyst'] {
   color-scheme: dark;

@@ -30,13 +30,13 @@ export const DARK_PALETTES = [
   },
   {
     id: 'evergreen',
-    name: 'سبز جنگلی',
-    description: 'سبز آرام و طلایی؛ ظاهر قبلی',
+    name: 'سبز و آبی',
+    description: 'سبز آرام و آبی خنک',
     background: '#101a17',
     surface: '#18251f',
     colors: {
       primary: '#82d6b4',
-      secondary: '#e4bc74',
+      secondary: '#70c6e8',
       success: '#82d6b4',
       error: '#f3a196',
     },

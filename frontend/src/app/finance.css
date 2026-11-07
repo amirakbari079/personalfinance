@@ -1,9 +1,9 @@
-/* Shared evergreen / warm paper visual system. All amounts retain their original units. */
+/* Shared evergreen / cool paper visual system. All amounts retain their original units. */
 :root {
   --color-brand-accent: #08735d;
   --color-brand-accent-hover: #065c4b;
-  --color-secondary: #956014;
-  --color-secondary-hover: #764800;
+  --color-secondary: #287ba8;
+  --color-secondary-hover: #1d6087;
   --color-surface: #f5f6f2;
   --color-surface-card: #fff;
   --color-surface-muted: #dce4dd;
@@ -23,11 +23,11 @@
   --finance-border: #e0e7df;
   --finance-rail: #fff;
   --finance-ink: #103e32;
-  --finance-gold: #e9bf68;
+  --finance-gold: #48a8d1;
   --finance-hero: #153f33;
   --finance-hero-text: #f3faf2;
   --finance-chart-1: #13866b;
-  --finance-chart-2: #b58028;
+  --finance-chart-2: #48a8d1;
   --finance-chart-3: #6285ae;
   --finance-chart-4: #bb6656;
   --shadow-card: 0 3px 18px #233e2710;
@@ -41,8 +41,8 @@
 .dark {
   --color-brand-accent: #82d6b4;
   --color-brand-accent-hover: #a1e3ca;
-  --color-secondary: #e4bc74;
-  --color-secondary-hover: #f4d696;
+  --color-secondary: #70c6e8;
+  --color-secondary-hover: #9bdcf3;
   --color-surface: #101a17;
   --color-surface-card: #18251f;
   --color-surface-muted: #314038;
@@ -63,7 +63,7 @@
   --finance-rail: #132019;
   --finance-hero: #204c3a;
   --finance-chart-1: #82d6b4;
-  --finance-chart-2: #e4bc74;
+  --finance-chart-2: #70c6e8;
   --finance-chart-3: #91b4d3;
   --finance-chart-4: #e99b88;
   --shadow-card: 0 3px 18px #00000012;
@@ -242,7 +242,7 @@ h3 {
   padding: 0 16px 40px;
 }
 .finance-main > .route-enter > div:not(.dashboard-page) {
-  max-width: 1320px;
+  max-width: none;
 }
 .icon-button {
   display: inline-flex;
@@ -292,8 +292,8 @@ h3 {
   box-shadow: var(--shadow-card);
 }
 .dashboard-page {
-  max-width: 1280px;
-  margin-inline: auto;
+  max-width: none;
+  margin-inline: 0;
   padding: 30px 16px 0;
   display: flex;
   flex-direction: column;

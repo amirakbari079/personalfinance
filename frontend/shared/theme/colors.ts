@@ -7,7 +7,7 @@ export type ThemeColors = {
 
 export const DEFAULT_THEME_COLORS: ThemeColors = {
   primary: '#08735d',
-  secondary: '#956014',
+  secondary: '#287ba8',
   success: '#08735d',
   error: '#b3423a',
 }
@@ -80,6 +80,14 @@ export function parseStoredColors(raw: string | null): ThemeColors {
   if (!raw) return DEFAULT_THEME_COLORS
   try {
     const parsed = JSON.parse(raw) as Partial<ThemeColors>
+    // The previous built-in defaults used a brown secondary accent. Treat that
+    // exact built-in set as defaults while preserving genuinely custom colors.
+    if (
+      parsed.primary === '#08735d' &&
+      parsed.secondary === '#956014' &&
+      parsed.success === '#08735d' &&
+      parsed.error === '#b3423a'
+    ) return DEFAULT_THEME_COLORS
     const result = { ...DEFAULT_THEME_COLORS }
     for (const key of Object.keys(
       DEFAULT_THEME_COLORS,
