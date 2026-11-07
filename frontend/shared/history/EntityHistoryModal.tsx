@@ -24,6 +24,7 @@ interface Props {
   footerNote: string
   onClose: () => void
   onValueChanged?: () => void
+  readOnly?: boolean
 }
 
 export default function EntityHistoryModal({
@@ -35,6 +36,7 @@ export default function EntityHistoryModal({
   footerNote,
   onClose,
   onValueChanged,
+  readOnly = false,
 }: Props) {
   const [entries, setEntries] = useState<SnapshotEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -119,8 +121,8 @@ export default function EntityHistoryModal({
       }
     >
       <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-text-muted">مدیریت رکوردهای تاریخی</p>
-        {!showForm && (
+        <p className="text-sm text-text-muted">{readOnly ? 'سوابق محفوظ؛ تغییرات جدید از دفتر تراکنش' : 'مدیریت رکوردهای تاریخی'}</p>
+        {!readOnly && !showForm && (
           <button
             type="button"
             onClick={openNew}
@@ -152,8 +154,8 @@ export default function EntityHistoryModal({
         entries={entries}
         config={config}
         isLoading={isLoading}
-        onEdit={openEdit}
-        onDelete={handleDelete}
+        onEdit={readOnly ? undefined : openEdit}
+        onDelete={readOnly ? undefined : handleDelete}
         deletingId={deletingId}
       />
     </FormModal>

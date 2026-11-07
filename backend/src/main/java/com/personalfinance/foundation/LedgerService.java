@@ -17,7 +17,7 @@ import java.security.MessageDigest;
 public class LedgerService {
  public record Command(@NotNull UUID requestKey,@NotBlank String kind,@NotNull Long accountId,Long destinationAccountId,
   @NotNull @Positive @Max(9007199254740991L) Long amount,@NotNull LocalDate date,@NotBlank @Size(max=1000) String description,
-  Long categoryId,Long counterpartyId,Long expectedVersion) {}
+  Long categoryId,Long counterpartyId,@NotNull Long expectedVersion) {}
  private final JdbcTemplate jdbc; private final ManagementService json;
  private final ValueSnapshotService snapshots;private final BalanceSheetService balances;private final EntityManager em;
  public LedgerService(JdbcTemplate jdbc,ManagementService json,ValueSnapshotService snapshots,BalanceSheetService balances,EntityManager em){this.jdbc=jdbc;this.json=json;this.snapshots=snapshots;this.balances=balances;this.em=em;}
@@ -32,6 +32,7 @@ public class LedgerService {
   if(c.kind().equals("ADJUSTMENT"))throw new IllegalArgumentException("برای اصلاح موجودی از مسیر اختصاصی استفاده کنید");
   String hash=hash(c); lockRequest(c.requestKey());
   var previous=existing(c.requestKey(),hash);if(previous!=null)return previous;
+  if(c.expectedVersion()==null)throw new IllegalArgumentException("نسخهٔ حساب الزامی است");
   var ids=new TreeSet<Long>();ids.add(c.accountId());
   if(c.kind().equals("TRANSFER")) {
    if(c.destinationAccountId()==null || c.accountId().equals(c.destinationAccountId()))throw new IllegalArgumentException("حساب مقصد باید متفاوت باشد");
@@ -46,6 +47,7 @@ public class LedgerService {
  }
  public record Adjustment(@NotNull UUID requestKey,@NotNull Long accountId,@NotNull Long balance,@NotNull LocalDate date,@NotBlank String reason,@NotNull Long expectedVersion) {}
  @Transactional public Map<String,Object> adjust(Adjustment c) {
+  if(c.accountId()==null || c.expectedVersion()==null || c.date()==null)throw new IllegalArgumentException("اطلاعات اصلاح کامل نیست");
   if(c.balance()==null || c.balance()>9007199254740991L || c.balance() < -9007199254740991L || c.reason()==null || c.reason().isBlank() || c.reason().length()>1000)throw new IllegalArgumentException("مبلغ و دلیل اصلاح معتبر نیست");
   String hash=hash(c);lockRequest(c.requestKey());var previous=existing(c.requestKey(),hash);if(previous!=null)return previous;
   lockAccount(c.accountId(),c.date(),c.expectedVersion());
@@ -58,6 +60,7 @@ public class LedgerService {
  }
  public record Reversal(@NotNull UUID requestKey,@NotBlank @Size(max=1000) String reason) {}
  @Transactional public Map<String,Object> reverse(long original,Reversal c) {
+  if(c.reason()==null || c.reason().isBlank() || c.reason().length()>1000)throw new IllegalArgumentException("دلیل ابطال الزامی است");
   String hash=hash(Map.of("original",original,"request",c));lockRequest(c.requestKey());var prior=existing(c.requestKey(),hash);if(prior!=null)return prior;
   var record=jdbc.queryForList("SELECT * FROM pf_transactions WHERE id=? FOR UPDATE",original);
   if(record.isEmpty())throw new NoSuchElementException("تراکنش یافت نشد");
@@ -85,7 +88,16 @@ public class LedgerService {
   result.put("reversed",jdbc.queryForObject("SELECT count(*)>0 FROM pf_transactions WHERE reversal_of=?",Boolean.class,id));return result;
  }
  public List<Map<String,Object>> accounts(){return jdbc.queryForList("SELECT a.id,a.name,a.balance::text AS balance,a.version,l.opening_date,l.opening_balance::text AS opening_balance FROM accounts a JOIN pf_ledger_accounts l ON l.account_id=a.id WHERE a.archived_at IS NULL ORDER BY a.name");}
- public Map<String,Object> summary(LocalDate from,LocalDate to){return jdbc.queryForMap("SELECT coalesce(sum(CASE WHEN t.kind='INCOME' THEN e.amount ELSE 0 END),0)::text AS income,coalesce(sum(CASE WHEN t.kind='EXPENSE' THEN -e.amount ELSE 0 END),0)::text AS expense FROM pf_transactions t JOIN pf_transaction_entries e ON e.transaction_id=t.id WHERE t.effective_date BETWEEN ? AND ? AND NOT EXISTS(SELECT 1 FROM pf_transactions r WHERE r.reversal_of=t.id)",from,to);}
+ public Map<String,Object> summary(LocalDate from,LocalDate to){
+  if(from==null || to==null || from.isAfter(to))throw new IllegalArgumentException("بازهٔ تاریخ معتبر نیست");
+  return jdbc.queryForMap("""
+    SELECT coalesce(sum(CASE WHEN coalesce(original.kind,t.kind)='INCOME' THEN e.amount ELSE 0 END),0)::text AS income,
+      coalesce(sum(CASE WHEN coalesce(original.kind,t.kind)='EXPENSE' THEN -e.amount ELSE 0 END),0)::text AS expense
+    FROM pf_transactions t JOIN pf_transaction_entries e ON e.transaction_id=t.id
+    LEFT JOIN pf_transactions original ON original.id=t.reversal_of
+    WHERE t.effective_date BETWEEN ? AND ?
+    """,from,to);
+ }
  private void validateCatalog(Long id,String kind){if(id!=null&&jdbc.queryForObject("SELECT count(*) FROM pf_catalog WHERE id=? AND kind=? AND active=true",Long.class,id,kind)!=1)throw new IllegalArgumentException("دسته یا طرف حساب معتبر نیست");}
  private void lockRequest(UUID key){if(key==null)throw new IllegalArgumentException("شناسه درخواست الزامی است");jdbc.queryForObject("SELECT pg_advisory_xact_lock(hashtextextended(?,0))::text",String.class,key.toString());}
  private Map<String,Object> existing(UUID key,String hash){var rows=jdbc.queryForList("SELECT id,request_hash FROM pf_transactions WHERE request_key=?",key);if(rows.isEmpty())return null;if(!hash.equals(rows.getFirst().get("request_hash")))throw new IllegalStateException("شناسه درخواست برای اطلاعات دیگری استفاده شده است");return get(((Number)rows.getFirst().get("id")).longValue());}
@@ -103,7 +115,7 @@ public class LedgerService {
    long value=jdbc.queryForObject("SELECT l.opening_balance+coalesce((SELECT sum(amount) FROM pf_transaction_entries WHERE account_id=l.account_id),0) FROM pf_ledger_accounts l WHERE l.account_id=?",Long.class,id);
    if(value>9007199254740991L||value < -9007199254740991L)throw new IllegalArgumentException("موجودی خارج از محدودهٔ پشتیبانی‌شده است");
    jdbc.update("UPDATE accounts SET balance=? WHERE id=?",value,id);
-   snapshots.upsert(SnapshotEntityType.ACCOUNT,id,value,today(),"محاسبه از دفتر تراکنش");
+   // Legacy snapshots are immutable evidence. Ledger history is derived from entries.
   }
   em.flush();em.clear();balances.recordTodaySnapshot();
  }

@@ -38,6 +38,7 @@ const themeScript = `
     if (c) {
       var colors = JSON.parse(c);
       var root = document.documentElement;
+      if (colors.primary === '#08735d' && colors.secondary === '#287ba8' && colors.success === '#08735d' && colors.error === '#b3423a') return;
       if (colors.primary === '#08735d' && colors.secondary === '#956014' && colors.success === '#08735d' && colors.error === '#b3423a') return;
       if (colors.primary) {
         root.style.setProperty('--color-brand-accent', colors.primary);

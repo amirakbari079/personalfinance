@@ -41,7 +41,7 @@ import java.util.Set;
 public class BackupService {
 
     private static final Logger log = LoggerFactory.getLogger(BackupService.class);
-    private static final Set<String> SKIP_TABLES = Set.of("flyway_schema_history");
+    private static final Set<String> SKIP_TABLES = Set.of("flyway_schema_history", "pf_restore_events");
     private static final Object LOCK = new Object();
 
     private final DataSource dataSource;
@@ -80,11 +80,7 @@ public class BackupService {
         synchronized (LOCK) {
             try {
                 storage.ensureDir();
-                BackupDocument doc = dumpDatabase();
-                String filename = storage.newFilename();
-                Path file = storage.resolveSafe(filename);
-                mapper.writeValue(file.toFile(), doc);
-                return toResponse(file);
+                return writeBackup(dumpDatabase());
             } catch (IOException | SQLException e) {
                 log.error("Backup create failed", e);
                 throw new IllegalStateException("خطا در ساخت بکاپ");
@@ -112,7 +108,9 @@ public class BackupService {
                     filename = storage.newFilename();
                     target = storage.resolveSafe(filename);
                 }
-                mapper.writeValue(target.toFile(), doc);
+                try (var output = Files.newOutputStream(target, java.nio.file.StandardOpenOption.CREATE_NEW)) {
+                    mapper.writeValue(output, doc);
+                }
                 return toResponse(target);
             } catch (IOException e) {
                 throw new IllegalArgumentException("فایل بکاپ معتبر نیست");
@@ -126,10 +124,12 @@ public class BackupService {
             try {
                 BackupDocument doc = mapper.readValue(file.toFile(), BackupDocument.class);
                 assertValid(doc);
-                restoreDocument(doc);
+                restoreDocument(doc, filename);
                 return RestoreResultResponse.of(filename, doc.countsOrEmpty());
             } catch (IOException | SQLException e) {
-                log.error("Backup restore failed", e);
+                // PostgreSQL exception details may contain an entire financial row.
+                log.error("Backup restore failed: {} / SQL state {}", e.getClass().getSimpleName(),
+                        e instanceof SQLException sql ? sql.getSQLState() : "n/a");
                 throw new IllegalStateException("بازیابی بکاپ ناموفق بود");
             }
         }
@@ -176,25 +176,59 @@ public class BackupService {
     }
 
     private BackupDocument dumpDatabase() throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            conn.setReadOnly(true);
+            conn.setAutoCommit(false);
+            try {
+                var document = dumpDatabase(conn);
+                conn.commit();
+                return document;
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
+    private BackupDocument dumpDatabase(Connection conn) throws SQLException {
         Instant now = Instant.now();
         Map<String, List<Map<String, Object>>> tables = new LinkedHashMap<>();
         Map<String, Integer> counts = new LinkedHashMap<>();
-        try (Connection conn = dataSource.getConnection()) {
-            for (String table : listDataTables(conn)) {
-                List<Map<String, Object>> rows = dumpTable(conn, table);
-                tables.put(table, rows);
-                counts.put(table, rows.size());
-            }
+        for (String table : listDataTables(conn)) {
+            List<Map<String, Object>> rows = dumpTable(conn, table);
+            tables.put(table, rows);
+            counts.put(table, rows.size());
         }
         return BackupDocument.of(now, counts, tables);
     }
 
-    private void restoreDocument(BackupDocument doc) throws SQLException {
+    private BackupFileResponse writeBackup(BackupDocument doc) throws IOException {
+        storage.ensureDir();
+        Path file = storage.resolveSafe(storage.newFilename());
+        try (var output = Files.newOutputStream(file, java.nio.file.StandardOpenOption.CREATE_NEW)) {
+            mapper.writeValue(output, doc);
+        }
+        return toResponse(file);
+    }
+
+    private void restoreDocument(BackupDocument doc, String filename) throws SQLException, IOException {
         try (Connection conn = dataSource.getConnection()) {
             boolean previous = conn.getAutoCommit();
             conn.setAutoCommit(false);
             try {
                 List<String> tables = listDataTables(conn);
+                validateRestoreSchema(conn, tables, doc);
+                // Lock before the safety snapshot, using the SAME connection to avoid races/deadlocks.
+                try (Statement st = conn.createStatement()) {
+                    st.execute("SET LOCAL lock_timeout='15s'");
+                    st.execute("LOCK TABLE " + joinQuoted(tables) + " IN ACCESS EXCLUSIVE MODE");
+                }
+                String safetyBackup = writeBackup(dumpDatabase(conn)).getFilename();
+                try (Statement st = conn.createStatement()) {
+                    st.execute("SET CONSTRAINTS ALL DEFERRED");
+                    st.execute("SET LOCAL pf.restoring='true'");
+                }
                 truncate(conn, tables);
                 for (String table : tables) {
                     List<Map<String, Object>> rows = doc.tablesOrEmpty().get(table);
@@ -203,6 +237,16 @@ public class BackupService {
                     }
                     insertRows(conn, table, rows);
                 }
+                // Validate every FK before changing sequences (setval is not transactional).
+                try (Statement st = conn.createStatement()) { st.execute("SET CONSTRAINTS ALL IMMEDIATE"); }
+                var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                try (PreparedStatement ps = conn.prepareStatement("INSERT INTO pf_restore_events(actor,backup_filename,backup_created_at,safety_backup_filename) VALUES(?,?,?,?)")) {
+                    ps.setString(1,auth == null ? "system" : auth.getName());
+                    ps.setString(2,filename);
+                    ps.setTimestamp(3,doc.getCreatedAt() == null ? null : Timestamp.from(doc.getCreatedAt()));
+                    ps.setString(4,safetyBackup);
+                    ps.executeUpdate();
+                }
                 resetSequences(conn, tables);
                 conn.commit();
             } catch (Exception e) {
@@ -210,6 +254,22 @@ public class BackupService {
                 throw e;
             } finally {
                 conn.setAutoCommit(previous);
+            }
+        }
+    }
+
+    private void validateRestoreSchema(Connection conn,List<String> tables,BackupDocument doc) throws SQLException {
+        if (!new java.util.HashSet<>(tables).equals(doc.tablesOrEmpty().keySet())) {
+            throw new IllegalArgumentException("ساختار این بکاپ با نسخهٔ فعلی سازگار نیست؛ اطلاعات فعلی تغییر نکرد. بکاپ قدیمی باید ابتدا جداگانه ارتقا یابد.");
+        }
+        for (String table : tables) {
+            var rows = doc.tablesOrEmpty().get(table);
+            if (rows == null || !java.util.Objects.equals(doc.countsOrEmpty().get(table), rows.size()))
+                throw new IllegalArgumentException("بکاپ ناقص است؛ تعداد رکوردها تطابق ندارد");
+            var columns = new java.util.HashSet<>(columnNames(conn,table));
+            for (var row : rows) {
+                if (row == null || !columns.equals(row.keySet()))
+                    throw new IllegalArgumentException("ستون‌های بکاپ با ساختار فعلی سازگار نیست");
             }
         }
     }
@@ -255,6 +315,9 @@ public class BackupService {
                     Object value = values.get(i);
                     if (value == null) {
                         ps.setNull(i + 1, types.getOrDefault(columns.get(i), Types.NULL));
+                    } else if (types.get(columns.get(i)) == Types.OTHER) {
+                        // Let PostgreSQL infer the destination JSONB/UUID type, not VARCHAR.
+                        ps.setObject(i + 1, value, Types.OTHER);
                     } else {
                         ps.setObject(i + 1, value);
                     }
@@ -268,7 +331,7 @@ public class BackupService {
         if (tables.isEmpty()) {
             return;
         }
-        String sql = "TRUNCATE TABLE " + joinQuoted(tables) + " RESTART IDENTITY CASCADE";
+        String sql = "TRUNCATE TABLE " + joinQuoted(tables) + " RESTART IDENTITY";
         try (Statement st = conn.createStatement()) {
             st.execute(sql);
         }
@@ -378,25 +441,14 @@ public class BackupService {
             return null;
         }
         return switch (jdbcType) {
-            case Types.BIGINT -> asNumber(raw).longValue();
-            case Types.INTEGER, Types.SMALLINT -> asNumber(raw).intValue();
+            case Types.BIGINT -> asBigDecimal(raw).longValueExact();
+            case Types.INTEGER, Types.SMALLINT -> asBigDecimal(raw).intValueExact();
             case Types.NUMERIC, Types.DECIMAL -> asBigDecimal(raw);
             case Types.BOOLEAN, Types.BIT -> asBoolean(raw);
             case Types.DATE -> LocalDate.parse(raw.toString().substring(0, 10));
             case Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> parseInstant(raw);
             default -> raw.toString();
         };
-    }
-
-    private Number asNumber(Object raw) {
-        if (raw instanceof Number number) {
-            return number.longValue();
-        }
-        String text = raw.toString();
-        if (text.contains(".")) {
-            return new BigDecimal(text).longValue();
-        }
-        return Long.parseLong(text);
     }
 
     private BigDecimal asBigDecimal(Object raw) {

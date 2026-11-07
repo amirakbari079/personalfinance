@@ -18,9 +18,9 @@ public class BackupStorage {
 
     static final String FORMAT_MARKER = "personalfinance-backup-v1";
     private static final Pattern SAFE_NAME =
-            Pattern.compile("^personalfinance-backup-\\d{8}-\\d{6}\\.json$");
+            Pattern.compile("^personalfinance-backup-\\d{8}-\\d{6}(?:-\\d{3}-[a-f0-9]{8})?\\.json$");
     private static final DateTimeFormatter FILE_STAMP =
-            DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+            DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
     private static final List<String> LEGACY_DIR_NAMES =
             List.of("backups", "backup", "data", "export", "exports", "dumps");
 
@@ -54,7 +54,8 @@ public class BackupStorage {
     }
 
     public String newFilename() {
-        return "personalfinance-backup-" + LocalDateTime.now().format(FILE_STAMP) + ".json";
+        return "personalfinance-backup-" + LocalDateTime.now(java.time.ZoneId.of("Asia/Tehran")).format(FILE_STAMP)
+                + "-" + java.util.UUID.randomUUID().toString().substring(0,8) + ".json";
     }
 
     public boolean isSafeName(String filename) {

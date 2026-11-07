@@ -56,6 +56,24 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("نام کاربری یا رمز عبور اشتباه است"));
     }
 
+    @ExceptionHandler({org.springframework.dao.OptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class})
+    public ResponseEntity<ApiResponse<Void>> handleVersionConflict(Exception ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("رکورد تغییر کرده است؛ دوباره بارگذاری کنید"));
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraint(Exception ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("داده تکراری است یا با رکوردهای مرتبط سازگار نیست"));
+    }
+
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class})
+    public ResponseEntity<ApiResponse<Void>> handleMalformed(Exception ex) {
+        return ResponseEntity.badRequest().body(ApiResponse.error("قالب درخواست یا یکی از فیلدهای الزامی معتبر نیست"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
         log.error("Unhandled exception", ex);

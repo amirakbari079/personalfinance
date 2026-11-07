@@ -6,9 +6,9 @@ import { ACCOUNT_TYPE_LABELS } from '@/lib/api/accountsApi'
 import { formatWithCommas, stripCommas } from '@/utils/numberFormat'
 import BankPicker from '@/shared/banks/BankPicker'
 import { detectBankFromName } from '@/shared/banks/detectBank'
-import JalaliDatePicker from '@/shared/JalaliDatePicker'
 import { getTodayJalali } from '@/utils/jalaliToday'
 import FormModalShell from '@/shared/FormModalShell'
+import Link from 'next/link'
 
 interface Props {
   initial: Account | null
@@ -23,7 +23,7 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
   const [name, setName] = useState(initial?.name ?? '')
   const [type, setType] = useState<AccountType>(initial?.type ?? 'BANK')
   const [balance, setBalance] = useState(formatWithCommas(initial?.balance?.toString() ?? '0'))
-  const [balanceRecordedDate, setBalanceRecordedDate] = useState(getTodayJalali())
+  const [balanceRecordedDate] = useState(getTodayJalali())
   const [notes, setNotes] = useState(initial?.notes ?? '')
   const [bankCode, setBankCode] = useState<string | null>(initial?.bankCode ?? null)
   const [error, setError] = useState<string | null>(null)
@@ -79,6 +79,7 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
         notes,
         bankCode: LOGO_TYPES.includes(type) ? bankCode : null,
         balanceRecordedDate,
+        version: initial?.version,
       })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'خطا در ذخیره')
@@ -142,6 +143,7 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
           type="text"
           inputMode="numeric"
           value={balance}
+          disabled={!!initial}
           onChange={e => handleBalanceChange(e.target.value)}
           required
           placeholder="0"
@@ -149,17 +151,10 @@ export default function AccountForm({ initial, onSave, onCancel }: Props) {
         />
       </div>
 
-      <div>
+      {initial ? <p className="text-sm text-text-muted leading-7">برای تغییر موجودی، <Link href="/transactions" className="text-brand-accent underline">گردش پول</Link> را باز کنید و تراکنش یا اصلاح موجودی با دلیل ثبت کنید.</p> : <div>
         <label className="field-label">تاریخ ثبت موجودی</label>
-        <JalaliDatePicker
-          value={balanceRecordedDate}
-          onChange={setBalanceRecordedDate}
-          placeholder="تاریخ ثبت"
-        />
-        <p className="text-[10px] text-text-muted mt-1">
-          هر بار که موجودی را به‌روز می‌کنید، در این تاریخ ذخیره می‌شود.
-        </p>
-      </div>
+        <p className="text-sm text-text-muted mt-1">امروز، {balanceRecordedDate}؛ این مبلغ ماندهٔ افتتاحیهٔ حساب است.</p>
+      </div>}
 
       <div>
         <label className="field-label">

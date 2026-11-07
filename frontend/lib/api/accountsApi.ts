@@ -20,6 +20,8 @@ export interface Account {
   bankCode: string | null
   balanceRecordedDate?: string | null
   createdAt: string
+  version: number
+  archivedAt: string | null
 }
 
 export interface AccountRequest {
@@ -29,12 +31,13 @@ export interface AccountRequest {
   notes: string
   bankCode: string | null
   balanceRecordedDate?: string
+  version?: number
 }
 
 const BASE = '/api/v1/accounts'
 
-export function getAccounts(): Promise<Account[]> {
-  return apiGetList<Account>(BASE, 'خطا در دریافت حساب‌ها')
+export function getAccounts(archived = false): Promise<Account[]> {
+  return apiGetList<Account>(`${BASE}?archived=${archived}`, 'خطا در دریافت حساب‌ها')
 }
 
 export function getTotalBalance(): Promise<number> {
@@ -49,8 +52,12 @@ export function updateAccount(id: number, data: AccountRequest): Promise<Account
   return apiPut<Account>(`${BASE}/${id}`, data, 'خطا در ویرایش حساب')
 }
 
-export function deleteAccount(id: number): Promise<void> {
-  return apiDelete(`${BASE}/${id}`, 'خطا در حذف حساب')
+export function deleteAccount(id: number, version: number): Promise<void> {
+  return apiDelete(`${BASE}/${id}?version=${version}`, 'خطا در بایگانی حساب')
+}
+
+export function restoreAccount(id: number, version: number): Promise<Account> {
+  return apiPost<Account>(`${BASE}/${id}/restore?version=${version}`, {}, 'خطا در بازگردانی حساب')
 }
 
 export function exportAccountsCsv(): Promise<void> {

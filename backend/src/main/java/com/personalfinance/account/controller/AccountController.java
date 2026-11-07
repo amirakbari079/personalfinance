@@ -28,8 +28,8 @@ public class AccountController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AccountResponse>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.ok(accountService.findAll()));
+    public ResponseEntity<ApiResponse<List<AccountResponse>>> getAll(@RequestParam(defaultValue="false") boolean archived) {
+        return ResponseEntity.ok(ApiResponse.ok(accountService.findAll(archived)));
     }
 
     @GetMapping("/total")
@@ -61,8 +61,13 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        accountService.delete(id);
-        return ResponseEntity.ok(ApiResponse.ok("حساب حذف شد", null));
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id,@RequestParam Long version) {
+        accountService.archive(id,version);
+        return ResponseEntity.ok(ApiResponse.ok("حساب بایگانی شد؛ سوابق آن محفوظ است", null));
+    }
+
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<ApiResponse<AccountResponse>> restore(@PathVariable Long id,@RequestParam Long version) {
+        return ResponseEntity.ok(ApiResponse.ok(accountService.restore(id,version)));
     }
 }

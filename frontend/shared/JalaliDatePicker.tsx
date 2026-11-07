@@ -11,12 +11,14 @@ interface Props {
   value: string | null
   onChange: (jalali: string) => void
   placeholder?: string
+  id?: string
 }
 
 export default function JalaliDatePicker({
   value,
   onChange,
   placeholder = 'انتخاب تاریخ',
+  id,
 }: Props) {
   const pickerValue = useMemo(() => {
     if (!value) return undefined
@@ -31,6 +33,7 @@ export default function JalaliDatePicker({
   return (
     <div className="jalali-picker-wrap relative">
       <DatePicker
+        id={id}
         value={pickerValue}
         onChange={(date) => {
           if (date && !Array.isArray(date)) {

@@ -1,4 +1,5 @@
 # Runtime
+/foundation-test.log
 .run/
 logs/
 

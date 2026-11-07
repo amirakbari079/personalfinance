@@ -17,6 +17,10 @@ public class AccountRequest {
     @NotNull(message = "موجودی الزامی است")
     private Long balance;
 
+    private Long version;
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
+
     private String notes;
 
     /** Optional key from frontend Iranian bank logo catalog. */

@@ -16,7 +16,7 @@ public class Investment extends BaseEntity {
     @Column(name = "asset_type", nullable = false, length = 30)
     private InvestmentType assetType;
 
-    @Column(name = "native_amount", precision = 20, scale = 4)
+    @Column(name = "native_amount", precision = 38, scale = 18)
     private BigDecimal nativeAmount;
 
     @Column(name = "native_unit", length = 20)

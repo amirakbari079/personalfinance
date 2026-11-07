@@ -8,6 +8,7 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  restoreAccount,
   exportAccountsCsv,
 } from '@/lib/api/accountsApi'
 import {
@@ -28,6 +29,7 @@ import ListSortBar from '@/shared/ListSortBar'
 import TotalFooter from '@/shared/TotalFooter'
 import { BASE_SORT_OPTIONS, DEFAULT_SORT, sortItems, type SortOptionId } from '@/utils/listSort'
 import { sumAmounts } from '@/utils/formatToman'
+import Link from 'next/link'
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
@@ -41,6 +43,7 @@ export default function AccountsPage() {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [historyAccount, setHistoryAccount] = useState<Account | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [archived, setArchived] = useState(false)
 
   async function loadAnalytics() {
     setAnalyticsLoading(true)
@@ -60,7 +63,8 @@ export default function AccountsPage() {
 
   async function load() {
     try {
-      const accs = await getAccounts()
+      setError(null)
+      const accs = await getAccounts(archived)
       setAccounts(accs)
       void loadAnalytics()
     } catch (e) {
@@ -70,7 +74,7 @@ export default function AccountsPage() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [archived])
 
   async function handleSave(data: AccountRequest) {
     if (editingAccount) {
@@ -86,10 +90,13 @@ export default function AccountsPage() {
   async function handleDelete(id: number) {
     setDeletingId(id)
     try {
-      await deleteAccount(id)
+      const account = accounts.find(a => a.id === id)
+      if (!account) return
+      if (archived) await restoreAccount(id, account.version)
+      else await deleteAccount(id, account.version)
       load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'خطا در حذف')
+      setError(e instanceof Error ? e.message : 'خطا در بایگانی یا بازگردانی')
     } finally {
       setDeletingId(null)
     }
@@ -140,6 +147,12 @@ export default function AccountsPage() {
         onExport={exportAccountsCsv}
       />
 
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <button type="button" className="btn-ghost" aria-pressed={!archived} onClick={() => setArchived(false)}>حساب‌های فعال</button>
+        <button type="button" className="btn-ghost" aria-pressed={archived} onClick={() => setArchived(true)}>بایگانی</button>
+        <Link className="btn-primary ms-auto" href="/transactions">ثبت گردش پول و اصلاح موجودی</Link>
+      </div>
+
       {error && (
         <p className="text-sm text-status-error bg-status-error-bg border border-status-error-border rounded-lg px-4 py-2.5 mb-4">
           {error}
@@ -167,7 +180,7 @@ export default function AccountsPage() {
         )}
         {accounts.length === 0 ? (
           <div className="text-center py-16 text-text-muted text-sm">
-            هنوز حسابی ثبت نشده. اولین حساب را اضافه کنید.
+            {archived ? 'حساب بایگانی‌شده‌ای ندارید. بایگانی، سوابق را پاک نمی‌کند.' : 'هنوز حسابی ثبت نشده. اولین حساب را اضافه کنید.'}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">

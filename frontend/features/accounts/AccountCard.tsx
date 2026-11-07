@@ -1,6 +1,6 @@
 'use client'
 
-import { History, MoreHorizontal, Pencil, Trash2, Wallet } from 'lucide-react'
+import { History, MoreHorizontal, Pencil, Archive, RotateCcw, Wallet } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
 import type { Account } from '@/lib/api/accountsApi'
 import { ACCOUNT_TYPE_LABELS } from '@/lib/api/accountsApi'
@@ -92,7 +92,7 @@ export default function AccountCard({
                     <History className="w-3.5 h-3.5" />
                     تاریخچه
                   </button>
-                  <button
+                  {!account.archivedAt && <button
                     type="button"
                     onClick={() => {
                       setMenuOpen(false)
@@ -102,7 +102,7 @@ export default function AccountCard({
                   >
                     <Pencil className="w-3.5 h-3.5" />
                     ویرایش
-                  </button>
+                  </button>}
                   <button
                     type="button"
                     onClick={() => {
@@ -112,8 +112,8 @@ export default function AccountCard({
                     disabled={isDeleting}
                     className="account-card-menu-item account-card-menu-item--danger disabled:opacity-40"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    حذف
+                    {account.archivedAt ? <RotateCcw className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+                    {account.archivedAt ? 'بازگردانی' : 'بایگانی'}
                   </button>
                 </div>
               </>

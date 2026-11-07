@@ -30,9 +30,10 @@ export default function AccountHistoryModal(props: Props) {
       entityId={accountId}
       entityName={accountName}
       title="تاریخچه موجودی"
+      readOnly
       config={ACCOUNT_HISTORY_CONFIG}
       api={ACCOUNT_SNAPSHOT_API}
-      footerNote={`ویرایش رکوردهای گذشته فقط نمودار را اصلاح می‌کند. ${ACCOUNT_HISTORY_CONFIG.latestLabel} حساب فقط از رکورد با همان برچسب به‌روز می‌شود.`}
+      footerNote="رکوردهای قدیمی محفوظ‌اند. تغییرات جدید از دفتر گردش پول محاسبه می‌شوند؛ برای اصلاح موجودی، تراکنش جدید با دلیل ثبت کنید."
       onClose={onClose}
       onValueChanged={onBalanceChanged}
     />

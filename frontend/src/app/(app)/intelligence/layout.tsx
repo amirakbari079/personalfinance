@@ -21,7 +21,7 @@ export default function IntelligenceLayout({ children }: { children: ReactNode }
   const pathname = usePathname()
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 pb-12">
+    <div className="w-full px-4 py-6 pb-12">
       <nav
         className="flex items-center gap-1 mb-6 overflow-x-auto"
         style={{ scrollbarWidth: 'none' }}

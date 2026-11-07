@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ChartNoAxesCombined,
   Wallet,
+  ArrowLeftRight,
   TrendingUp,
   ArrowDownToLine,
   Landmark,
@@ -39,6 +40,7 @@ const GROUPS = [
     title: 'پول و دارایی',
     items: [
       { href: '/accounts', label: 'حساب‌ها', icon: Wallet },
+      { href: '/transactions', label: 'گردش پول', icon: ArrowLeftRight },
       { href: '/investments', label: 'سرمایه‌گذاری‌ها', icon: TrendingUp },
       { href: '/incomes', label: 'درآمدها', icon: ArrowDownToLine },
       { href: '/loans', label: 'وام و اقساط', icon: Landmark },

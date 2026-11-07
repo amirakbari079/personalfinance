@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Async;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="app.market.startup-enabled",havingValue="true",matchIfMissing=true)
 public class MarketDataStartupFetcher implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(MarketDataStartupFetcher.class);

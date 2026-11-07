@@ -23,6 +23,12 @@ public class Account extends BaseEntity {
     @Column(name = "bank_code", length = 50)
     private String bankCode;
 
+    @Column(name = "archived_at")
+    private java.time.Instant archivedAt;
+
+    public java.time.Instant getArchivedAt() { return archivedAt; }
+    public void setArchivedAt(java.time.Instant archivedAt) { this.archivedAt = archivedAt; }
+
     public Account() {}
 
     public String getName() { return name; }

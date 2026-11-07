@@ -15,6 +15,8 @@ public class AccountResponse {
     private String bankCode;
     private String balanceRecordedDate;
     private Instant createdAt;
+    private Long version;
+    private Instant archivedAt;
 
     public static AccountResponse from(Account account) {
         AccountResponse r = new AccountResponse();
@@ -25,6 +27,8 @@ public class AccountResponse {
         r.notes     = account.getNotes();
         r.bankCode  = account.getBankCode();
         r.createdAt = account.getCreatedAt();
+        r.version = account.getVersion();
+        r.archivedAt = account.getArchivedAt();
         return r;
     }
 
@@ -33,6 +37,8 @@ public class AccountResponse {
     }
 
     public Long getId() { return id; }
+    public Long getVersion() { return version; }
+    public Instant getArchivedAt() { return archivedAt; }
     public String getName() { return name; }
     public AccountType getType() { return type; }
     public Long getBalance() { return balance; }

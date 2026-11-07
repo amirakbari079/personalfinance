@@ -69,7 +69,7 @@ public class BalanceSheetService {
 
     @Transactional
     public void recordTodaySnapshot() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = com.personalfinance.foundation.LedgerService.today();
         long totalAssets = computeTotalAssets();
         long totalLiabilities = computeTotalLiabilities();
         long netBalance = totalAssets - totalLiabilities;
@@ -84,15 +84,13 @@ public class BalanceSheetService {
         snapshotRepository.save(snapshot);
     }
 
-    @Scheduled(cron = "0 5 0 * * *")
+    @Scheduled(cron = "0 5 0 * * *", zone = "Asia/Tehran")
     @Transactional
     public void scheduledDailySnapshot() {
         recordTodaySnapshot();
     }
 
     public List<BalanceSheetHistoryPoint> getHistorySeries() {
-        recordTodaySnapshot();
-
         List<BalanceSheetSnapshot> snapshots = snapshotRepository.findAllByOrderByRecordedDateAsc();
         List<BalanceSheetHistoryPoint> series = new ArrayList<>();
         Long previousNet = null;
@@ -112,9 +110,7 @@ public class BalanceSheetService {
     }
 
     public CashFlowResponse getCashFlow() {
-        recordTodaySnapshot();
-
-        LocalDate today = LocalDate.now();
+        LocalDate today = com.personalfinance.foundation.LedgerService.today();
         PersianDate persianToday = PersianDate.fromGregorian(today);
         LocalDate monthStart = PersianDate.of(persianToday.getYear(), persianToday.getMonthValue(), 1)
                 .toGregorian();

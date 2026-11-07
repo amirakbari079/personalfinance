@@ -1,7 +1,5 @@
 package com.personalfinance.history.service;
 
-
-
 import com.github.mfathi91.time.PersianDate;
 
 import com.personalfinance.account.repository.AccountRepository;
@@ -20,21 +18,15 @@ import com.personalfinance.history.repository.ValueSnapshotRepository;
 
 import org.springframework.stereotype.Service;
 
-
-
 import java.time.LocalDate;
 
 import java.util.ArrayList;
 
 import java.util.List;
 
-
-
 @Service
 
 public class AggregateHistoryService {
-
-
 
     private final ValueSnapshotRepository snapshotRepository;
 
@@ -45,8 +37,7 @@ public class AggregateHistoryService {
     private final ValueSnapshotService snapshotService;
 
     private final JalaliDateConverter jalaliDateConverter;
-
-
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     public AggregateHistoryService(
 
@@ -58,7 +49,7 @@ public class AggregateHistoryService {
 
             ValueSnapshotService snapshotService,
 
-            JalaliDateConverter jalaliDateConverter) {
+            JalaliDateConverter jalaliDateConverter, org.springframework.jdbc.core.JdbcTemplate jdbc) {
 
         this.snapshotRepository = snapshotRepository;
 
@@ -69,20 +60,17 @@ public class AggregateHistoryService {
         this.snapshotService = snapshotService;
 
         this.jalaliDateConverter = jalaliDateConverter;
+        this.jdbc = jdbc;
 
     }
 
-
-
     public List<TotalSeriesPoint> getAccountTotalSeries() {
 
-        List<Long> ids = accountRepository.findAll().stream().map(a -> a.getId()).toList();
+        List<Long> ids = accountRepository.findAllIncludingArchived().stream().map(a -> a.getId()).toList();
 
         return getTotalSeries(SnapshotEntityType.ACCOUNT, ids);
 
     }
-
-
 
     public List<TotalSeriesPoint> getInvestmentTotalSeries() {
 
@@ -92,17 +80,13 @@ public class AggregateHistoryService {
 
     }
 
-
-
     public CashFlowResponse getAccountCashFlow() {
 
-        List<Long> ids = accountRepository.findAll().stream().map(a -> a.getId()).toList();
+        List<Long> ids = accountRepository.findAllIncludingArchived().stream().map(a -> a.getId()).toList();
 
         return getCashFlow(SnapshotEntityType.ACCOUNT, ids);
 
     }
-
-
 
     public CashFlowResponse getInvestmentCashFlow() {
 
@@ -112,19 +96,15 @@ public class AggregateHistoryService {
 
     }
 
-
-
     private List<TotalSeriesPoint> getTotalSeries(SnapshotEntityType entityType, List<Long> entityIds) {
 
-        List<LocalDate> dates = snapshotRepository.findDistinctRecordedDates(entityType);
+        List<LocalDate> dates = recordedDates(entityType);
 
         if (dates.isEmpty()) {
 
             return List.of();
 
         }
-
-
 
         List<TotalSeriesPoint> series = new ArrayList<>();
 
@@ -146,11 +126,9 @@ public class AggregateHistoryService {
 
     }
 
-
-
     private CashFlowResponse getCashFlow(SnapshotEntityType entityType, List<Long> entityIds) {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = com.personalfinance.foundation.LedgerService.today();
 
         PersianDate persianToday = PersianDate.fromGregorian(today);
 
@@ -158,23 +136,17 @@ public class AggregateHistoryService {
 
                 .toGregorian();
 
-
-
         long currentTotal = entityIds.stream()
 
                 .mapToLong(id -> snapshotService.getLatestValue(entityType, id))
 
                 .sum();
 
-
-
         long startOfMonthTotal = computeTotalOnOrBefore(entityType, entityIds, monthStart);
-
-
 
         if (startOfMonthTotal == 0L && currentTotal == 0L) {
 
-            List<LocalDate> dates = snapshotRepository.findDistinctRecordedDates(entityType);
+            List<LocalDate> dates = recordedDates(entityType);
 
             if (!dates.isEmpty()) {
 
@@ -196,8 +168,6 @@ public class AggregateHistoryService {
 
         }
 
-
-
         long delta = currentTotal - startOfMonthTotal;
 
         Double percentChange = startOfMonthTotal == 0L
@@ -206,11 +176,7 @@ public class AggregateHistoryService {
 
                 : (delta * 100.0) / startOfMonthTotal;
 
-
-
         String monthLabel = jalaliDateConverter.jalaliMonthLabel(jalaliDateConverter.toJalali(today));
-
-
 
         return new CashFlowResponse(
 
@@ -227,8 +193,6 @@ public class AggregateHistoryService {
                 delta >= 0);
 
     }
-
-
 
     private long computeTotalOnOrBefore(
 
@@ -250,5 +214,8 @@ public class AggregateHistoryService {
 
     }
 
+    private List<LocalDate> recordedDates(SnapshotEntityType type) {
+        if(type != SnapshotEntityType.ACCOUNT) return snapshotRepository.findDistinctRecordedDates(type);
+        return jdbc.query("SELECT recorded_date d FROM value_snapshots WHERE entity_type='ACCOUNT' UNION SELECT opening_date FROM pf_ledger_accounts UNION SELECT t.effective_date FROM pf_transactions t JOIN pf_transaction_entries e ON e.transaction_id=t.id ORDER BY d", (rs,n)->rs.getDate(1).toLocalDate());
+    }
 }
-
