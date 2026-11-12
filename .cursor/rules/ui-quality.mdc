@@ -1,0 +1,19 @@
+---
+description: Preserve and improve the accepted PersonalFinance UI baseline
+alwaysApply: true
+---
+
+# UI quality floor
+
+Before UI/UX/theme/layout/chart/copy work, read `docs/UI-GUARDRAILS.md`.
+
+- Baseline: tag `ui-baseline-2026-11-07`, commit `83bcf8a`.
+- Improve a named problem; avoid unsolicited global redesigns.
+- Preserve Persian RTL, right rail, full-width desktop workspace, visual finance charts, local Vazirmatn, Lucide, mobile navigation, and three dark palettes.
+- Keep cool green/blue/cyan accents. No decorative brown, beige, gold, or amber. Semantic warning/error colors are allowed.
+- Use semantic CSS variables and shared components; no isolated hard-coded theme colors.
+- Preserve stored theme/custom-color choices and all financial information shown.
+- Before/after screenshots must use the same route and data at 375, 768, and 1440 px; check full-width pages at 1920 px.
+- Block delivery on overflow, clipped content, weaker hierarchy, lost information, broken focus/keyboard behavior, poor contrast, or missing loading/empty/error states.
+- Run frontend typecheck, tests, and production build after material changes.
+- Document the reason, visual evidence, validation, and rollback commit.

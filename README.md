@@ -17,6 +17,10 @@ Read [docs/MAINTENANCE.md](docs/MAINTENANCE.md) for setup, module ownership,
 provider contracts, tests, backups, limitations, and troubleshooting.
 See [docs/REPAIR-2026-11-04.md](docs/REPAIR-2026-11-04.md) for the verified repair results.
 
+Agents must read [AGENTS.md](AGENTS.md) before making changes. Any UI work must
+also follow [docs/UI-GUARDRAILS.md](docs/UI-GUARDRAILS.md); the accepted visual
+baseline is tagged `ui-baseline-2026-11-07` in Git.
+
 ## Quick start
 
 | Action | File |
@@ -55,6 +59,7 @@ cd frontend && npm install && npm run dev
 
 ## Docs
 
+- [UI quality guardrails](docs/UI-GUARDRAILS.md) — accepted baseline, protected behaviors and before/after review gates
 - [Visual experience](docs/VISUAL-EXPERIENCE.md) — Persian UI guide, chart calculations, design references and validation
 - `REQUIREMENTS.md` — features
 - `ARCHITECTURE.md` — design
