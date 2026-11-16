@@ -84,10 +84,15 @@ export default function MarketWatchPage() {
 
   useEffect(() => {
     void loadAll()
+    const onMarketUpdate = () => { void loadAll() }
+    window.addEventListener('market-data-updated', onMarketUpdate)
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') void loadAll()
     }, 60_000)
-    return () => window.clearInterval(timer)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('market-data-updated', onMarketUpdate)
+    }
   }, [loadAll])
 
   async function handleRefresh() {

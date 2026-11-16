@@ -115,7 +115,12 @@ export default function MarketSidebar({ className = '' }: Props) {
       }
     }
     load()
-    return () => { cancelled = true }
+    const onMarketUpdate = () => { void load() }
+    window.addEventListener('market-data-updated', onMarketUpdate)
+    return () => {
+      cancelled = true
+      window.removeEventListener('market-data-updated', onMarketUpdate)
+    }
   }, [loadHistory, loadPinned])
 
   useEffect(() => {

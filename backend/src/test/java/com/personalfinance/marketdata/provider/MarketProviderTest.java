@@ -74,4 +74,55 @@ class MarketProviderTest {
         assertTrue(provider.fetchQuote("../../bad").isEmpty());
         verify(http, times(1)).get(anyString());
     }
+
+    @Test void transientExchangeFailureIsNotNegativeCached() {
+        var http = mock(IranExchangeHttpClient.class);
+        when(http.get(anyString()))
+                .thenReturn(null)
+                .thenReturn(null)
+                .thenReturn("""
+                    {"closingPriceInfo":{"pClosing":661714,"priceYesterday":650000,
+                      "dEven":20261116,"hEven":123000}}
+                    """);
+        var provider = new TsetmcBourseProvider(http, new ObjectMapper());
+
+        assertTrue(provider.fetchQuote("34144395039913458").isEmpty());
+        assertEquals(new BigDecimal("66171.4"),
+                provider.fetchQuote("34144395039913458").orElseThrow().priceToman());
+        verify(http, times(3)).get(anyString());
+    }
+
+    @Test void exchangeKeepsLastValidQuoteWhenARefreshTimesOut() {
+        var http = mock(IranExchangeHttpClient.class);
+        when(http.get(anyString()))
+                .thenReturn("""
+                    {"closingPriceInfo":{"pClosing":661714,"priceYesterday":650000,
+                      "dEven":20261116,"hEven":123000}}
+                    """)
+                .thenReturn(null)
+                .thenReturn(null);
+        var provider = new TsetmcBourseProvider(http, new ObjectMapper(), java.time.Duration.ZERO);
+
+        var first = provider.fetchQuote("34144395039913458").orElseThrow();
+        var afterTimeout = provider.fetchQuote("34144395039913458").orElseThrow();
+
+        assertEquals(first, afterTimeout);
+        verify(http, times(3)).get(anyString());
+    }
+
+    @Test void exchangeFallsBackToOfficialDailyPriceWithItsRealTimestamp() {
+        var http = mock(IranExchangeHttpClient.class);
+        when(http.get(contains("GetClosingPriceInfo"))).thenReturn(null);
+        when(http.get(contains("GetClosingPriceDailyList"))).thenReturn("""
+            {"closingPriceDaily":[
+              {"pClosing":661165,"priceYesterday":673142,"dEven":20261115,"hEven":175959}
+            ]}
+            """);
+        var provider = new TsetmcBourseProvider(http, new ObjectMapper());
+
+        var quote = provider.fetchQuote("34144395039913458").orElseThrow();
+
+        assertEquals(new BigDecimal("66116.5"), quote.priceToman());
+        assertEquals(Instant.parse("2026-11-15T14:29:59Z"), quote.observedAt());
+    }
 }

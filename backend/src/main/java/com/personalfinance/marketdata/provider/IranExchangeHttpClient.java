@@ -5,15 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
@@ -25,10 +19,10 @@ public class IranExchangeHttpClient {
 
     private static final Logger log = LoggerFactory.getLogger(IranExchangeHttpClient.class);
 
-    private final HttpClient httpClient;
+    private final SSLContext windowsSslContext;
 
     public IranExchangeHttpClient() {
-        this.httpClient = buildClient();
+        this.windowsSslContext = buildWindowsSslContext();
     }
 
     public String get(String url) {
@@ -36,22 +30,37 @@ public class IranExchangeHttpClient {
         assertTsetmcHost(uri.getHost());
         if (!"https".equals(uri.getScheme())) throw new IllegalArgumentException("HTTPS required");
 
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .timeout(Duration.ofSeconds(10))
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                    .header("Accept", "application/json, text/plain, */*")
-                    .header("Referer", "https://www.tsetmc.com/")
-                    .GET()
-                    .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response.body();
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            HttpsURLConnection connection = null;
+            try {
+                connection = (HttpsURLConnection) uri.toURL().openConnection();
+                connection.setInstanceFollowRedirects(false);
+                connection.setConnectTimeout(4_000);
+                connection.setReadTimeout(6_000);
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                connection.setRequestProperty("Accept", "application/json, text/plain, */*");
+                connection.setRequestProperty("Referer", "https://www.tsetmc.com/");
+                if (windowsSslContext != null) {
+                    connection.setSSLSocketFactory(windowsSslContext.getSocketFactory());
+                }
+                int status = connection.getResponseCode();
+                if (status >= 200 && status < 300) {
+                    try (var input = connection.getInputStream()) {
+                        return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+                    }
+                }
+                log.warn("TSETMC HTTP {} status={}", uri, status);
+                return null;
+            } catch (java.io.IOException e) {
+                if (attempt == 2) {
+                    log.warn("TSETMC HTTP {} failed after retry: {}", uri, e.getMessage());
+                    return null;
+                }
+                log.info("TSETMC HTTP {} transient failure; retrying once", uri);
+            } finally {
+                if (connection != null) connection.disconnect();
             }
-            log.warn("TSETMC HTTP {} status={}", uri, response.statusCode());
-        } catch (Exception e) {
-            log.warn("TSETMC HTTP {} failed: {}", uri, e.getMessage());
         }
         return null;
     }
@@ -62,24 +71,24 @@ public class IranExchangeHttpClient {
         }
     }
 
-    private static HttpClient buildClient() {
-        var builder = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .followRedirects(HttpClient.Redirect.NEVER);
-        if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("windows")) {
-            try {
-                // Use the OS trust anchors on Windows, retaining certificate and hostname validation.
-                var store = java.security.KeyStore.getInstance("Windows-ROOT");
-                store.load(null, null);
-                var factory = javax.net.ssl.TrustManagerFactory.getInstance(javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm());
-                factory.init(store);
-                var context = SSLContext.getInstance("TLS");
-                context.init(null, factory.getTrustManagers(), null);
-                builder.sslContext(context);
-            } catch (Exception e) {
-                log.warn("Windows trust store unavailable; using Java trust store: {}", e.getMessage());
-            }
+    private static SSLContext buildWindowsSslContext() {
+        if (!System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("windows")) {
+            return null;
         }
-        return builder.build();
+        try {
+            // TSETMC's chain is accepted by Windows but not always by the bundled
+            // Java trust store. Keep normal certificate and hostname validation.
+            var store = java.security.KeyStore.getInstance("Windows-ROOT");
+            store.load(null, null);
+            var factory = javax.net.ssl.TrustManagerFactory.getInstance(
+                    javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm());
+            factory.init(store);
+            var context = SSLContext.getInstance("TLS");
+            context.init(null, factory.getTrustManagers(), null);
+            return context;
+        } catch (Exception e) {
+            log.warn("Windows trust store unavailable; using Java trust store: {}", e.getMessage());
+            return null;
+        }
     }
 }

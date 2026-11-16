@@ -26,6 +26,8 @@ import { useAuth } from '@/features/auth/AuthContext'
 import ThemeToggle from './ThemeToggle'
 import FormModal from './FormModal'
 import QuickEntry from './QuickEntry'
+import { refreshMarketQuotes } from '@/lib/api/marketApi'
+import { runMarketRefreshOnce } from '@/lib/marketRefreshSession'
 const GROUPS = [
   {
     title: 'نمای کلی',
@@ -93,6 +95,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
       window.removeEventListener('keydown', key)
       window.removeEventListener('finance-data-changed', changed)
     }
+  }, [])
+  useEffect(() => {
+    void runMarketRefreshOnce(refreshMarketQuotes, () => {
+      window.dispatchEvent(new Event('market-data-updated'))
+    })
   }, [])
   const nav = (
     <nav aria-label="منوی اصلی">

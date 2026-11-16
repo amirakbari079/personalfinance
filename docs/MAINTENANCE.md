@@ -77,11 +77,23 @@ a stored price with zero. Last stored prices remain visible with their timestamp
   timestamp of its inputs. It is an estimate, not an executable exchange price.
 
 The market page reads stored prices and never starts provider HTTP calls on a GET.
-Startup collection runs in the background; subsequent automatic collection is
-every ten minutes. Manual refresh is available. Update submissions within 30
-seconds reuse recent work; queued/running work is deduplicated. An interrupted
-job becomes retryable after ten minutes. The market page checks stored updates
-once per minute while visible.
+After authentication, the browser starts one non-blocking refresh per app session:
+stored prices render immediately, then market widgets reload after the background
+refresh completes. Backend startup collection still runs in the background and
+subsequent automatic collection is every ten minutes. Manual refresh is available.
+Update submissions within 30 seconds reuse recent work; queued/running work is
+deduplicated. An interrupted job becomes retryable after ten minutes. The market
+page checks stored updates once per minute while visible.
+
+TSETMC calls have one bounded retry for transient connection failures. If the
+live closing-price endpoint is temporarily limited, the provider falls back to
+TSETMC's official daily-price endpoint and preserves that row's exchange time.
+Failed
+responses are never negative-cached: a timeout must not make otherwise independent
+ETF, portfolio and watchlist requests fail for another 30 seconds. Successful
+quotes retain the short cache and their exchange observation time. If a later
+attempt times out, the in-process last valid quote is returned with that unchanged
+observation time, so the UI can label it as old instead of showing a false error.
 
 The UI facade selects the most recently received snapshot and displays its actual
 source timestamp. Historical snapshots from older versions may contain collection
