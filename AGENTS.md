@@ -14,3 +14,5 @@ For UI work:
 - Run `npm run typecheck`, `npm test`, and `npm run build` from `frontend/` after material UI changes. Record visual checks in the relevant docs.
 
 For finance foundation/data work, also read `docs/FOUNDATION-PROGRESS.md` and `docs/FOUNDATION-OPERATIONS.md` when present. Never infer old transactions from snapshots or test against the production database.
+
+For Phase 2 business accounting work, read `docs/BUSINESS-FINANCE-HANDOFF.md` first. It defines the owner's current scope and acceptance tests; the older Phase 2 sections of `REQUIREMENTS.md`, `ROADMAP.md`, and `ARCHITECTURE.md` are background where they differ.

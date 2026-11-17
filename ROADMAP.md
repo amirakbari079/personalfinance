@@ -88,7 +88,9 @@ Phase 2 is **on hold** until Phase 1.5 is complete and stable.
 
 ## Phase 2 — Business Finance ("The One")
 
-**On hold** until Phase 1.5 (M6.2–M6.6) is complete.
+> مشخصات اجرایی محدودشده و معیار پذیرش برای تحویل به عامل دیگر: [`docs/BUSINESS-FINANCE-HANDOFF.md`](docs/BUSINESS-FINANCE-HANDOFF.md). دامنه و فرمول‌های این سند، در موارد اختلاف، بر طرح اولیهٔ M7–M12 اولویت دارند.
+
+The original M7–M12 plan was marked on hold pending Phase 1.5. The owner is now preparing a scoped handoff for implementation; follow the linked handoff document for current requirements and acceptance criteria.
 
 ### M7 — Product Catalogue & Counterparties
 - Product CRUD (code, name, unit, category, default purchase + sale prices)
