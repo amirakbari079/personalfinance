@@ -130,6 +130,41 @@ h3 {
   color: var(--color-text-muted);
   margin-block-start: 2px;
 }
+.workspace-switcher {
+  display: flex;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--finance-border);
+  border-radius: 12px;
+  padding: 3px;
+  margin-inline: 4px;
+  margin-block-end: 18px;
+  gap: 3px;
+}
+.workspace-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: all 160ms ease;
+  min-height: 34px;
+  text-decoration: none;
+}
+.workspace-tab:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+.workspace-tab.is-active {
+  background: var(--finance-accent-bg, var(--color-status-success-bg));
+  color: var(--color-brand-accent);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
 .rail-group {
   margin-block-end: 20px;
 }
@@ -561,9 +596,24 @@ h3 {
   flex-wrap: wrap;
   gap: 14px;
 }
-.trend-summary > strong {
+.trend-summary > strong,
+.trend-summary-amount {
   font-size: clamp(18px, 1.7vw, 24px);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.trend-summary-amount number-flow-react,
+.hero-amount number-flow-react,
+.text-amount number-flow-react,
+.trend-summary-amount .number,
+.hero-amount .number,
+.text-amount .number {
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  line-height: inherit;
+  color: inherit;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 .trend-summary > span {
   display: inline-flex;

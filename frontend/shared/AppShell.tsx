@@ -21,6 +21,12 @@ import {
   Scale,
   Command,
   Leaf,
+  Store,
+  Boxes,
+  ShoppingCart,
+  ShoppingBag,
+  Users,
+  BadgeDollarSign,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 import ThemeToggle from './ThemeToggle'
@@ -28,7 +34,8 @@ import FormModal from './FormModal'
 import QuickEntry from './QuickEntry'
 import { refreshMarketQuotes } from '@/lib/api/marketApi'
 import { runMarketRefreshOnce } from '@/lib/marketRefreshSession'
-const GROUPS = [
+
+const PERSONAL_GROUPS = [
   {
     title: 'نمای کلی',
     items: [
@@ -62,9 +69,39 @@ const GROUPS = [
     ],
   },
 ]
-const ITEMS = GROUPS.flatMap((g) => g.items)
+
+const SHOP_GROUPS = [
+  {
+    title: 'مدیریت فروشگاه',
+    items: [
+      { href: '/shop', label: 'نمای فروشگاه', icon: Store },
+      { href: '/shop/products', label: 'کالا و موجودی', icon: Boxes },
+    ],
+  },
+  {
+    title: 'عملیات تجاری',
+    items: [
+      { href: '/shop/purchases', label: 'خرید (فاکتورها)', icon: ShoppingCart },
+      { href: '/shop/sales', label: 'فروش (فاکتورها)', icon: ShoppingBag },
+    ],
+  },
+  {
+    title: 'حساب‌ها و اشخاص',
+    items: [
+      { href: '/shop/counterparties', label: 'طرف‌حساب‌ها', icon: Users },
+      { href: '/shop/accounts', label: 'حساب‌های کسب‌وکار', icon: BadgeDollarSign },
+    ],
+  },
+]
+
+const ALL_SEARCH_ITEMS = [
+  ...PERSONAL_GROUPS.flatMap((g) => g.items),
+  ...SHOP_GROUPS.flatMap((g) => g.items),
+]
+
 const normalize = (v: string) =>
   v.replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, '').trim()
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -72,14 +109,21 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const [panel, setPanel] = useState<'menu' | 'search' | null>(null)
   const [query, setQuery] = useState('')
   const [revision, setRevision] = useState(0)
+
+  const isShop = pathname.startsWith('/shop')
+  const currentGroups = isShop ? SHOP_GROUPS : PERSONAL_GROUPS
+
   const active = (href: string) =>
-    href === '/'
+    href === '/' || href === '/shop'
       ? pathname === href
       : pathname === href || pathname.startsWith(`${href}/`)
-  const current = ITEMS.find((i) => active(i.href))
+
+  const current = ALL_SEARCH_ITEMS.find((i) => active(i.href))
+
   useEffect(() => {
     setPanel(null)
   }, [pathname])
+
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -96,14 +140,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
       window.removeEventListener('finance-data-changed', changed)
     }
   }, [])
+
   useEffect(() => {
     void runMarketRefreshOnce(refreshMarketQuotes, () => {
       window.dispatchEvent(new Event('market-data-updated'))
     })
   }, [])
+
   const nav = (
-    <nav aria-label="منوی اصلی">
-      {GROUPS.map((group) => (
+    <nav aria-label={isShop ? 'منوی فروشگاه' : 'منوی اصلی'}>
+      {currentGroups.map((group) => (
         <div className="rail-group" key={group.title}>
           <p>{group.title}</p>
           {group.items.map(({ href, label, icon: Icon }) => (
@@ -123,24 +169,66 @@ export default function AppShell({ children }: { children: ReactNode }) {
       ))}
     </nav>
   )
+
+  const workspaceSwitcher = (
+    <div className="workspace-switcher" role="tablist" aria-label="انتخاب فضای کاری">
+      <Link
+        href="/"
+        onClick={() => setPanel(null)}
+        className={`workspace-tab ${!isShop ? 'is-active' : ''}`}
+        role="tab"
+        aria-selected={!isShop}
+      >
+        <Leaf size={14} aria-hidden="true" />
+        <span>شخصی</span>
+      </Link>
+      <Link
+        href="/shop"
+        onClick={() => setPanel(null)}
+        className={`workspace-tab ${isShop ? 'is-active' : ''}`}
+        role="tab"
+        aria-selected={isShop}
+      >
+        <Store size={14} aria-hidden="true" />
+        <span>فروشگاه</span>
+      </Link>
+    </div>
+  )
+
   return (
     <div className="finance-app">
       <a href="#main-content" className="skip-link">
         رفتن به محتوای صفحه
       </a>
       <aside className="finance-rail">
-        <Link href="/" className="finance-brand">
-          <span>
-            <Leaf size={24} aria-hidden="true" />
-          </span>
-          <div>
-            <strong>حسابداری شخصی</strong>
-            <small>پول شما، تصویر روشن‌تر</small>
-          </div>
-        </Link>
+        {isShop ? (
+          <Link href="/shop" className="finance-brand">
+            <span>
+              <Store size={24} aria-hidden="true" />
+            </span>
+            <div>
+              <strong>حسابداری فروشگاه</strong>
+              <small>کالا، گردش انبار و سود</small>
+            </div>
+          </Link>
+        ) : (
+          <Link href="/" className="finance-brand">
+            <span>
+              <Leaf size={24} aria-hidden="true" />
+            </span>
+            <div>
+              <strong>حسابداری شخصی</strong>
+              <small>پول شما، تصویر روشن‌تر</small>
+            </div>
+          </Link>
+        )}
+
+        {workspaceSwitcher}
+
         {nav}
+
         <div className="rail-foot">
-          <span className="local-dot" /> فضای شخصی شما
+          <span className="local-dot" /> {isShop ? 'فضای فروشگاه و تجارت' : 'فضای شخصی شما'}
           <button
             aria-label="خروج از حساب"
             title="خروج از حساب"
@@ -153,6 +241,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </aside>
+
       <div className="finance-workspace">
         <header className="finance-topbar">
           <div className="topbar-context">
@@ -163,9 +252,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
             >
               <Menu size={22} />
             </button>
-            <span className="topbar-brand">فضای شخصی</span>
+            <span className="topbar-brand">{isShop ? 'فضای فروشگاه' : 'فضای شخصی'}</span>
             <ChevronLeft size={14} aria-hidden="true" />
-            <strong>{current?.label ?? 'حسابداری شخصی'}</strong>
+            <strong>{current?.label ?? (isShop ? 'نمای فروشگاه' : 'حسابداری شخصی')}</strong>
           </div>
           <div className="topbar-actions">
             <button
@@ -184,30 +273,44 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <QuickEntry />
           </div>
         </header>
+
         <main id="main-content" tabIndex={-1} className="finance-main">
           <div key={`${pathname}-${revision}`} className="route-enter">
             {children}
           </div>
         </main>
+
         <nav className="mobile-dock" aria-label="دسترسی سریع">
-          {[ITEMS[0], ITEMS[1], ITEMS[3], ITEMS[10]].map(
-            ({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active(href) ? 'page' : undefined}
-              >
-                <Icon size={21} aria-hidden="true" />
-                <span>{label}</span>
-              </Link>
-            ),
-          )}
+          {(isShop
+            ? [
+                SHOP_GROUPS[0].items[0],
+                SHOP_GROUPS[0].items[1],
+                SHOP_GROUPS[2].items[0],
+                SHOP_GROUPS[2].items[1],
+              ]
+            : [
+                PERSONAL_GROUPS[0].items[0],
+                PERSONAL_GROUPS[0].items[1],
+                PERSONAL_GROUPS[1].items[0],
+                PERSONAL_GROUPS[2].items[2],
+              ]
+          ).map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active(href) ? 'page' : undefined}
+            >
+              <Icon size={21} aria-hidden="true" />
+              <span>{label}</span>
+            </Link>
+          ))}
           <button onClick={() => setPanel('menu')}>
             <Menu size={21} />
             <span>بیشتر</span>
           </button>
         </nav>
       </div>
+
       {panel && (
         <FormModal
           title={panel === 'search' ? 'کجا می‌خواهید بروید؟' : 'بخش‌های برنامه'}
@@ -220,6 +323,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         >
           {panel === 'menu' ? (
             <>
+              {workspaceSwitcher}
               {nav}
               <button
                 className="btn-ghost"
@@ -240,11 +344,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
                   autoFocus
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="مثلاً حساب، بازار یا تحلیل…"
+                  placeholder="مثلاً کالا، فاکتور، حساب یا گزارش…"
                 />
               </label>
               <div className="command-results">
-                {ITEMS.filter((i) =>
+                {ALL_SEARCH_ITEMS.filter((i) =>
                   normalize(i.label).includes(normalize(query)),
                 ).map(({ href, label, icon: Icon }) => (
                   <Link key={href} href={href} onClick={() => setPanel(null)}>
@@ -253,7 +357,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                     <ChevronLeft size={17} />
                   </Link>
                 ))}
-                {!ITEMS.some((i) =>
+                {!ALL_SEARCH_ITEMS.some((i) =>
                   normalize(i.label).includes(normalize(query)),
                 ) && (
                   <p className="empty-caption">
