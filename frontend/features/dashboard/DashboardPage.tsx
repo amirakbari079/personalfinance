@@ -14,11 +14,13 @@ import { useBalanceSheetData } from '@/features/balance-sheet/useBalanceSheetDat
 import { useDashboardExtras } from './useDashboardExtras'
 import { compactMoney } from './analytics'
 import { formatToman } from '@/utils/formatToman'
+import AnimatedToman from '@/shared/AnimatedToman'
 import FinanceIllustration from '@/shared/FinanceIllustration'
 import TrendExplorer from './TrendExplorer'
 import AllocationPanel from './AllocationPanel'
 import AssetExplorer from './AssetExplorer'
 import { MonthlyPlan, UpcomingPayments } from './PlanningPanels'
+import ShopPersonalSummaryCard from '@/features/business/personal-view/ShopPersonalSummaryCard'
 export default function DashboardPage({
   reports = false,
 }: {
@@ -101,7 +103,9 @@ export default function DashboardPage({
             </span>
             <h2>تراز خالص دارایی و تعهدات</h2>
             <p className="hero-amount">
-              <bdi>{data.netBalance.toLocaleString('fa-IR')}</bdi>
+              <bdi>
+                <AnimatedToman value={data.netBalance} withSuffix={false} />
+              </bdi>
               <span>تومان</span>
             </p>
             <p className="hero-description">
@@ -201,6 +205,7 @@ export default function DashboardPage({
         </div>
       )}
       <AssetExplorer data={data} />
+      {!reports && <ShopPersonalSummaryCard />}
       {reports && !extras.loading && !extras.errors.includes('وام‌ها') && (
         <section className="finance-panel debt-panel">
           <div className="finance-icon">
