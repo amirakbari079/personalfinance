@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   BarChart,
   Bar,
+  type MouseHandlerDataParam,
 } from 'recharts'
 import { compactMoney, type HistoryPoint } from './analytics'
 import { formatToman } from '@/utils/formatToman'
@@ -18,10 +19,13 @@ export default function WealthChart({
   data,
   comparison = false,
   showAssets = false,
+  onHoverPoint,
 }: {
   data: HistoryPoint[]
   comparison?: boolean
   showAssets?: boolean
+  /** Fired while hovering a chart point; null on leave. */
+  onHoverPoint?: (point: HistoryPoint | null) => void
 }) {
   const id = useId().replace(/:/g, '')
   const contentStyle = {
@@ -45,6 +49,20 @@ export default function WealthChart({
   }
   const formatDate = (v: string) =>
     v.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])
+  const pointAt = (state: MouseHandlerDataParam): HistoryPoint | null => {
+    const raw = state.activeTooltipIndex ?? state.activeIndex
+    const idx =
+      typeof raw === 'number'
+        ? raw
+        : typeof raw === 'string' && raw !== '' && Number.isFinite(Number(raw))
+          ? Number(raw)
+          : null
+    return idx != null ? (data[idx] ?? null) : null
+  }
+  const handleMove = (state: MouseHandlerDataParam) => {
+    onHoverPoint?.(pointAt(state))
+  }
+  const handleLeave = () => onHoverPoint?.(null)
   return (
     <div
       className="wealth-chart"
@@ -62,6 +80,8 @@ export default function WealthChart({
             data={data}
             margin={{ top: 15, right: 8, bottom: 0, left: 10 }}
             accessibilityLayer
+            onMouseMove={handleMove}
+            onMouseLeave={handleLeave}
           >
             <CartesianGrid
               vertical={false}
@@ -104,6 +124,8 @@ export default function WealthChart({
             data={data}
             margin={{ top: 15, right: 8, bottom: 0, left: 10 }}
             accessibilityLayer
+            onMouseMove={handleMove}
+            onMouseLeave={handleLeave}
           >
             <defs>
               <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">

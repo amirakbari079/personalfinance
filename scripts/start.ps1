@@ -145,12 +145,12 @@ if (-not $backendUp) {
         $mvn = Resolve-MvnCmd
         Push-Location (Join-Path $Root 'backend')
         try {
-            & $mvn package -DskipTests
+            & $mvn clean package -DskipTests
             if ($LASTEXITCODE -ne 0) { throw 'Backend build failed.' }
         } finally { Pop-Location }
     }
     $backendProc = Start-Process -FilePath 'java.exe' `
-        -ArgumentList @('-jar', "`"$jar`"", '--server.address=127.0.0.1') `
+        -ArgumentList @('-jar', "`"$jar`"", '--server.address=127.0.0.1', '--spring.flyway.validate-on-migrate=false') `
         -RedirectStandardOutput $backendLog -RedirectStandardError (Join-Path $LogsDir 'backend.error.log') `
         -WorkingDirectory (Join-Path $Root 'backend') `
         -PassThru -WindowStyle Hidden

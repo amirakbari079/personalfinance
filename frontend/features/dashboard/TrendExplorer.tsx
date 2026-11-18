@@ -18,6 +18,7 @@ import {
   type HistoryPoint,
 } from './analytics'
 import { formatToman } from '@/utils/formatToman'
+import AnimatedToman from '@/shared/AnimatedToman'
 import FinanceIllustration from '@/shared/FinanceIllustration'
 const WealthChart = dynamic(() => import('./WealthChart'), {
   ssr: false,
@@ -45,10 +46,13 @@ export default function TrendExplorer({
   const [months, setMonths] = useState(3)
   const [mode, setMode] = useState<'trend' | 'compare'>('trend')
   const [showAssets, setShowAssets] = useState(false)
+  const [hoverPoint, setHoverPoint] = useState<HistoryPoint | null>(null)
   const data = useMemo(
     () => historyInPeriod(history, months, todayKey()),
     [history, months],
   )
+  const latest = data.length ? data[data.length - 1] : null
+  const activePoint = hoverPoint ?? latest
   const change =
     data.length > 1
       ? changeBetween(data[0].netBalance, data[data.length - 1].netBalance)
@@ -156,8 +160,20 @@ export default function TrendExplorer({
       ) : (
         <>
           <div className="trend-summary">
-            <strong>{formatToman(data[data.length - 1].netBalance)}</strong>
-            {change ? (
+            <strong className="trend-summary-amount">
+              <AnimatedToman value={activePoint?.netBalance ?? 0} />
+            </strong>
+            {hoverPoint ? (
+              <span className="muted">
+                تراز در{' '}
+                <bdi>
+                  {hoverPoint.recordedDateJalali.replace(
+                    /\d/g,
+                    (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)],
+                  )}
+                </bdi>
+              </span>
+            ) : change ? (
               <span className={change.delta >= 0 ? 'positive' : 'negative'}>
                 {change.delta >= 0 ? (
                   <ArrowUpLeft size={17} />
@@ -176,16 +192,18 @@ export default function TrendExplorer({
             )}
           </div>
           <p className="chart-caption">
-            آخرین تراز ثبت‌شده در بازه
-            {change
-              ? '؛ تغییر نسبت به اولین ثبت همین بازه'
-              : '؛ برای نمایش روند به دست‌کم دو تاریخ نیاز است'}
+            {hoverPoint
+              ? 'مقدار نقطهٔ انتخاب‌شده روی نمودار'
+              : change
+                ? 'آخرین تراز ثبت‌شده در بازه؛ تغییر نسبت به اولین ثبت همین بازه'
+                : 'آخرین تراز ثبت‌شده در بازه؛ برای نمایش روند به دست‌کم دو تاریخ نیاز است'}
             .
           </p>
           <WealthChart
             data={data}
             comparison={mode === 'compare'}
             showAssets={showAssets}
+            onHoverPoint={setHoverPoint}
           />
           <div className="chart-legend">
             <span>

@@ -15,6 +15,7 @@
 | تم / رنگ سفارشی | `frontend/shared/ThemeProvider.tsx` · `frontend/shared/theme/colors.ts` |
 | بکاپ و بازیابی | `frontend/features/settings/BackupPanel.tsx` · `frontend/features/settings/SettingsPage.tsx` |
 | جمع کل صفحات | `frontend/shared/TotalFooter.tsx` + `frontend/utils/formatToman.ts` |
+| انیمیشن چرخش رقم (Number Flow) | `frontend/shared/AnimatedToman.tsx` · هاور نمودار در `TrendExplorer` / `WealthChart` / `TrendLineChart` |
 | آیکون بانک / کارگزاری | `frontend/shared/banks/` |
 | Tailwind tokens | `frontend/tailwind.config.ts` |
 

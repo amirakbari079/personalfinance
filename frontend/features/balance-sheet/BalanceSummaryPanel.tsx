@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowDownLeft, ArrowUpRight, Minus, TrendingUp } from 'lucide-react'
 import { formatToman } from '@/utils/formatToman'
+import AnimatedToman from '@/shared/AnimatedToman'
 import {
   getBalanceSheetHistory,
   getBalanceSheetCashFlow,
@@ -22,6 +23,8 @@ export default function BalanceSummaryPanel({ totalAssets, totalLiabilities, net
   const [history, setHistory] = useState<BalanceSheetHistoryPoint[]>([])
   const [cashFlow, setCashFlow] = useState<CashFlowSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [hoverNet, setHoverNet] = useState<number | null>(null)
+  const displayNet = hoverNet ?? netBalance
 
   useEffect(() => {
     Promise.all([getBalanceSheetHistory(), getBalanceSheetCashFlow()])
@@ -52,13 +55,17 @@ export default function BalanceSummaryPanel({ totalAssets, totalLiabilities, net
         <StatusTag variant={isPositive ? 'success' : 'error'} className="mb-3 relative">بالانس نهایی</StatusTag>
         <p
           className={`text-4xl md:text-5xl text-amount-hero tracking-tight relative ${
-            isPositive ? 'text-status-success' : 'text-status-error'
+            (hoverNet ?? netBalance) >= 0 ? 'text-status-success' : 'text-status-error'
           }`}
         >
-          {formatToman(netBalance)}
+          <AnimatedToman value={displayNet} />
         </p>
         <p className="text-xs text-text-muted mt-2 relative">
-          {isPositive ? 'وضعیت مثبت — دارایی‌ها بیشتر از بدهی‌هاست' : 'وضعیت منفی — بدهی‌ها بیشتر از دارایی‌هاست'}
+          {hoverNet !== null
+            ? 'بالانس نقطهٔ انتخاب‌شده روی نمودار'
+            : isPositive
+              ? 'وضعیت مثبت — دارایی‌ها بیشتر از بدهی‌هاست'
+              : 'وضعیت منفی — بدهی‌ها بیشتر از دارایی‌هاست'}
         </p>
       </div>
 
@@ -108,6 +115,7 @@ export default function BalanceSummaryPanel({ totalAssets, totalLiabilities, net
           data={history}
           formatValue={formatToman}
           isLoading={isLoading}
+          onHoverNet={setHoverNet}
         />
       </div>
     </section>

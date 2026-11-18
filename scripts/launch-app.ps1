@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $PSScriptRoot
 
@@ -35,6 +35,7 @@ if (-not ($backendReady -and $frontendReady)) {
     # Start backend & frontend in the background without launching default browser tab
     $startScript = Join-Path $PSScriptRoot 'start.ps1'
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$startScript" -NoBrowser
+    $startExitCode = $LASTEXITCODE
 
     # Wait for frontend readiness
     $deadline = (Get-Date).AddSeconds(120)
@@ -50,6 +51,21 @@ if (-not ($backendReady -and $frontendReady)) {
             } catch {}
         }
         Start-Sleep -Milliseconds 800
+    }
+
+    if (-not $ready) {
+        Add-Type -AssemblyName System.Windows.Forms
+        $backendLog = Join-Path $Root 'logs\backend.log'
+        $errorMsg = "اجرای سرویس‌های پس‌زمینه با خطا مواجه شد.`n`n"
+        if (Test-Path $backendLog) {
+            $lastLines = Get-Content $backendLog -Tail 10 -ErrorAction SilentlyContinue
+            if ($lastLines) {
+                $errorMsg += "آخرین خطوط لاگ بک‌اند:`n" + ($lastLines -join "`n") + "`n`n"
+            }
+        }
+        $errorMsg += "لطفاً بررسی کنید که دیتابیس PostgreSQL فعال است، یا فایل start.bat را دستی اجرا کنید."
+        [System.Windows.Forms.MessageBox]::Show($errorMsg, "PersonalFinance - خطا در اجرا", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        exit 1
     }
 }
 

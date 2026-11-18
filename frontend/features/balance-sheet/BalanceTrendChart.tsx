@@ -10,6 +10,7 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
+  type MouseHandlerDataParam,
 } from 'recharts'
 import type { BalanceSheetHistoryPoint } from '@/lib/api/balanceSheetHistoryApi'
 
@@ -17,6 +18,7 @@ interface Props {
   data: BalanceSheetHistoryPoint[]
   formatValue: (amount: number) => string
   isLoading?: boolean
+  onHoverNet?: (net: number | null) => void
 }
 
 function shortDate(jalali: string): string {
@@ -34,7 +36,12 @@ function formatCompact(value: number): string {
   return value.toLocaleString('fa-IR')
 }
 
-export default function BalanceTrendChart({ data, formatValue, isLoading }: Props) {
+export default function BalanceTrendChart({
+  data,
+  formatValue,
+  isLoading,
+  onHoverNet,
+}: Props) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -62,7 +69,24 @@ export default function BalanceTrendChart({ data, formatValue, isLoading }: Prop
   return (
     <div className="h-72 w-full" dir="ltr">
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <ComposedChart
+          data={chartData}
+          margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+          onMouseMove={(state: MouseHandlerDataParam) => {
+            const raw = state.activeTooltipIndex ?? state.activeIndex
+            const idx =
+              typeof raw === 'number'
+                ? raw
+                : typeof raw === 'string' &&
+                    raw !== '' &&
+                    Number.isFinite(Number(raw))
+                  ? Number(raw)
+                  : null
+            const net = idx != null ? chartData[idx]?.net : undefined
+            onHoverNet?.(typeof net === 'number' ? net : null)
+          }}
+          onMouseLeave={() => onHoverNet?.(null)}
+        >
           <defs>
             <linearGradient id="netGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--color-brand-accent)" stopOpacity={0.25} />

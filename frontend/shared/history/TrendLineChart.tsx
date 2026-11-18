@@ -1,7 +1,8 @@
 'use client'
 
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { compactMoney } from '@/features/dashboard/analytics'
+import AnimatedToman from '@/shared/AnimatedToman'
 import {
   ResponsiveContainer,
   AreaChart,
@@ -10,6 +11,7 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  type MouseHandlerDataParam,
 } from 'recharts'
 import type { TotalSeriesPoint } from '@/lib/api/historyApi'
 
@@ -29,6 +31,12 @@ function shortDate(jalali: string): string {
   )
 }
 
+type ChartRow = {
+  date: string
+  fullDate: string
+  total: number
+}
+
 export default function TrendLineChart({
   data,
   formatValue,
@@ -36,6 +44,8 @@ export default function TrendLineChart({
   isLoading,
 }: Props) {
   const gradientId = useId().replace(/:/g, '')
+  const [hoverTotal, setHoverTotal] = useState<number | null>(null)
+
   if (isLoading) {
     return (
       <div className="glass-card p-6 flex items-center justify-center h-56">
@@ -55,20 +65,41 @@ export default function TrendLineChart({
     )
   }
 
-  const chartData = data.map((d) => ({
+  const chartData: ChartRow[] = data.map((d) => ({
     date: shortDate(d.recordedDateJalali),
     fullDate: d.recordedDateJalali,
     total: d.total,
   }))
+  const latestTotal = chartData[chartData.length - 1]?.total ?? 0
+  const displayTotal = hoverTotal ?? latestTotal
 
   return (
     <div className="glass-card p-5">
-      <h3 className="text-section-label text-text-muted mb-4">{title}</h3>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+        <h3 className="text-section-label text-text-muted">{title}</h3>
+        <strong className="trend-summary-amount text-text-primary">
+          <AnimatedToman value={displayTotal} />
+        </strong>
+      </div>
       <div className="h-56 w-full" dir="ltr">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
             margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+            onMouseMove={(state: MouseHandlerDataParam) => {
+              const raw = state.activeTooltipIndex ?? state.activeIndex
+              const idx =
+                typeof raw === 'number'
+                  ? raw
+                  : typeof raw === 'string' &&
+                      raw !== '' &&
+                      Number.isFinite(Number(raw))
+                    ? Number(raw)
+                    : null
+              const total = idx != null ? chartData[idx]?.total : undefined
+              setHoverTotal(typeof total === 'number' ? total : null)
+            }}
+            onMouseLeave={() => setHoverTotal(null)}
           >
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
